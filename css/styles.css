@@ -242,12 +242,16 @@ body, html {
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* 模态框 / 遮罩屏 */
+/* 模态框 / 遮罩屏 — 深红绒布赌场质感 */
 .overlay-screen {
     position: absolute;
     inset: 0;
-    background: rgba(5, 15, 12, 0.88);
-    backdrop-filter: blur(12px);
+    /* 深红绒布底 + SVG 菱格噪点纹理 */
+    background-color: #1a0608;
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='none'/%3E%3Cpath d='M0 16 L16 0 L32 16 L16 32 Z' fill='none' stroke='%23ffffff' stroke-width='0.3' stroke-opacity='0.04'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23ffffff' fill-opacity='0.025'/%3E%3C/svg%3E");
+    background-size: 32px 32px, 4px 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,83 +268,178 @@ body, html {
 }
 
 /* ==========================================================================
-   极简奢华大厅样式 (Minimalist Premium Lobby)
+   牌室风格大厅主卡片 (Card Room Lobby — Felt + Gold Foil)
    ========================================================================== */
 
 .hero-lobby-card {
-    background: #111113;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
+    /* 深色皮革底面 */
+    background: #130508;
+    /* 烫金边框：3层叠加——最外金线 / 中间细隙 / 内衬暗纹 */
+    border: 1px solid #7a5a1e;
+    outline: 3px solid rgba(184, 134, 11, 0.18);
+    outline-offset: 3px;
+    border-radius: 6px;
     width: 90%;
-    max-width: 420px;
-    padding: 32px 28px;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+    max-width: 430px;
+    padding: 0;
+    box-shadow:
+        0 0 0 1px rgba(255, 215, 0, 0.08) inset,
+        0 4px 0 0 #5a3a0a,
+        0 8px 32px rgba(0, 0, 0, 0.85),
+        0 2px 80px rgba(120, 20, 20, 0.4);
     z-index: 10;
+    overflow: hidden;
     text-align: center;
 }
 
+/* 顶部橙红渐变装饰横幅 */
 .lobby-header {
-    margin-bottom: 24px;
+    background: linear-gradient(180deg, #7a1a1a 0%, #5c1212 55%, #3d0a0a 100%);
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #7a5a1e;
+    position: relative;
+    overflow: hidden;
 }
 
-.brand-badge {
-    display: inline-flex;
+/* 横幅内隐约的横纹绒布纹 */
+.lobby-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.08) 3px,
+        rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+}
+
+/* 顶部金线装饰 */
+.lobby-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #c9922a 20%, #ffd700 50%, #c9922a 80%, transparent 100%);
+}
+
+.brand-hero {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.5px;
+    gap: 14px;
+    justify-content: center;
+    position: relative;
 }
 
-.brand-badge i {
-    color: #ffffff;
-    font-size: 1.3rem;
+.brand-logo-icon {
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(145deg, #ffd700 0%, #c9922a 100%);
+    color: #3d0a0a;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,215,0,0.4) inset;
+    flex-shrink: 0;
+}
+
+.brand-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #f5d98a;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 20px rgba(255,215,0,0.2);
+    font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
+}
+
+.brand-subtitle {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    color: #a07840;
+    margin-top: 2px;
+    text-transform: uppercase;
 }
 
 .hero-tags {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin-top: 12px;
+    gap: 10px;
+    margin-top: 14px;
+    position: relative;
 }
 
 .badge-tag {
-    background: #1c1c1f;
-    color: #a1a1aa;
-    font-size: 0.75rem;
-    padding: 4px 12px;
-    border-radius: 6px;
+    background: rgba(0,0,0,0.35);
+    color: #c9a255;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 2px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 500;
+    gap: 5px;
+    font-weight: 600;
+    border: 1px solid rgba(180, 140, 50, 0.25);
+    letter-spacing: 0.5px;
+}
+
+/* 表单主体区 - 绒布底纹 */
+.lobby-form {
+    padding: 22px 24px;
+    background-image:
+        repeating-linear-gradient(
+            135deg,
+            transparent,
+            transparent 2px,
+            rgba(255,255,255,0.012) 2px,
+            rgba(255,255,255,0.012) 4px
+        );
 }
 
 .nickname-section {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #a07840;
+    margin-bottom: 6px;
+    text-align: left;
 }
 
 .nickname-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
-    background: #1c1c1f;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 6px 6px 6px 16px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(180, 140, 50, 0.25);
+    border-radius: 3px;
+    padding: 5px 5px 5px 14px;
     transition: all 0.2s ease;
 }
 
 .nickname-input-wrapper:focus-within {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: #232326;
+    border-color: rgba(201, 146, 42, 0.6);
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 0 2px rgba(201,146,42,0.1);
 }
 
 .nickname-input-wrapper .input-icon {
-    color: #a1a1aa;
+    color: #7a5a2a;
     font-size: 0.9rem;
-    margin-right: 12px;
+    margin-right: 10px;
     flex-shrink: 0;
 }
 
@@ -349,36 +448,41 @@ body, html {
     background: transparent !important;
     border: none !important;
     outline: none !important;
-    color: #ffffff !important;
+    color: #f5d98a !important;
     font-size: 0.95rem !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     padding: 8px 0 !important;
     height: 36px !important;
+    letter-spacing: 0.5px;
 }
 
 .nickname-input-wrapper input::placeholder {
-    color: #52525b;
+    color: #4a3820;
+    font-weight: 400;
 }
 
 .btn-random-nick {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0 14px !important;
-    height: 36px !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
+    background: rgba(180,140,50,0.15) !important;
+    color: #c9a255 !important;
+    border: 1px solid rgba(180,140,50,0.3) !important;
+    border-radius: 2px !important;
+    padding: 0 12px !important;
+    height: 34px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 5px !important;
     cursor: pointer !important;
     flex-shrink: 0 !important;
-    transition: background 0.15s ease !important;
+    letter-spacing: 0.5px;
+    transition: all 0.15s ease !important;
 }
 
 .btn-random-nick:hover {
-    background: #e4e4e7 !important;
+    background: rgba(201,146,42,0.28) !important;
+    border-color: rgba(255,215,0,0.5) !important;
+    color: #ffd700 !important;
 }
 
 .btn-random-nick:active {
@@ -388,42 +492,84 @@ body, html {
 .mode-selection {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
-/* 极简精致功能卡片 */
+/* 牌室风格功能卡片 */
 .mode-card {
     width: 100%;
-    background: #1c1c1f;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    padding: 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(120, 80, 20, 0.35);
+    border-radius: 3px;
+    padding: 13px 14px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
+}
+
+.mode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,215,0,0.04) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 .mode-card:hover {
-    background: #232326;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(120,40,20,0.22);
+    border-color: rgba(201,146,42,0.55);
 }
 
-.card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+.mode-card:hover::before {
+    opacity: 1;
+}
+
+.primary-card {
+    border-color: rgba(180,140,50,0.45);
+}
+
+.card-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     flex-shrink: 0;
-    background: #27272a;
-    color: #ffffff;
+}
+
+.card-icon-wrap.gold {
+    background: rgba(180,120,10,0.18);
+    border: 1px solid rgba(180,140,50,0.4);
+    color: #e8b84b;
+}
+
+.card-icon-wrap.cyan {
+    background: rgba(30,120,160,0.18);
+    border: 1px solid rgba(50,160,200,0.35);
+    color: #60b8d8;
+}
+
+.card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    background: rgba(80,40,10,0.3);
+    border: 1px solid rgba(120,80,20,0.3);
+    color: #c9a255;
 }
 
 .card-content {
@@ -432,58 +578,77 @@ body, html {
 }
 
 .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #e8d5a0;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
+    letter-spacing: 0.3px;
 }
 
 .card-desc {
-    font-size: 0.8rem;
-    color: #a1a1aa;
+    font-size: 0.72rem;
+    color: #7a6040;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: 0.2px;
 }
 
 .pill-badge {
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background: #27272a;
-    color: #d4d4d8;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: rgba(80,40,10,0.4);
+    color: #a07840;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border: 1px solid rgba(120,80,20,0.3);
+}
+
+.pill-badge.gold {
+    background: rgba(180,120,10,0.2);
+    border: 1px solid rgba(180,140,50,0.4);
+    color: #e8b84b;
+}
+
+.pill-badge.cyan {
+    background: rgba(30,100,140,0.2);
+    border: 1px solid rgba(50,140,180,0.35);
+    color: #60b8d8;
 }
 
 .card-arrow {
-    font-size: 0.9rem;
-    color: #52525b;
+    font-size: 0.8rem;
+    color: #5a4020;
     transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .mode-card:hover .card-arrow {
     transform: translateX(4px);
-    color: #ffffff;
+    color: #c9a255;
 }
 
-.card-join {
+.join-card {
     background: transparent !important;
-    border: none !important;
-    padding: 8px 0 !important;
+    border: 1px solid rgba(100,60,15,0.4) !important;
+    padding: 12px 14px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
     cursor: default !important;
-    gap: 12px !important;
+    gap: 10px !important;
 }
 
 .card-title-sm {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #a1a1aa;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #7a6040;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -497,69 +662,82 @@ body, html {
 
 .join-input-row input {
     flex: 1;
-    background: #1c1c1f !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    height: 42px !important;
-    color: #ffffff !important;
+    background: rgba(0,0,0,0.5) !important;
+    border: 1px solid rgba(120,80,20,0.4) !important;
+    border-radius: 3px !important;
+    padding: 9px 12px !important;
+    height: 40px !important;
+    color: #f5d98a !important;
     font-size: 0.95rem !important;
+    font-weight: 600 !important;
     outline: none !important;
     box-sizing: border-box !important;
     transition: all 0.2s ease !important;
+    letter-spacing: 1px;
 }
 
 .join-input-row input:focus {
-    border-color: rgba(255, 255, 255, 0.2) !important;
-    background: #232326 !important;
+    border-color: rgba(201,146,42,0.65) !important;
+    box-shadow: 0 0 0 2px rgba(201,146,42,0.12) !important;
 }
 
 .btn-join-action {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: none !important;
-    border-radius: 10px !important;
-    padding: 0 16px !important;
-    height: 42px !important;
-    font-size: 0.9rem !important;
-    font-weight: 600 !important;
+    background: linear-gradient(180deg, #c9922a 0%, #9a6a10 100%) !important;
+    color: #fff9e6 !important;
+    border: 1px solid #7a5a1e !important;
+    border-radius: 3px !important;
+    padding: 0 14px !important;
+    height: 40px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
     white-space: nowrap !important;
     cursor: pointer !important;
-    transition: background 0.15s ease, transform 0.1s ease !important;
+    letter-spacing: 0.5px;
+    transition: all 0.15s ease !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
 }
 
 .btn-join-action:hover {
-    background: #e4e4e7 !important;
+    background: linear-gradient(180deg, #e8b84b 0%, #c9922a 100%) !important;
 }
 
 .btn-join-action:active {
     transform: scale(0.97);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
 }
 
 .divider {
     display: flex;
     align-items: center;
-    margin: 8px 0;
-    color: #52525b;
-    font-size: 0.8rem;
+    margin: 6px 0;
+    color: #5a4020;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .divider::before, .divider::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(90deg, transparent, rgba(120,80,20,0.4), transparent);
 }
 
 .divider span {
     padding: 0 12px;
+    color: #7a5a2a;
 }
 
 .lobby-footer {
-    margin-top: 24px;
-    font-size: 0.8rem;
-    color: #71717a;
+    margin-top: 0;
+    padding: 10px 24px;
+    font-size: 0.68rem;
+    color: #5a4020;
     font-weight: 500;
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(120,80,20,0.25);
+    background: rgba(0,0,0,0.25);
 }
 
 /* 等待房间 */
