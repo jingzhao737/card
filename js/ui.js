@@ -231,6 +231,7 @@ const UIRenderer = {
         if (this.selectedCards.has(card.id)) {
             this.selectedCards.delete(card.id);
             el.classList.remove('selected');
+            SoundEngine.playCardDeselect();
         } else {
             this.selectedCards.add(card.id);
             el.classList.add('selected');
@@ -243,6 +244,9 @@ const UIRenderer = {
      * 清空已选中的卡牌
      */
     clearSelectedCards() {
+        if (this.selectedCards.size > 0) {
+            SoundEngine.playCardDeselect();
+        }
         this.selectedCards.clear();
         const container = document.getElementById('selfHandCards');
         if (container) {
