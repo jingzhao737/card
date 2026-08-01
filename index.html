@@ -193,6 +193,8 @@
             <!-- 左侧玩家 (Player 2 - 顺时针上家/下家) -->
             <div class="player-area left-player" id="playerAreaLeft">
                 <div class="player-profile">
+                    <!-- 左家对话气泡/出牌状态 (位于名片正上方) -->
+                    <div class="speech-bubble" id="bubbleLeft" style="display: none;"></div>
                     <div class="avatar-box" id="avatarLeft">
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -204,8 +206,6 @@
                         <i class="fa-solid fa-cards"></i> <span class="count">17</span> 张
                     </div>
                 </div>
-                <!-- 左家对话气泡/出牌状态 -->
-                <div class="speech-bubble" id="bubbleLeft" style="display: none;"></div>
                 <!-- 左家出牌展示区 -->
                 <div class="played-cards-area" id="playedLeft"></div>
             </div>
@@ -213,6 +213,8 @@
             <!-- 右侧玩家 (Player 3) -->
             <div class="player-area right-player" id="playerAreaRight">
                 <div class="player-profile">
+                    <!-- 右家对话气泡/出牌状态 (位于名片正上方) -->
+                    <div class="speech-bubble" id="bubbleRight" style="display: none;"></div>
                     <div class="avatar-box" id="avatarRight">
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -224,8 +226,6 @@
                         <i class="fa-solid fa-cards"></i> <span class="count">17</span> 张
                     </div>
                 </div>
-                <!-- 右家对话气泡/出牌状态 -->
-                <div class="speech-bubble" id="bubbleRight" style="display: none;"></div>
                 <!-- 右家出牌展示区 -->
                 <div class="played-cards-area" id="playedRight"></div>
             </div>
@@ -247,13 +247,14 @@
                     <i class="fa-solid fa-stopwatch"></i> <span id="timerSeconds">30</span>s
                 </div>
                 <div class="played-cards-area self-played" id="playedSelf"></div>
-                <div class="speech-bubble self-bubble" id="bubbleSelf" style="display: none;"></div>
             </div>
 
             <!-- 底部玩家 (Self / Player 1) -->
             <div class="player-area self-player">
                 <!-- 自己 ID 头像小条 (置顶上移) -->
                 <div class="self-profile-mini">
+                    <!-- 自己对话气泡 (位于名片正上方) -->
+                    <div class="speech-bubble self-bubble" id="bubbleSelf" style="display: none;"></div>
                     <div class="avatar-box self-avatar" id="avatarSelf">
                         <i class="fa-solid fa-user"></i>
                     </div>

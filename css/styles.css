@@ -973,31 +973,42 @@ body, html {
     opacity: 0.85 !important;
 }
 
+/* 对话气泡：位于每个人物名片正上方，边界精准锁死防截断 */
 .speech-bubble {
-    background: #ffffff;
-    color: #0f172a;
+    background: rgba(17, 17, 19, 0.96);
+    color: #ffffff;
     font-weight: 800;
-    padding: 6px 14px;
-    border-radius: 16px;
-    font-size: 0.85rem;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.76rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
     position: absolute;
-    z-index: 20;
-    border: 1px solid #cbd5e1;
+    z-index: 60;
+    border: 1px solid var(--accent-gold);
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: popIn 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .left-player .speech-bubble {
-    top: 70px;
-    left: 110px;
+    top: -30px;
+    left: 0;
+    max-width: 140px;
 }
 
 .right-player .speech-bubble {
-    top: 70px;
-    right: 110px;
+    top: -30px;
+    right: 0;
+    max-width: 140px;
 }
 
 .self-bubble {
-    top: -45px;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 220px;
 }
 
 /* 底部自己手牌区 */
@@ -1750,17 +1761,19 @@ body, html {
     }
 
     .left-player .speech-bubble {
-        left: 78px;
-        top: 45px;
-        font-size: 0.7rem;
+        top: -26px;
+        left: 0;
+        font-size: 0.68rem;
         padding: 2px 6px;
+        max-width: 120px;
     }
 
     .right-player .speech-bubble {
-        right: 78px;
-        top: 45px;
-        font-size: 0.7rem;
+        top: -26px;
+        right: 0;
+        font-size: 0.68rem;
         padding: 2px 6px;
+        max-width: 120px;
     }
 
     #playedLeft .card, #playedRight .card {
@@ -1860,8 +1873,12 @@ body, html {
     }
 
     .self-bubble {
-        top: -36px;
-        font-size: 0.78rem;
+        top: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        max-width: 180px;
     }
 
     .self-cards-wrapper {
