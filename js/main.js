@@ -701,6 +701,41 @@ class GameEngineController {
         updateRoleBadge('roleBadgeLeft', rel.left);
         updateRoleBadge('roleBadgeRight', rel.right);
 
+        // 玩家编号：地主=1，顺时针下家=2，下下家=3
+        const updatePlayerNums = () => {
+            const badges = {
+                self:  document.getElementById('numBadgeSelf'),
+                left:  document.getElementById('numBadgeLeft'),
+                right: document.getElementById('numBadgeRight'),
+            };
+            if (!isBiddingDone || landlordIdx === -1) {
+                // 叫牌阶段隐藏编号
+                Object.values(badges).forEach(b => { if (b) b.style.display = 'none'; });
+                return;
+            }
+            // 以地主为 1，顺时针方向依次 2、3
+            // players 数组顺序：0=self(底部)，1=left，2=right（顺时针）
+            // rel.self/left/right 是当前视角的绝对索引
+            const order = [rel.self, rel.left, rel.right]; // 顺时针顺序（桌面视角）
+            const landlordVisPos = order.indexOf(landlordIdx); // 0/1/2
+            const nums = {};
+            order.forEach((absIdx, visPos) => {
+                const numInRound = ((visPos - landlordVisPos + 3) % 3) + 1;
+                nums[absIdx] = numInRound;
+            });
+
+            const setNum = (badgeId, absIdx) => {
+                const el = document.getElementById(badgeId);
+                if (!el) return;
+                el.textContent = nums[absIdx];
+                el.style.display = 'inline-flex';
+            };
+            setNum('numBadgeSelf',  rel.self);
+            setNum('numBadgeLeft',  rel.left);
+            setNum('numBadgeRight', rel.right);
+        };
+        updatePlayerNums();
+
         // 4. 叫完地主进入打牌阶段时，自动触发全员理牌与理牌音效
         if (this.gameState.phase === 'PLAYING' && !this._hasPlayedSortSoundThisRound) {
             this._hasPlayedSortSoundThisRound = true;

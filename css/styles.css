@@ -290,52 +290,27 @@ body, html {
    ❓ 牌型说明按钮 & 弹窗
    ============================================================ */
 
-/* 底牌旁牌型说明按钮 — 压花金币风格 */
+/* 底牌旁牌型说明按钮 — 简洁暗色 */
 .btn-card-help {
-    position: relative;
-    width: 34px;
-    height: 34px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    /* 金属压花渐变 */
-    background: radial-gradient(circle at 35% 35%, #f5d98a 0%, #c9922a 45%, #7a5010 100%);
-    /* 双圈边框效果 */
-    border: 2px solid #ffd700;
-    outline: 1px solid rgba(120,80,10,0.6);
-    outline-offset: 2px;
-    color: #3d1a00;
-    font-size: 0.9rem;
-    font-weight: 900;
+    background: rgba(40,20,5,0.7);
+    border: 1px solid rgba(120,80,20,0.4);
+    color: #8a6030;
+    font-size: 0.72rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     flex-shrink: 0;
-    box-shadow:
-        0 0 0 3px rgba(201,146,42,0.15),
-        0 3px 8px rgba(0,0,0,0.6),
-        inset 0 1px 2px rgba(255,255,255,0.3);
-    transition: all 0.2s ease;
-    animation: chipPulse 3s ease-in-out infinite;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
-
-@keyframes chipPulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(201,146,42,0.15), 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3); }
-    50%       { box-shadow: 0 0 0 5px rgba(255,215,0,0.25),  0 3px 12px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.3); }
-}
-
 .btn-card-help:hover {
-    background: radial-gradient(circle at 35% 35%, #fff0b0 0%, #e8b84b 45%, #a07020 100%);
-    border-color: #ffe566;
-    transform: scale(1.1) translateY(-1px);
-    box-shadow:
-        0 0 0 5px rgba(255,215,0,0.3),
-        0 6px 16px rgba(0,0,0,0.7),
-        inset 0 1px 3px rgba(255,255,255,0.4);
-    animation: none;
-}
-
-.btn-card-help:active {
-    transform: scale(0.96) translateY(0);
+    background: rgba(80,40,5,0.8);
+    border-color: rgba(201,146,42,0.5);
+    color: #c9a255;
 }
 
 /* 弹窗遮罩 */
@@ -1588,6 +1563,24 @@ body, html {
     top: 56% !important;
     left: 56% !important;
     opacity: 0.85 !important;
+}
+
+/* 玩家编号徽章（地主=1，下家=2，下下家=3） */
+.player-num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(30,15,3,0.85);
+    border: 1px solid rgba(140,100,30,0.5);
+    color: #a07840;
+    font-size: 0.6rem;
+    font-weight: 900;
+    font-family: var(--font-num);
+    flex-shrink: 0;
+    line-height: 1;
 }
 
 /* 对话气泡：位于每个人物名片正上方，边界精准锁死防截断 */
