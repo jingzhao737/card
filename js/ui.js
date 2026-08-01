@@ -303,7 +303,7 @@ const UIRenderer = {
         if (count === 0) return;
 
         const isMobile = window.innerWidth <= 768;
-        const cardWidth = isMobile ? 44 : 86;
+        const cardWidth = isMobile ? 52 : 86;
 
         // 1. 判断手牌是否已经理牌排序 (按点数降序排列)
         const isHandSorted = handCards.every((c, i) => i === 0 || c.rank <= handCards[i - 1].rank);
@@ -330,11 +330,11 @@ const UIRenderer = {
         const groupCount = rankGroups.length;
         const containerWidth = Math.min(window.innerWidth - 12, container.clientWidth || (isMobile ? window.innerWidth - 16 : 800));
         
-        let columnOverlap = isMobile ? -22 : -50;
+        let columnOverlap = isMobile ? -26 : -50;
         if (groupCount > 1) {
             const calcOverlap = -Math.floor((cardWidth * groupCount - containerWidth) / (groupCount - 1));
             if (calcOverlap < columnOverlap) {
-                columnOverlap = Math.max(calcOverlap, isMobile ? -30 : -68);
+                columnOverlap = Math.max(calcOverlap, isMobile ? -36 : -68);
             }
         }
 
@@ -347,7 +347,7 @@ const UIRenderer = {
                 const el = this.createCardElement(card, true);
 
                 // 向上出头偏移量 (同点数垂直向上露头堆叠)
-                const stackOffsetY = stackIdx * (isMobile ? -24 : -38);
+                const stackOffsetY = stackIdx * (isMobile ? -26 : -38);
                 el.style.setProperty('--stack-y', `${stackOffsetY}px`);
                 
                 // Z轴层级：第1张在最下在前 (z-index 30)，后面张在后 (依次递减 z-index) 向上出头

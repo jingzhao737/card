@@ -2321,11 +2321,11 @@ body, html {
 
 @media (max-width: 768px) {
     :root {
-        /* 手机端更加精细缩小的扑克牌尺寸 (44px x 64px, 2px 微角) */
-        --card-w: 44px;
-        --card-h: 64px;
-        --card-radius: 2px;
-        --card-overlap: -28px;
+        /* 手机端手牌尺寸适度放大 (52px x 74px, 3px 圆角) */
+        --card-w: 52px;
+        --card-h: 74px;
+        --card-radius: 3px;
+        --card-overlap: -32px;
     }
 
     /* ——— 手机端大厅：可滚动 + 全局压缩 ——— */
@@ -2572,7 +2572,11 @@ body, html {
 
     .table-center-area {
         justify-content: flex-end;
-        padding-bottom: 10px;
+        padding-bottom: 48px;
+    }
+
+    #playedSelf {
+        transform: translateY(-16px);
     }
 
     .table-top-center {
@@ -2737,22 +2741,22 @@ body, html {
     }
 
     .card .card-value {
-        font-size: 0.82rem;
+        font-size: 0.95rem;
         font-weight: 900;
     }
 
     .card .card-suit {
-        font-size: 0.62rem;
+        font-size: 0.72rem;
     }
 
     .card .card-center-symbol {
-        font-size: 1.15rem;
+        font-size: 1.35rem;
     }
 
-    /* 手机端自己打出的牌：更精致微型显示 (36px x 52px)，极度省空间 */
+    /* 手机端自己打出的牌：更清晰优雅显示 (40px x 56px) */
     #playedSelf .card {
-        width: 36px !important;
-        height: 52px !important;
+        width: 40px !important;
+        height: 56px !important;
         padding: 2px 2px !important;
         margin-right: -18px !important;
     }
@@ -2762,30 +2766,30 @@ body, html {
     }
 
     #playedSelf .card .card-value {
-        font-size: 0.78rem !important;
+        font-size: 0.84rem !important;
     }
 
     #playedSelf .card .card-suit {
-        font-size: 0.58rem !important;
+        font-size: 0.62rem !important;
     }
 
     #playedSelf .card .card-center-symbol {
-        font-size: 0.92rem !important;
+        font-size: 1.05rem !important;
     }
 
-    /* 手机端控制按钮组悬浮置顶于手牌上方 */
+    /* 手机端控制按钮组悬浮向上提升，便于操作 */
     .controls-bar {
-        margin-bottom: 30px;
+        margin-bottom: 44px;
         z-index: 20;
     }
 
     .btn-group {
-        gap: 6px;
+        gap: 8px;
     }
 
     .btn-action {
-        padding: 5px 10px;
-        font-size: 0.72rem;
+        padding: 6px 14px;
+        font-size: 0.78rem;
         border-radius: 4px;
     }
 
@@ -2811,7 +2815,7 @@ body, html {
     .self-profile-mini {
         position: relative;
         gap: 4px;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         padding: 3px 8px;
         border-radius: 4px;
     }
