@@ -540,9 +540,6 @@ class GameEngineController {
      * 重新回到初始大厅
      */
     resetToLobby() {
-        window.location.href = window.location.pathname;
-    }
-
     /**
      * 开始新一局 (洗牌、发牌、全员就位加载完毕后展开 3秒倒计时 + 动态进度条)
      */
@@ -607,11 +604,11 @@ class GameEngineController {
     startOpeningCountdown() {
         const overlay = document.getElementById('startCountdownOverlay');
         const numEl = document.getElementById('startCountdownNum');
-        const fillEl = document.getElementById('startProgressBarFill');
+        const lightRed = document.getElementById('trafficLightRed');
+        const lightYellow = document.getElementById('trafficLightYellow');
+        const lightGreen = document.getElementById('trafficLightGreen');
 
         if (overlay) overlay.style.display = 'flex';
-        if (numEl) numEl.textContent = '3';
-        if (fillEl) fillEl.style.width = '0%';
 
         this._isCountingDownLocally = true;
         this.updateControlButtons(NetworkManager.myPlayerIndex);
@@ -620,14 +617,36 @@ class GameEngineController {
         const totalDuration = 3000; // 3.0 秒
         const step = 50;
 
+        const updateLights = (sec) => {
+            if (lightRed) lightRed.classList.toggle('active', sec === 3 || sec === 0);
+            if (lightYellow) lightYellow.classList.toggle('active', sec === 2 || sec === 0);
+            if (lightGreen) lightGreen.classList.toggle('active', sec === 1 || sec === 0);
+
+            if (numEl) {
+                if (sec === 3) {
+                    numEl.textContent = '3';
+                    numEl.className = 'start-number num-red';
+                } else if (sec === 2) {
+                    numEl.textContent = '2';
+                    numEl.className = 'start-number num-yellow';
+                } else if (sec === 1) {
+                    numEl.textContent = '1';
+                    numEl.className = 'start-number num-green';
+                } else {
+                    numEl.textContent = '抢！';
+                    numEl.className = 'start-number num-go';
+                }
+            }
+        };
+
+        updateLights(3);
+
         clearInterval(this._startCountdownTimer);
         this._startCountdownTimer = setInterval(() => {
             elapsed += step;
-            const pct = Math.min(100, (elapsed / totalDuration) * 100);
-            if (fillEl) fillEl.style.width = `${pct}%`;
 
-            const remainingSecs = Math.ceil((totalDuration - elapsed) / 1000);
-            if (numEl) numEl.textContent = remainingSecs > 0 ? remainingSecs : '抢！';
+            const remainingSecs = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
+            updateLights(remainingSecs);
 
             if (elapsed >= totalDuration) {
                 clearInterval(this._startCountdownTimer);
