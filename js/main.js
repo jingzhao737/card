@@ -477,6 +477,8 @@ class GameEngineController {
         this.gameState.multiplier = 1;
         this.gameState.winnerIndex = -1;
 
+        this._hasPlayedSortSoundThisRound = false;
+
         UIRenderer.clearSelectedCards();
 
         // 先标记开局倒计时状态，再广播，确保客户端收到时能触发倒计时动画
@@ -616,14 +618,19 @@ class GameEngineController {
         updateRoleBadge('roleBadgeLeft', rel.left);
         updateRoleBadge('roleBadgeRight', rel.right);
 
-        // 4. 渲染自己手牌并控制【理牌】按钮显隐 (单次对局理牌后自动隐藏，开局乱序时显示)
+        // 4. 叫完地主进入打牌阶段时，自动触发全员理牌与理牌音效
+        if (this.gameState.phase === 'PLAYING' && !this._hasPlayedSortSoundThisRound) {
+            this._hasPlayedSortSoundThisRound = true;
+            SoundEngine.playCardSort();
+        }
+
         const myHand = this.gameState.players[myIndex].hand || [];
         UIRenderer.renderSelfHand(myHand);
 
         const btnSort = document.getElementById('btnSortCards');
         if (btnSort) {
             const isHandSorted = myHand.length > 0 && myHand.every((c, i) => i === 0 || c.rank <= myHand[i - 1].rank);
-            if (isHandSorted || this.gameState.phase === 'GAMEOVER') {
+            if (isHandSorted || this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER') {
                 btnSort.style.display = 'none';
             } else {
                 btnSort.style.display = 'inline-flex';
@@ -873,9 +880,10 @@ class GameEngineController {
         this.gameState.currentTurn = landlordIdx;
         this.gameState.multiplier = Math.max(1, this.gameState.highestBid);
 
-        // 赋予角色
+        // 赋予角色并自动为全场玩家整理手牌
         this.gameState.players.forEach((p, idx) => {
             p.role = idx === landlordIdx ? 'LANDLORD' : 'FARMER';
+            p.hand = DouDizhuRules.sortCards(p.hand);
         });
 
         // 3 张底牌给地主 (严格过滤已有 card.id 保证防重)
@@ -885,7 +893,7 @@ class GameEngineController {
         this.gameState.players[landlordIdx].hand = DouDizhuRules.sortCards(landlordHand);
 
         UIRenderer.showToast(`${this.gameState.players[landlordIdx].name} 成为地主！得 3 张底牌`);
-        SoundEngine.playBid();
+        SoundEngine.playCardSort();
         this.startTurnTimer();
     }
 
