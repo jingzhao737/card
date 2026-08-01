@@ -186,6 +186,14 @@ class GameEngineController {
             }
         });
 
+        // 绑定【理牌】按钮事件
+        const btnSort = document.getElementById('btnSortCards');
+        if (btnSort) {
+            btnSort.addEventListener('click', () => {
+                this.sortSelfHand();
+            });
+        }
+
         // 房主手动点击开始游戏（自动补齐空位为 AI）
         document.getElementById('btnStartGame').addEventListener('click', () => {
             this.fillAiAndStart();
@@ -441,10 +449,10 @@ class GameEngineController {
         // 1. 生成洗牌
         const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck());
 
-        // 2. 发牌: 3人各 17 张，留 3 张底牌
-        const p0Hand = DouDizhuRules.sortCards(deck.slice(0, 17));
-        const p1Hand = DouDizhuRules.sortCards(deck.slice(17, 34));
-        const p2Hand = DouDizhuRules.sortCards(deck.slice(34, 51));
+        // 2. 发牌: 3人各 17 张原始混乱手牌，留 3 张底牌 (开局手牌保持乱序，点击理牌后进行排序)
+        const p0Hand = deck.slice(0, 17);
+        const p1Hand = deck.slice(17, 34);
+        const p2Hand = deck.slice(34, 51);
         const bottom = deck.slice(51, 54);
 
         // 3. 构造重置 GameState
@@ -1014,13 +1022,14 @@ class GameEngineController {
     }
 
     /**
-     * 手牌整理排序
+     * 手牌整理排序并播放理牌音效
      */
     sortSelfHand() {
         const myIndex = NetworkManager.myPlayerIndex;
         if (this.gameState.players[myIndex]) {
             this.gameState.players[myIndex].hand = DouDizhuRules.sortCards(this.gameState.players[myIndex].hand);
             UIRenderer.renderSelfHand(this.gameState.players[myIndex].hand);
+            SoundEngine.playCardSort();
         }
     }
 

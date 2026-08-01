@@ -107,6 +107,63 @@ class AudioSynth {
     }
 
     /**
+     * 理牌音效：快速滑牌/洗牌纸擦刷音 (Fast Card Riffle / Sort Sound)
+     */
+    playCardSort() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const pitches = [480, 600, 720, 850];
+
+        pitches.forEach((freq, i) => {
+            const startTime = now + i * 0.025; // 每 25ms 弹响一次
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.frequency.exponentialRampToValueAtTime(freq + 120, startTime + 0.02);
+
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.linearRampToValueAtTime(0.12, startTime + 0.003);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.02);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.02);
+
+            const bufferSize = Math.floor(this.ctx.sampleRate * 0.015);
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let k = 0; k < bufferSize; k++) {
+                data[k] = (Math.random() * 2 - 1) * Math.exp(-k / (bufferSize * 0.3));
+            }
+
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2200 + i * 300, startTime);
+            filter.Q.setValueAtTime(2, startTime);
+
+            const noiseGain = this.ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.001, startTime);
+            noiseGain.gain.linearRampToValueAtTime(0.1, startTime + 0.002);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.015);
+
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(this.ctx.destination);
+
+            noise.start(startTime);
+        });
+    }
+
+    /**
      * 出牌音效：沉稳绒布桌面触牌声 (Warm Felt Table Slap)
      */
     playCardPlay() {
