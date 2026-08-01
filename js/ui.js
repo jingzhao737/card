@@ -468,8 +468,43 @@ const UIRenderer = {
     },
 
     /**
+     * 新一局开始时彻底重置界面 (清空桌面残牌、气泡、弹窗，恢复底牌容器)
+     */
+    resetGameTableUI() {
+        this.selectedCards.clear();
+        this._lastHandCardIdsStr = null;
+
+        // 清空三大出牌展示区
+        ['playedSelf', 'playedLeft', 'playedRight'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = '';
+                el.className = 'played-cards-area';
+                el._renderedCardIdsStr = null;
+            }
+        });
+
+        // 隐藏气泡
+        ['bubbleSelf', 'bubbleLeft', 'bubbleRight'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        // 重置胜负横幅与底牌
+        const vBox = document.getElementById('victoryBannerBox');
+        if (vBox) {
+            vBox.style.display = 'none';
+            delete vBox.dataset.minimized;
+        }
+
+        const bWrap = document.getElementById('bottomCardsWrapper');
+        if (bWrap) bWrap.style.display = 'flex';
+    },
+
+    /**
      * 显示对话气泡 (叫分/过/文字状态)
      */
+
     showBubble(bubbleId, text, duration = 3000) {
         const el = document.getElementById(bubbleId);
         if (!el) return;

@@ -21,7 +21,8 @@ class GameEngineController {
             lastPlay: null, // { playerIndex: 0, cards: [] }
             multiplier: 1,
             baseScore: 150,
-            winnerIndex: -1
+            winnerIndex: -1,
+            readyPlayers: [false, false, false]
         };
 
         this.turnTimerId = null;
@@ -176,13 +177,37 @@ class GameEngineController {
             this.fillAiAndStart();
         });
 
-        // 绑定胜负横幅【再来一局】全局事件
+        // 绑定胜负横幅【再来一局】、【收起/关闭】与【展开】事件
         document.addEventListener('click', (e) => {
-            const btn = e.target.closest('#btnRestartGame');
-            if (btn) {
+            const restartBtn = e.target.closest('#btnRestartGame');
+            if (restartBtn) {
+                const myIndex = NetworkManager.myPlayerIndex;
                 if (NetworkManager.isHost) {
-                    this.fillAiAndStart();
+                    this.processRestartVote(myIndex);
+                } else {
+                    NetworkManager.sendActionToHost('RESTART_VOTE', { playerIndex: myIndex });
                 }
+                return;
+            }
+
+            const closeBtn = e.target.closest('#btnCloseVictoryBanner');
+            if (closeBtn) {
+                const victoryBox = document.getElementById('victoryBannerBox');
+                if (victoryBox) {
+                    victoryBox.dataset.minimized = 'true';
+                    this.onReceiveStateUpdate(this.gameState);
+                }
+                return;
+            }
+
+            const expandBtn = e.target.closest('#btnExpandVictory');
+            if (expandBtn) {
+                const victoryBox = document.getElementById('victoryBannerBox');
+                if (victoryBox) {
+                    victoryBox.dataset.minimized = 'false';
+                    this.onReceiveStateUpdate(this.gameState);
+                }
+                return;
             }
         });
 
@@ -527,6 +552,9 @@ class GameEngineController {
         document.getElementById('gameTable').style.display = 'grid';
         document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
 
+        // 彻底重置界面 DOM & 选牌状态 & 气泡 & 残余展示牌
+        UIRenderer.resetGameTableUI();
+
         // 1. 生成洗牌
         const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck());
 
@@ -536,7 +564,7 @@ class GameEngineController {
         const p2Hand = deck.slice(34, 51);
         const bottom = deck.slice(51, 54);
 
-        // 3. 构造重置 GameState
+        // 3. 构造重置 GameState (保持玩家 ID/昵称/isAi/isHost)
         this.gameState.phase = 'BIDDING';
         this.gameState.players[0].hand = p0Hand;
         this.gameState.players[1].hand = p1Hand;
@@ -557,10 +585,9 @@ class GameEngineController {
         this.gameState.recentPlays = { 0: null, 1: null, 2: null };
         this.gameState.multiplier = 1;
         this.gameState.winnerIndex = -1;
+        this.gameState.readyPlayers = [false, false, false];
 
         this._hasPlayedSortSoundThisRound = false;
-
-        UIRenderer.clearSelectedCards();
 
         // 先标记开局倒计时状态，再广播，确保客户端收到时能触发倒计时动画
         this.gameState.isOpeningCountdown = true;
@@ -765,6 +792,14 @@ class GameEngineController {
                 this.turnTimerInterval = null;
             }
 
+            // 房主主导：确保 AI 机器人自动标记就绪
+            if (NetworkManager.isHost) {
+                if (!this.gameState.readyPlayers) this.gameState.readyPlayers = [false, false, false];
+                this.gameState.players.forEach((p, idx) => {
+                    if (p.isAi) this.gameState.readyPlayers[idx] = true;
+                });
+            }
+
             const victoryBox = document.getElementById('victoryBannerBox');
             if (victoryBox) {
                 victoryBox.style.display = 'flex';
@@ -780,14 +815,36 @@ class GameEngineController {
                     winnerDesc = `农民【${farmers}】联手获胜`;
                 }
 
-                const isHost = NetworkManager.isHost;
-                victoryBox.innerHTML = `
-                    <div class="victory-content-wrap">
-                        <div class="victory-main-title">${titleText}</div>
-                        <div class="victory-sub-desc">${winnerDesc}</div>
-                        ${isHost ? '<button class="btn-action primary btn-restart-round" id="btnRestartGame"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>' : '<span class="waiting-host-tag">等待房主重新开局...</span>'}
-                    </div>
-                `;
+                const readyPlayers = this.gameState.readyPlayers || [false, false, false];
+                const readyCount = readyPlayers.filter(Boolean).length;
+                const hasSelfVoted = !!readyPlayers[myIndex];
+                const isMinimized = victoryBox.dataset.minimized === 'true';
+
+                if (isMinimized) {
+                    victoryBox.innerHTML = `
+                        <div class="victory-mini-badge" id="btnExpandVictory">
+                            <span>🏆 胜负 (已就绪 ${readyCount}/3)</span>
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                    `;
+                } else {
+                    victoryBox.innerHTML = `
+                        <div class="victory-content-wrap">
+                            <button class="victory-close-btn" id="btnCloseVictoryBanner" title="收起胜负榜 (方便看牌)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            <div class="victory-main-title">${titleText}</div>
+                            <div class="victory-sub-desc">${winnerDesc}</div>
+                            
+                            <div class="restart-vote-box">
+                                <div class="restart-vote-count">准备开局 <span class="vote-num ${readyCount > 0 ? 'active' : ''}">${readyCount}/3</span></div>
+                                <button class="btn-action primary btn-restart-round ${hasSelfVoted ? 'voted' : ''}" id="btnRestartGame" ${hasSelfVoted ? 'disabled' : ''}>
+                                    <i class="fa-solid ${hasSelfVoted ? 'fa-check' : 'fa-rotate-right'}"></i> ${hasSelfVoted ? '已就绪' : '再来一局'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
             }
 
             // 结算时明牌公开展示全场剩余手牌 (自动折到第二排、第三排)
@@ -798,7 +855,10 @@ class GameEngineController {
             const bWrap = document.getElementById('bottomCardsWrapper');
             if (bWrap) bWrap.style.display = 'flex';
             const vBox = document.getElementById('victoryBannerBox');
-            if (vBox) vBox.style.display = 'none';
+            if (vBox) {
+                vBox.style.display = 'none';
+                delete vBox.dataset.minimized;
+            }
 
             const recent = this.gameState.recentPlays || {};
             const selfPlay = recent[rel.self];
@@ -945,6 +1005,35 @@ class GameEngineController {
         } else if (actionType === 'CHAT_PHRASE') {
             this.processChatPhrase(playerIndex, payload.text);
             NetworkManager.broadcastChatPhrase(playerIndex, payload.text);
+        } else if (actionType === 'RESTART_VOTE') {
+            this.processRestartVote(playerIndex);
+        }
+    }
+
+    /**
+     * 处理【再来一局】准备就绪投票
+     */
+    processRestartVote(playerIndex) {
+        if (this.gameState.phase !== 'GAMEOVER') return;
+        if (!this.gameState.readyPlayers) {
+            this.gameState.readyPlayers = [false, false, false];
+        }
+
+        this.gameState.readyPlayers[playerIndex] = true;
+
+        // 房主处理时，确保 AI 机器人自动设为准备就绪
+        this.gameState.players.forEach((p, idx) => {
+            if (p.isAi) this.gameState.readyPlayers[idx] = true;
+        });
+
+        const readyCount = this.gameState.readyPlayers.filter(Boolean).length;
+        NetworkManager.broadcastState(this.gameState);
+
+        // 当 3 位玩家（包含 AI）全员就位 (3/3)，自动重新发牌开局！
+        if (readyCount >= 3) {
+            setTimeout(() => {
+                this.startNewRound();
+            }, 300);
         }
     }
 
