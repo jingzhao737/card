@@ -1107,6 +1107,7 @@ body, html {
 }
 
 .self-profile-mini {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1892,6 +1893,7 @@ body, html {
     }
 
     .self-profile-mini {
+        position: relative;
         gap: 4px;
         margin-bottom: 12px;
         padding: 3px 8px;
