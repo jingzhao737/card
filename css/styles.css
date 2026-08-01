@@ -587,7 +587,7 @@ body, html {
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid var(--glass-border);
     padding: 4px 10px;
-    border-radius: 10px;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -682,7 +682,7 @@ body, html {
 .player-profile {
     background: #111113;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    border-radius: 4px;
     padding: 8px 10px;
     display: flex;
     flex-direction: column;
@@ -740,7 +740,7 @@ body, html {
     font-size: 0.7rem;
     font-weight: 800;
     padding: 1px 6px;
-    border-radius: 8px;
+    border-radius: 3px;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
@@ -775,7 +775,7 @@ body, html {
     border: 1px solid rgba(255, 215, 0, 0.5);
     color: var(--accent-gold);
     padding: 2px 6px;
-    border-radius: 10px;
+    border-radius: 3px;
     font-size: 0.75rem;
     font-weight: 800;
 }
@@ -794,7 +794,7 @@ body, html {
     position: absolute;
     top: 24px;
     padding: 6px 14px;
-    border-radius: 16px;
+    border-radius: 4px;
     font-weight: 700;
     font-family: var(--font-num);
     display: flex;
@@ -839,7 +839,7 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #e4e4e7;
     padding: 6px 16px;
-    border-radius: 14px;
+    border-radius: 4px;
     font-size: 0.85rem;
     font-weight: 600;
     display: inline-flex;
@@ -902,7 +902,7 @@ body, html {
     justify-content: center;
     min-height: var(--card-h);
     padding: 3px 6px;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid transparent;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -911,7 +911,7 @@ body, html {
 .played-cards-area.latest-play-container {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 /* 左侧玩家出的牌：向右方移出头像区域，并与头像水平对齐 */
@@ -1103,7 +1103,7 @@ body, html {
     background: #111113;
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 6px 14px;
-    border-radius: 14px;
+    border-radius: 4px;
     z-index: 10;
 }
 
@@ -1378,21 +1378,23 @@ body, html {
     justify-content: center;
 }
 
-/* 浮动 Toast 通知 */
+/* 浮动 Toast 通知：居中显示，字号精简 */
 .toast-message {
     position: fixed;
-    top: 60px;
+    top: 45%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background: rgba(15, 23, 42, 0.95);
     border: 1px solid var(--accent-gold);
     color: #fff;
-    padding: 8px 20px;
-    border-radius: 20px;
+    padding: 6px 14px;
+    border-radius: 4px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     z-index: 999;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    text-align: center;
+    pointer-events: none;
 }
 
 /* ==========================================================================
@@ -1544,7 +1546,7 @@ body, html {
         width: 74px;
         padding: 4px 3px;
         gap: 3px;
-        border-radius: 10px;
+        border-radius: 4px;
     }
 
     .avatar-box {
@@ -1673,9 +1675,9 @@ body, html {
     }
 
     .btn-action {
-        padding: 6px 12px;
-        font-size: 0.78rem;
-        border-radius: 16px;
+        padding: 5px 10px;
+        font-size: 0.72rem;
+        border-radius: 4px;
     }
 
     .self-bubble {
@@ -1697,6 +1699,7 @@ body, html {
         gap: 4px;
         margin-bottom: 12px;
         padding: 3px 8px;
+        border-radius: 4px;
     }
 
     .self-profile-mini .avatar-box {
