@@ -565,8 +565,8 @@ class GameEngineController {
 
         // 1. 顶部底牌与倍数
         const isBottomRevealed = this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER';
-        UIRenderer.renderBottomCards(this.gameState.bottomCards, isBottomRevealed);
-        document.getElementById('gameMultiplier').textContent = `x${this.gameState.multiplier}`;
+        const multEl = document.getElementById('gameMultiplier');
+        if (multEl) multEl.textContent = `x${this.gameState.multiplier}`;
 
         // 2. 玩家面板信息 (头像/名字/剩余手牌)
         document.getElementById('nameSelf').textContent = this.gameState.players[rel.self].name;
