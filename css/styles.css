@@ -1711,6 +1711,12 @@ body, html {
         border-width: 1px;
     }
 
+    /* 手机端手牌被选中上移距离适度微缩 (从20px缩小到8px，避免盖住上方出的牌) */
+    .card.selected {
+        transform: translateY(calc(var(--stack-y, 0px) - 8px)) !important;
+        box-shadow: 0 4px 10px rgba(255, 215, 0, 0.45), 0 0 0 1px #ffd700 !important;
+    }
+
     .card-top-left.joker-vertical {
         top: 2px;
         left: 3px;
