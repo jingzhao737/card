@@ -1170,6 +1170,16 @@ body, html {
     border-color: #ffd700 !important;
 }
 
+/* 乱序手牌随意堆叠与物理卡牌微倾斜错位 (随意乱放视觉) */
+.card.messy-card {
+    transform: translateY(calc(var(--stack-y, 0px) + var(--jitter-y, 0px))) rotate(var(--jitter-rot, 0deg));
+    transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.card.messy-card.selected {
+    transform: translateY(calc(var(--stack-y, 0px) + var(--jitter-y, 0px) - 20px)) rotate(var(--jitter-rot, 0deg)) !important;
+}
+
 /* 牌背样式 */
 .card.poker-back {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important;
@@ -1715,6 +1725,10 @@ body, html {
     .card.selected {
         transform: translateY(calc(var(--stack-y, 0px) - 8px)) !important;
         box-shadow: 0 4px 10px rgba(255, 215, 0, 0.45), 0 0 0 1px #ffd700 !important;
+    }
+
+    .card.messy-card.selected {
+        transform: translateY(calc(var(--stack-y, 0px) + var(--jitter-y, 0px) - 8px)) rotate(var(--jitter-rot, 0deg)) !important;
     }
 
     .card-top-left.joker-vertical {

@@ -305,19 +305,28 @@ const UIRenderer = {
         const isMobile = window.innerWidth <= 768;
         const cardWidth = isMobile ? 44 : 86;
 
-        // 1. 按点数分组收集列 (Rank Columns)
+        // 1. 判断手牌是否已经理牌排序 (按点数降序排列)
+        const isHandSorted = handCards.every((c, i) => i === 0 || c.rank <= handCards[i - 1].rank);
+
+        // 2. 按点数分组收集列 (仅理牌后生效，乱序时单牌平铺)
         const rankGroups = [];
-        let currentGroup = null;
+        if (isHandSorted) {
+            let currentGroup = null;
+            handCards.forEach(card => {
+                if (!currentGroup || currentGroup.rank !== card.rank) {
+                    currentGroup = { rank: card.rank, cards: [] };
+                    rankGroups.push(currentGroup);
+                }
+                currentGroup.cards.push(card);
+            });
+        } else {
+            // 乱序状态：每张牌独立成列
+            handCards.forEach(card => {
+                rankGroups.push({ rank: card.rank, cards: [card] });
+            });
+        }
 
-        handCards.forEach(card => {
-            if (!currentGroup || currentGroup.rank !== card.rank) {
-                currentGroup = { rank: card.rank, cards: [] };
-                rankGroups.push(currentGroup);
-            }
-            currentGroup.cards.push(card);
-        });
-
-        // 2. 计算不同点数【列】之间的间距 (移动端自适应分列，同点数同列堆叠)
+        // 3. 计算不同【列】之间的间距
         const groupCount = rankGroups.length;
         const containerWidth = Math.min(window.innerWidth - 12, container.clientWidth || (isMobile ? window.innerWidth - 16 : 800));
         
@@ -329,7 +338,7 @@ const UIRenderer = {
             }
         }
 
-        // 3. 渲染各点数列
+        // 4. 渲染卡牌节点
         rankGroups.forEach((group, gIdx) => {
             const groupCards = group.cards;
             const gLen = groupCards.length;
@@ -337,12 +346,21 @@ const UIRenderer = {
             groupCards.forEach((card, stackIdx) => {
                 const el = this.createCardElement(card, true);
 
-                // 向上出头偏移量 (同点数垂直向上露头堆叠：移动端 -24px, 桌面 -38px 确保选下方牌时绝不压盖上方牌)
+                // 向上出头偏移量 (同点数垂直向上露头堆叠)
                 const stackOffsetY = stackIdx * (isMobile ? -24 : -38);
                 el.style.setProperty('--stack-y', `${stackOffsetY}px`);
                 
                 // Z轴层级：第1张在最下在前 (z-index 30)，后面张在后 (依次递减 z-index) 向上出头
                 el.style.zIndex = 30 - stackIdx;
+
+                // 乱序状态：赋予微弱物理随机微倾斜 (-4deg ~ +4deg) 与微弱错位 (-4px ~ +4px)，产生随意堆叠感
+                if (!isHandSorted) {
+                    const rot = ((card.id * 13) % 9) - 4;
+                    const yShift = ((card.id * 7) % 7) - 3;
+                    el.style.setProperty('--jitter-rot', `${rot}deg`);
+                    el.style.setProperty('--jitter-y', `${yShift}px`);
+                    el.classList.add('messy-card');
+                }
 
                 // 同点数完全重合在同一 X 坐标列 (margin-right: -cardWidth)
                 if (stackIdx < gLen - 1) {
