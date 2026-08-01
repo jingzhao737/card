@@ -2005,6 +2005,140 @@ body, html {
         --card-radius: 2px;
         --card-overlap: -28px;
     }
+
+    /* ——— 手机端大厅：可滚动 + 全局压缩 ——— */
+
+    /* 大厅遮罩：允许纵向滚动，顶部对齐 */
+    .overlay-screen {
+        align-items: flex-start;
+        justify-content: center;
+        overflow-y: auto;
+        padding: 8px 12px 20px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 主卡片：贴满宽度，去掉多余圆角 */
+    .hero-lobby-card {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 4px;
+    }
+
+    /* 顶部品牌横幅：大幅压缩高度 */
+    .lobby-header {
+        padding: 12px 16px 10px;
+    }
+
+    /* Logo 图标缩小 */
+    .brand-logo-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+        border-radius: 3px;
+    }
+
+    /* 品牌标题缩小 */
+    .brand-title {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+    }
+
+    .brand-subtitle {
+        font-size: 0.52rem;
+        letter-spacing: 1.5px;
+    }
+
+    /* 标签行紧凑化 */
+    .hero-tags {
+        margin-top: 8px;
+        gap: 6px;
+    }
+
+    .badge-tag {
+        font-size: 0.62rem;
+        padding: 2px 8px;
+    }
+
+    /* 表单区：缩减内边距 */
+    .lobby-form {
+        padding: 12px 14px;
+    }
+
+    .nickname-section {
+        margin-bottom: 10px;
+    }
+
+    .input-label {
+        font-size: 0.62rem;
+        margin-bottom: 4px;
+    }
+
+    .nickname-input-wrapper input {
+        font-size: 0.88rem !important;
+        height: 32px !important;
+        padding: 6px 0 !important;
+    }
+
+    .btn-random-nick {
+        height: 30px !important;
+        font-size: 0.72rem !important;
+        padding: 0 10px !important;
+    }
+
+    /* 功能卡片：更紧凑 */
+    .mode-selection {
+        gap: 6px;
+    }
+
+    .mode-card {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .card-icon-wrap,
+    .card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+
+    .card-title {
+        font-size: 0.82rem;
+        margin-bottom: 2px;
+    }
+
+    .card-desc {
+        font-size: 0.65rem;
+    }
+
+    /* 加入房间子卡 */
+    .join-card {
+        padding: 9px 12px !important;
+        gap: 7px !important;
+    }
+
+    .join-input-row input {
+        height: 34px !important;
+        font-size: 0.85rem !important;
+        padding: 7px 10px !important;
+    }
+
+    .btn-join-action {
+        height: 34px !important;
+        font-size: 0.78rem !important;
+        padding: 0 10px !important;
+    }
+
+    .divider {
+        margin: 4px 0;
+        font-size: 0.6rem;
+    }
+
+    /* 底部小脚注 */
+    .lobby-footer {
+        padding: 6px 14px;
+        font-size: 0.6rem;
+    }
     
     html, body {
         height: 100svh;
