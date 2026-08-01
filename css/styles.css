@@ -1508,20 +1508,20 @@ body, html {
     box-shadow: 0 0 10px rgba(201,146,42,0.12);
 }
 
-/* 左侧玩家出的牌：向右方移出头像区域，并适度上移 */
+/* 左侧玩家出的牌：向右方移出头像区域，并适度下调 */
 #playedLeft {
     position: absolute;
     left: 130px;
-    top: 110px;
+    top: 122px;
     justify-content: flex-start;
     z-index: 15;
 }
 
-/* 右侧玩家出的牌：向左方移出头像区域，并适度上移 */
+/* 右侧玩家出的牌：向左方移出头像区域，并适度下调 */
 #playedRight {
     position: absolute;
     right: 130px;
-    top: 110px;
+    top: 122px;
     justify-content: flex-end;
     z-index: 15;
 }
@@ -2677,12 +2677,12 @@ body, html {
 
     #playedLeft {
         left: 8px !important;
-        top: 148px !important;
+        top: 160px !important;
     }
 
     #playedRight {
         right: 8px !important;
-        top: 148px !important;
+        top: 160px !important;
     }
 
     .left-player .speech-bubble {
