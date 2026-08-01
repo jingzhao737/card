@@ -1515,62 +1515,64 @@ body, html {
         font-size: 0.85rem;
     }
 
-    /* 5. 左右玩家头像框：下移避开顶部 3 张底牌，与顶部信息拉开清晰间距 */
+    /* 5. 左右玩家头像框：精简缩小并向上移，给中央对局留足视野 */
     .left-player {
         grid-area: left-play;
         justify-content: flex-start;
-        padding-top: 65px;
+        padding-top: 42px;
     }
 
     .right-player {
         grid-area: right-play;
         justify-content: flex-start;
-        padding-top: 65px;
+        padding-top: 42px;
     }
 
     .player-profile {
-        width: 84px;
-        padding: 6px 4px;
+        width: 74px;
+        padding: 4px 3px;
+        gap: 3px;
+        border-radius: 10px;
     }
 
     .avatar-box {
-        width: 32px;
-        height: 32px;
-        font-size: 0.85rem;
+        width: 26px;
+        height: 26px;
+        font-size: 0.72rem;
     }
 
     .player-name {
-        font-size: 0.75rem;
+        font-size: 0.68rem;
         width: 100%;
     }
 
     .card-count-badge {
-        font-size: 0.65rem;
-        padding: 1px 3px;
+        font-size: 0.6rem;
+        padding: 1px 4px;
     }
 
     #playedLeft {
-        left: 8px;
-        top: 120px;
+        left: 6px;
+        top: 95px;
     }
 
     #playedRight {
-        right: 8px;
-        top: 120px;
+        right: 6px;
+        top: 95px;
     }
 
     .left-player .speech-bubble {
-        left: 88px;
-        top: 105px;
-        font-size: 0.72rem;
-        padding: 3px 8px;
+        left: 78px;
+        top: 80px;
+        font-size: 0.7rem;
+        padding: 2px 6px;
     }
 
     .right-player .speech-bubble {
-        right: 88px;
-        top: 105px;
-        font-size: 0.72rem;
-        padding: 3px 8px;
+        right: 78px;
+        top: 80px;
+        font-size: 0.7rem;
+        padding: 2px 6px;
     }
 
     #playedLeft .card, #playedRight .card {
