@@ -2079,10 +2079,52 @@ body, html {
         padding: 6px 0 !important;
     }
 
+    /* 昵称输入行：防止溢出 */
+    .nickname-input-wrapper {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .nickname-input-wrapper input {
+        font-size: 0.88rem !important;
+        height: 32px !important;
+        padding: 6px 0 !important;
+        min-width: 0;
+        width: 0;
+        flex: 1 1 0;
+    }
+
     .btn-random-nick {
         height: 30px !important;
-        font-size: 0.72rem !important;
+        font-size: 0 !important;      /* 隐藏文字，只留图标 */
+        padding: 0 9px !important;
+        flex-shrink: 0;
+    }
+
+    /* 只显示图标，隐藏文字文本节点 */
+    .btn-random-nick i {
+        font-size: 0.78rem;
+    }
+
+    /* 加入行：同样防溢出 */
+    .join-input-row {
+        overflow: hidden;
+    }
+
+    .join-input-row input {
+        height: 34px !important;
+        font-size: 0.85rem !important;
+        padding: 7px 8px !important;
+        min-width: 0;
+        flex: 1 1 0;
+    }
+
+    .btn-join-action {
+        height: 34px !important;
+        font-size: 0.75rem !important;
         padding: 0 10px !important;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
     /* 功能卡片：更紧凑 */
