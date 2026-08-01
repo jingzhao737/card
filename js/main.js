@@ -194,9 +194,9 @@ class GameEngineController {
             });
         }
 
-        // 绑定点击头像弹出经典快捷用语菜单与短语发送
+        // 绑定仅点击【自己头像】弹出经典快捷用语菜单与短语发送
         document.addEventListener('click', (e) => {
-            const avatarTarget = e.target.closest('.self-profile-mini, #avatarSelf, #avatarBoxSelf');
+            const avatarTarget = e.target.closest('#avatarSelf, .self-avatar');
             const menu = document.getElementById('quickPhraseMenu');
             if (avatarTarget && menu) {
                 menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
@@ -222,6 +222,10 @@ class GameEngineController {
                 menu.style.display = 'none';
             }
         });
+
+        // 绑定左上角【回到主页】与离开房间按钮
+        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+        if (btnGoHomeTop) btnGoHomeTop.addEventListener('click', () => this.resetToLobby());
 
         // 房主手动点击开始游戏（自动补齐空位为 AI）
         document.getElementById('btnStartGame').addEventListener('click', () => {
@@ -276,6 +280,9 @@ class GameEngineController {
         document.getElementById('waitingScreen').style.display = 'flex';
         document.getElementById('waitingScreen').classList.add('active');
 
+        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+        if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
+
         // 如果在 localhost 下运行，提示换成本机 IP
         let origin = window.location.origin;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -319,6 +326,9 @@ class GameEngineController {
         document.getElementById('roomInfoBar').style.display = 'flex';
         document.getElementById('btnStartGame').style.display = 'none';
         document.getElementById('btnStartWithAi').style.display = 'none';
+
+        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+        if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
         
         // 隐藏不需要给客户端展示的二维码和分享框，保持界面干净
         const qrContainer = document.querySelector('.qr-container');
@@ -605,6 +615,8 @@ class GameEngineController {
             document.getElementById('gameOverModal').style.display = 'none';
             document.getElementById('gameTable').style.display = 'grid';
             document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+            const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+            if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
         }
 
         // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时

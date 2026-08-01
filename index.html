@@ -18,10 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <div id="app" class="game-container">
-        <!-- 顶部导航栏 -->
-        <header class="top-nav">
-            <div class="brand">
+        <header class="app-header">
+            <button class="btn-top-home" id="btnGoHomeTop" style="display: none;" title="返回主页">
+                <i class="fa-solid fa-house"></i> <span>主页</span>
+            </button>
+
+            <div class="brand-badge">
                 <i class="fa-solid fa-layer-group"></i>
                 <span>游鲸斗地主</span>
             </div>
@@ -44,33 +46,43 @@
             </div>
         </header>
 
-        <!-- 主大厅/大厅模式选择 (Lobby Modal) -->
+        <!-- 主大厅/大厅模式选择 (Hero Aesthetic Lobby) -->
         <div id="lobbyScreen" class="overlay-screen active">
             <div class="lobby-card hero-lobby-card">
                 <div class="lobby-header">
-                    <div class="brand-badge">
-                        <i class="fa-solid fa-layer-group"></i>
-                        <span>游鲸斗地主</span>
+                    <div class="brand-hero">
+                        <div class="brand-logo-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div class="brand-text">
+                            <h1 class="brand-title">游鲸斗地主</h1>
+                            <p class="brand-subtitle">WEB P2P REAL-TIME CARDS</p>
+                        </div>
                     </div>
                     <div class="hero-tags">
                         <span class="badge-tag"><i class="fa-solid fa-bolt"></i> 3秒极速开局</span>
-                        <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> 网页点对点</span>
+                        <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> 点对点加密</span>
                     </div>
                 </div>
 
-                <div id="quickJoinBanner" style="display:none; background:#27272a; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; margin-bottom:20px; font-size:0.85rem; color:#e4e4e7; text-align:left;">
-                    <i class="fa-solid fa-link" style="color:#ffffff;"></i> 检测到邀请链接，房间号：<strong id="quickJoinRoomDisplay" style="color:#ffffff; font-family:var(--font-num);"></strong><br>
-                    <span style="color:#a1a1aa; display:inline-block; margin-top:4px;">确认昵称后点击「加入房间」即可开启对局</span>
+                <!-- 邀请加房快捷横幅 (通过链接进入时展示) -->
+                <div id="quickJoinBanner" style="display:none;" class="quick-join-banner">
+                    <div class="join-banner-icon"><i class="fa-solid fa-link"></i></div>
+                    <div class="join-banner-text">
+                        <div>已收到对局邀请，房间号：<strong id="quickJoinRoomDisplay"></strong></div>
+                        <span>在下方设置你的专属昵称即可快速加入战局</span>
+                    </div>
                 </div>
 
                 <div class="lobby-form">
                     <!-- 玩家名片框 -->
                     <div class="nickname-section">
+                        <label class="input-label">玩家昵称</label>
                         <div class="nickname-input-wrapper">
                             <i class="fa-solid fa-user-astronaut input-icon"></i>
                             <input type="text" id="nicknameInput" maxlength="10" placeholder="设置你的游戏昵称">
                             <button class="btn-random-nick" id="btnRandomNickname" type="button" title="随机生成炫酷昵称">
-                                <i class="fa-solid fa-dice"></i> 换一个
+                                <i class="fa-solid fa-dice"></i> 随机
                             </button>
                         </div>
                     </div>
@@ -78,42 +90,42 @@
                     <!-- 模式选择区 -->
                     <div class="mode-selection" id="fullModeSelection">
                         <!-- 创建房间按钮 -->
-                        <button class="mode-card" id="btnCreateRoom">
-                            <div class="card-icon">
+                        <button class="mode-card primary-card" id="btnCreateRoom">
+                            <div class="card-icon-wrap gold">
                                 <i class="fa-solid fa-plus"></i>
                             </div>
                             <div class="card-content">
                                 <div class="card-title">
                                     <span>创建房间</span>
-                                    <span class="pill-badge">房主</span>
+                                    <span class="pill-badge gold">房主</span>
                                 </div>
-                                <div class="card-desc">生成 6 位专属房间号发给好友</div>
+                                <div class="card-desc">生成 6 位专属邀请码，发给微信/QQ好友开局</div>
                             </div>
                             <i class="fa-solid fa-chevron-right card-arrow"></i>
                         </button>
 
                         <!-- 输入房间号加入 -->
-                        <div class="mode-card card-join">
+                        <div class="mode-card join-card">
                             <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入房间号加入</div>
                             <div class="join-input-row">
-                                <input type="text" id="joinRoomInput" placeholder="输入 6 位房间号">
-                                <button class="btn-join-action" id="btnJoinRoom">加入房间 →</button>
+                                <input type="text" id="joinRoomInput" placeholder="6 位房间号" maxlength="6">
+                                <button class="btn-join-action" id="btnJoinRoom">加入战局 <i class="fa-solid fa-arrow-right"></i></button>
                             </div>
                         </div>
 
-                        <div class="divider"><span>或</span></div>
+                        <div class="divider"><span>单人切磋</span></div>
 
                         <!-- 单机 AI 模式 -->
-                        <button class="mode-card" id="btnPlayAi">
-                            <div class="card-icon">
+                        <button class="mode-card ai-card" id="btnPlayAi">
+                            <div class="card-icon-wrap cyan">
                                 <i class="fa-solid fa-robot"></i>
                             </div>
                             <div class="card-content">
                                 <div class="card-title">
                                     <span>单机练习</span>
-                                    <span class="pill-badge">AI</span>
+                                    <span class="pill-badge cyan">AI 智胜</span>
                                 </div>
-                                <div class="card-desc">无需等待人齐，智能 AI 陪你切磋</div>
+                                <div class="card-desc">无需等待人齐，随时与智能 AI 算法极速切磋</div>
                             </div>
                             <i class="fa-solid fa-chevron-right card-arrow"></i>
                         </button>
