@@ -2029,11 +2029,12 @@ body, html {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* 主卡片：贴满宽度，去掉多余圆角 */
+    /* 主卡片：贴满宽度，居中（空间足时）或从顶滚动（内容过长时） */
     .hero-lobby-card {
         width: 100%;
         max-width: 100%;
         border-radius: 4px;
+        margin: auto 0;   /* 关键：flex-start + margin:auto = 空间足时自动垂直居中 */
     }
 
     /* 顶部品牌横幅：大幅压缩高度 */
