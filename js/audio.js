@@ -1,5 +1,5 @@
 /* ==========================================================================
-   高保真 Web Audio API 真实物理扑克牌音效合成器 (Acoustic Card Sound Engine)
+   高保真自然柔和物理音效合成器 (Organic Acoustic Card Sound Engine)
    ========================================================================== */
 
 class AudioSynth {
@@ -26,7 +26,7 @@ class AudioSynth {
     }
 
     /**
-     * 选牌音效：真实扑克纸牌拔弹摩擦脆响 (Paper Card Snap)
+     * 选牌音效：柔和自然弹纸声 (Soft Organic Card Pop)
      */
     playCardSelect() {
         if (!this.enabled) return;
@@ -35,8 +35,22 @@ class AudioSynth {
 
         const now = this.ctx.currentTime;
 
-        // 1. 高频纸张摩擦声
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.025); // 25ms
+        // 主音调：柔和正弦波渐变 (520Hz -> 720Hz)，带有 3ms 柔和 Attack 避免生硬
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(720, now + 0.035);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.14, now + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        // 辅音：低通滤波纸张碰撞微响 (Lowpass Friction)
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.02);
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -46,39 +60,26 @@ class AudioSynth {
         const noise = this.ctx.createBufferSource();
         noise.buffer = buffer;
 
-        const bandpass = this.ctx.createBiquadFilter();
-        bandpass.type = 'bandpass';
-        bandpass.frequency.setValueAtTime(3200, now);
-        bandpass.Q.setValueAtTime(3, now);
+        const lowpass = this.ctx.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.setValueAtTime(1600, now);
 
         const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.18, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+        noiseGain.gain.setValueAtTime(0.001, now);
+        noiseGain.gain.linearRampToValueAtTime(0.08, now + 0.003);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
 
-        noise.connect(bandpass);
-        bandpass.connect(noiseGain);
+        noise.connect(lowpass);
+        lowpass.connect(noiseGain);
         noiseGain.connect(this.ctx.destination);
 
-        // 2. 微音调弹响
-        const osc = this.ctx.createOscillator();
-        const oscGain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(750, now);
-        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.02);
-
-        oscGain.gain.setValueAtTime(0.12, now);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-
-        osc.connect(oscGain);
-        oscGain.connect(this.ctx.destination);
-
-        noise.start(now);
         osc.start(now);
-        osc.stop(now + 0.025);
+        noise.start(now);
+        osc.stop(now + 0.035);
     }
 
     /**
-     * 取消选牌音效：下降微音调软力擦落 (Card Deselect Snap)
+     * 取消选牌音效：温和落手声 (Soft Organic Deselect Tok)
      */
     playCardDeselect() {
         if (!this.enabled) return;
@@ -87,50 +88,26 @@ class AudioSynth {
 
         const now = this.ctx.currentTime;
 
-        // 1. 高频纸牌擦落声
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.025); // 25ms
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
-        }
-
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-
-        const bandpass = this.ctx.createBiquadFilter();
-        bandpass.type = 'bandpass';
-        bandpass.frequency.setValueAtTime(2600, now);
-        bandpass.Q.setValueAtTime(2.5, now);
-
-        const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.18, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
-
-        noise.connect(bandpass);
-        bandpass.connect(noiseGain);
-        noiseGain.connect(this.ctx.destination);
-
-        // 2. 清晰下降音调 Pop 降音 (680Hz -> 380Hz)
+        // 主音调：平滑降音 (580Hz -> 360Hz)，带 3ms 柔和缓冲
         const osc = this.ctx.createOscillator();
-        const oscGain = this.ctx.createGain();
+        const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(680, now);
-        osc.frequency.exponentialRampToValueAtTime(380, now + 0.025);
+        osc.frequency.setValueAtTime(580, now);
+        osc.frequency.exponentialRampToValueAtTime(360, now + 0.035);
 
-        oscGain.gain.setValueAtTime(0.18, now);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.12, now + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
 
-        osc.connect(oscGain);
-        oscGain.connect(this.ctx.destination);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
 
-        noise.start(now);
         osc.start(now);
-        osc.stop(now + 0.025);
+        osc.stop(now + 0.035);
     }
 
     /**
-     * 出牌音效：实体牌桌甩牌桌面拍击声 (Wood/Felt Table Slap)
+     * 出牌音效：沉稳绒布桌面触牌声 (Warm Felt Table Slap)
      */
     playCardPlay() {
         if (!this.enabled) return;
@@ -139,21 +116,22 @@ class AudioSynth {
 
         const now = this.ctx.currentTime;
 
-        // 1. 木质/绒布牌桌低频拍击震感 (Table Thud)
+        // 1. 沉稳牌桌触击低音 (Table Thud)
         const thudOsc = this.ctx.createOscillator();
         const thudGain = this.ctx.createGain();
         thudOsc.type = 'sine';
-        thudOsc.frequency.setValueAtTime(180, now);
-        thudOsc.frequency.exponentialRampToValueAtTime(45, now + 0.06);
+        thudOsc.frequency.setValueAtTime(140, now);
+        thudOsc.frequency.exponentialRampToValueAtTime(45, now + 0.07);
 
-        thudGain.gain.setValueAtTime(0.4, now);
-        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        thudGain.gain.setValueAtTime(0.001, now);
+        thudGain.gain.linearRampToValueAtTime(0.28, now + 0.005);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
         thudOsc.connect(thudGain);
         thudGain.connect(this.ctx.destination);
 
-        // 2. 纸牌甩出擦落清脆击响 (Card Snap Noise)
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.04); // 40ms
+        // 2. 柔和牌面擦落声 (Soft Friction)
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.04);
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -165,11 +143,12 @@ class AudioSynth {
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(2400, now);
-        filter.frequency.exponentialRampToValueAtTime(400, now + 0.04);
+        filter.frequency.setValueAtTime(1200, now);
+        filter.frequency.exponentialRampToValueAtTime(300, now + 0.04);
 
         const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.35, now);
+        noiseGain.gain.setValueAtTime(0.001, now);
+        noiseGain.gain.linearRampToValueAtTime(0.18, now + 0.004);
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
 
         noise.connect(filter);
@@ -177,12 +156,12 @@ class AudioSynth {
         noiseGain.connect(this.ctx.destination);
 
         thudOsc.start(now);
-        thudOsc.stop(now + 0.06);
         noise.start(now);
+        thudOsc.stop(now + 0.07);
     }
 
     /**
-     * 不出/过 音效：轻柔木块叩击声 (Gentle Wood Tap)
+     * 不出/过 音效：轻柔木块扣击 (Gentle Muted Tap)
      */
     playPass() {
         if (!this.enabled) return;
@@ -193,11 +172,12 @@ class AudioSynth {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.exponentialRampToValueAtTime(180, now + 0.08);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
 
-        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.11, now + 0.004);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
         osc.connect(gain);
@@ -207,7 +187,7 @@ class AudioSynth {
     }
 
     /**
-     * 抢地主/叫分音效：暖色双音风铃和弦 (Chime Fanfare)
+     * 抢地主/叫分音效：暖色三和弦风铃 (Warm Chime)
      */
     playBid() {
         if (!this.enabled) return;
@@ -215,26 +195,28 @@ class AudioSynth {
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
-        const freqs = [523.25, 659.25, 783.99]; // C5 - E5 - G5 大三和弦
+        const freqs = [523.25, 659.25, 783.99];
 
         freqs.forEach((freq, i) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now + i * 0.05);
+            osc.frequency.setValueAtTime(freq, now + i * 0.06);
 
-            gain.gain.setValueAtTime(0.18, now + i * 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.22);
+            const startTime = now + i * 0.06;
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.linearRampToValueAtTime(0.12, startTime + 0.006);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
 
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-            osc.start(now + i * 0.05);
-            osc.stop(now + i * 0.05 + 0.22);
+            osc.start(startTime);
+            osc.stop(startTime + 0.25);
         });
     }
 
     /**
-     * 炸弹音效：重低音震荡 + 轰鸣爆破 (Sub-Bass Boom & Explosion)
+     * 炸弹音效：沉稳低音轰鸣 (Deep Warm Bomb)
      */
     playBomb() {
         if (!this.enabled) return;
@@ -243,21 +225,22 @@ class AudioSynth {
 
         const now = this.ctx.currentTime;
 
-        // 1. 超低音极强震感 (Sub-Bass Drop)
+        // 1. 低音震感 drop
         const sub = this.ctx.createOscillator();
         const subGain = this.ctx.createGain();
         sub.type = 'sine';
-        sub.frequency.setValueAtTime(120, now);
-        sub.frequency.exponentialRampToValueAtTime(32, now + 0.45);
+        sub.frequency.setValueAtTime(100, now);
+        sub.frequency.exponentialRampToValueAtTime(30, now + 0.4);
 
-        subGain.gain.setValueAtTime(0.7, now);
-        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        subGain.gain.setValueAtTime(0.001, now);
+        subGain.gain.linearRampToValueAtTime(0.45, now + 0.01);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
         sub.connect(subGain);
         subGain.connect(this.ctx.destination);
 
-        // 2. 爆炸滚滚轰鸣 (Explosive Lowpass Noise)
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.45);
+        // 2. 温暖炸弹轰鸣 (Warm Lowpass Noise)
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.4);
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -269,24 +252,25 @@ class AudioSynth {
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(1400, now);
-        filter.frequency.exponentialRampToValueAtTime(40, now + 0.45);
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.exponentialRampToValueAtTime(35, now + 0.4);
 
         const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.6, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        noiseGain.gain.setValueAtTime(0.001, now);
+        noiseGain.gain.linearRampToValueAtTime(0.35, now + 0.01);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
         noise.connect(filter);
         filter.connect(noiseGain);
         noiseGain.connect(this.ctx.destination);
 
         sub.start(now);
-        sub.stop(now + 0.45);
         noise.start(now);
+        sub.stop(now + 0.4);
     }
 
     /**
-     * 胜利音效：亮丽五音阶升调和弦 (Victory Arpeggio)
+     * 胜利音效：圆润舒缓五音和弦 (Smooth Victory Fanfare)
      */
     playWin() {
         if (!this.enabled) return;
@@ -294,16 +278,17 @@ class AudioSynth {
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
 
         notes.forEach((freq, index) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = index === notes.length - 1 ? 'triangle' : 'sine';
+            osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, now + index * 0.08);
 
             const startTime = now + index * 0.08;
-            gain.gain.setValueAtTime(0.22, startTime);
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.linearRampToValueAtTime(0.15, startTime + 0.008);
             gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
 
             osc.connect(gain);
@@ -314,7 +299,7 @@ class AudioSynth {
     }
 
     /**
-     * 倒计时最后 5 秒紧急提示嘀声
+     * 倒计时嘀声
      */
     playCountdownTick() {
         if (!this.enabled) return;
@@ -326,15 +311,16 @@ class AudioSynth {
         const gain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.setValueAtTime(784, now);
 
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.003);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.05);
+        osc.stop(now + 0.04);
     }
 }
 
