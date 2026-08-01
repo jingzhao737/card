@@ -57,39 +57,59 @@ body, html {
     position: relative;
 }
 
-/* 顶部导航栏 */
+/* 顶部导航栏 — 深色木黎牌室档档风格 */
 .top-nav, .app-header {
-    height: 52px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
+    height: 48px;
+    background: linear-gradient(180deg, #180a04 0%, #0e0602 100%);
+    border-bottom: 1px solid rgba(180,140,50,0.3);
+    /* 顶部细金线 */
+    box-shadow: 0 1px 0 0 rgba(201,146,42,0.15), 0 2px 12px rgba(0,0,0,0.6);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--glass-border);
+    padding: 0 14px;
     z-index: 100;
+    position: relative;
+}
+
+/* header 内的横纹绒布微纹 */
+.app-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.06) 3px,
+        rgba(0,0,0,0.06) 4px
+    );
+    pointer-events: none;
 }
 
 /* 左上角返回主页按钮 */
 .btn-top-home {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-    font-size: 0.78rem;
+    background: rgba(80,40,5,0.5);
+    border: 1px solid rgba(180,130,40,0.35);
+    color: #c9a255;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 4px;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 2px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
 .btn-top-home:hover {
-    background: rgba(255, 215, 0, 0.2);
-    border-color: var(--accent-gold);
-    color: var(--accent-gold);
+    background: rgba(120,60,5,0.65);
+    border-color: rgba(255,215,0,0.5);
+    color: #ffd700;
+    box-shadow: 0 0 8px rgba(255,215,0,0.1);
 }
 
 .brand {
@@ -114,17 +134,18 @@ body, html {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--glass-border);
+    background: rgba(0,0,0,0.45);
+    padding: 3px 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(120,80,20,0.35);
 }
 
 .room-code {
     font-family: var(--font-num);
     font-weight: 800;
-    letter-spacing: 2px;
-    color: var(--accent-gold);
+    letter-spacing: 2.5px;
+    color: #e8b84b;
+    font-size: 0.9rem;
 }
 
 .header-cont.brand-hero {
@@ -230,21 +251,40 @@ body, html {
 }
 
 .btn-icon {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid var(--glass-border);
-    color: var(--text-light);
-    padding: 6px 12px;
-    border-radius: 8px;
+    background: rgba(60,30,5,0.5);
+    border: 1px solid rgba(120,80,20,0.35);
+    color: #a07840;
+    padding: 5px 11px;
+    border-radius: 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
+    transition: all 0.18s ease;
+    font-size: 0.82rem;
+    font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
 .btn-icon:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(100,50,5,0.65);
+    border-color: rgba(201,146,42,0.55);
+    color: #c9a255;
+    box-shadow: 0 0 8px rgba(201,146,42,0.1);
+}
+
+/* 離开房间 — 深红危险按钮 */
+.btn-icon.danger {
+    background: rgba(50,10,5,0.55);
+    border-color: rgba(160,40,30,0.4);
+    color: #c06050;
+}
+
+.btn-icon.danger:hover {
+    background: rgba(80,15,5,0.7);
+    border-color: rgba(220,60,40,0.6);
+    color: #f87171;
+    box-shadow: 0 0 8px rgba(200,40,20,0.15);
 }
 
 /* 模态框 / 遮罩屏 — 深红绒布赌场质感 */
