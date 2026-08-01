@@ -1629,9 +1629,33 @@ body, html {
         font-size: 1.35rem;
     }
 
-    /* 手机端控制按钮组悬浮置顶于手牌上方 */
+    /* 手机端自己打出的牌：稍微缩小显示，显得精致精致不抢占中心空间 */
+    #playedSelf .card {
+        width: 44px !important;
+        height: 64px !important;
+        padding: 2px 3px !important;
+        margin-right: -20px !important;
+    }
+
+    #playedSelf .card:last-child {
+        margin-right: 0 !important;
+    }
+
+    #playedSelf .card .card-value {
+        font-size: 0.85rem !important;
+    }
+
+    #playedSelf .card .card-suit {
+        font-size: 0.65rem !important;
+    }
+
+    #playedSelf .card .card-center-symbol {
+        font-size: 1.1rem !important;
+    }
+
+    /* 手机端控制按钮组悬浮置顶于手牌上方，拉开距离不压牌 */
     .controls-bar {
-        margin-bottom: 12px;
+        margin-bottom: 28px;
         z-index: 20;
     }
 
@@ -1662,7 +1686,7 @@ body, html {
 
     .self-profile-mini {
         gap: 4px;
-        margin-bottom: 6px;
+        margin-bottom: 12px;
         padding: 3px 8px;
     }
 
@@ -1682,9 +1706,9 @@ body, html {
     }
 
     .hand-cards-container {
-        min-height: calc(var(--card-h) + 25px);
+        min-height: calc(var(--card-h) + 40px);
         height: auto;
-        padding-top: 40px;
+        padding-top: 55px;
         padding-bottom: 4px;
         width: 100%;
         max-width: 100vw;
