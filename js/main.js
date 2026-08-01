@@ -560,6 +560,9 @@ class GameEngineController {
      * 重新回到初始大厅
      */
     resetToLobby() {
+        window.location.href = window.location.pathname;
+    }
+
     /**
      * 开始新一局 (洗牌、发牌、全员就位加载完毕后展开 3秒倒计时 + 动态进度条)
      */
