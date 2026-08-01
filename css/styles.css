@@ -1562,12 +1562,12 @@ body, html {
 
     #playedLeft {
         left: 8px !important;
-        top: 155px !important;
+        top: 125px !important;
     }
 
     #playedRight {
         right: 8px !important;
-        top: 155px !important;
+        top: 125px !important;
     }
 
     .left-player .speech-bubble {
