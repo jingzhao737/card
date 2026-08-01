@@ -130,6 +130,7 @@ const UIRenderer = {
             if (this.selectedCards.has(cardId)) {
                 this.selectedCards.delete(cardId);
                 if (el) el.classList.remove('selected');
+                SoundEngine.playCardDeselect();
             }
         }
         this.updatePlayButtonState();

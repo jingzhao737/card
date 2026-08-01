@@ -87,12 +87,12 @@ class AudioSynth {
 
         const now = this.ctx.currentTime;
 
-        // 1. 高频微弱擦落声
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.02); // 20ms
+        // 1. 高频纸牌擦落声
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.025); // 25ms
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
         }
 
         const noise = this.ctx.createBufferSource();
@@ -100,33 +100,33 @@ class AudioSynth {
 
         const bandpass = this.ctx.createBiquadFilter();
         bandpass.type = 'bandpass';
-        bandpass.frequency.setValueAtTime(2400, now);
-        bandpass.Q.setValueAtTime(2, now);
+        bandpass.frequency.setValueAtTime(2600, now);
+        bandpass.Q.setValueAtTime(2.5, now);
 
         const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.12, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+        noiseGain.gain.setValueAtTime(0.18, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
 
         noise.connect(bandpass);
         bandpass.connect(noiseGain);
         noiseGain.connect(this.ctx.destination);
 
-        // 2. 下降音调 Click 声
+        // 2. 清晰下降音调 Pop 降音 (680Hz -> 380Hz)
         const osc = this.ctx.createOscillator();
         const oscGain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(900, now);
-        osc.frequency.exponentialRampToValueAtTime(550, now + 0.02);
+        osc.frequency.setValueAtTime(680, now);
+        osc.frequency.exponentialRampToValueAtTime(380, now + 0.025);
 
-        oscGain.gain.setValueAtTime(0.09, now);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+        oscGain.gain.setValueAtTime(0.18, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
 
         osc.connect(oscGain);
         oscGain.connect(this.ctx.destination);
 
         noise.start(now);
         osc.start(now);
-        osc.stop(now + 0.02);
+        osc.stop(now + 0.025);
     }
 
     /**
