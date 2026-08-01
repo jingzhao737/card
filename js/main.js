@@ -146,7 +146,27 @@ class GameEngineController {
             });
         });
 
-        // 加入房间
+        // 加入房间输入框增强 (自动转大写、回车快捷提交、卡片点击聚焦)
+        const joinInput = document.getElementById('joinRoomInput');
+        const joinCard = document.querySelector('.join-card');
+        if (joinInput) {
+            joinInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('btnJoinRoom').click();
+                }
+            });
+            joinInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            });
+        }
+        if (joinCard && joinInput) {
+            joinCard.addEventListener('click', (e) => {
+                if (e.target !== joinInput && !e.target.closest('#btnJoinRoom')) {
+                    joinInput.focus();
+                }
+            });
+        }
+
         document.getElementById('btnJoinRoom').addEventListener('click', () => {
             const roomId = document.getElementById('joinRoomInput').value.trim();
             const nickname = getNickname();

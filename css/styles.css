@@ -34,6 +34,13 @@
     -webkit-user-select: none;
 }
 
+input, textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    pointer-events: auto !important;
+    cursor: text !important;
+}
+
 body, html {
     width: 100%;
     height: 100%;
@@ -765,6 +772,7 @@ body, html {
     background: linear-gradient(90deg, rgba(255,215,0,0.04) 0%, transparent 60%);
     opacity: 0;
     transition: opacity 0.2s;
+    pointer-events: none;
 }
 
 .mode-card:hover {
@@ -919,6 +927,8 @@ body, html {
 
 .join-input-row input {
     flex: 1;
+    position: relative;
+    z-index: 5;
     background: rgba(0,0,0,0.5) !important;
     border: 1px solid rgba(120,80,20,0.4) !important;
     border-radius: 3px !important;
@@ -931,6 +941,10 @@ body, html {
     box-sizing: border-box !important;
     transition: all 0.2s ease !important;
     letter-spacing: 1px;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    pointer-events: auto !important;
+    cursor: text !important;
 }
 
 .join-input-row input:focus {
