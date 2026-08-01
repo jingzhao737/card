@@ -243,6 +243,25 @@ class GameEngineController {
             UIRenderer.showToast(isEnabled ? '音效已开启' : '音效已静音');
         });
 
+        // 牌型说明弹窗
+        const cardHelpBtn  = document.getElementById('btnCardHelp');
+        const cardTypeModal = document.getElementById('cardTypeModal');
+        const closeCardType = document.getElementById('btnCloseCardType');
+
+        if (cardHelpBtn && cardTypeModal) {
+            cardHelpBtn.addEventListener('click', () => {
+                cardTypeModal.style.display = 'flex';
+            });
+            closeCardType.addEventListener('click', () => {
+                cardTypeModal.style.display = 'none';
+            });
+            // 点击遮罩层外部关闭
+            cardTypeModal.addEventListener('click', (e) => {
+                if (e.target === cardTypeModal) cardTypeModal.style.display = 'none';
+            });
+        }
+
+
         // 按钮组事件绑定 (抢手速叫地主/不叫/出牌/不出/提示)
         const bidLandlordBtn = document.getElementById('btnBidLandlord');
         if (bidLandlordBtn) bidLandlordBtn.addEventListener('click', () => this.handleSelfAction('BID', 'CLAIM'));

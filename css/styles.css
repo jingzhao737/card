@@ -288,6 +288,197 @@ body, html {
 
 /* 離开房间 — 深红危险按钮 */
 .btn-icon.danger {
+
+/* ============================================================
+   ❓ 牌型说明按钮 & 弹窗
+   ============================================================ */
+
+/* 底牌旁问号按钮 */
+.btn-card-help {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(60,30,5,0.6);
+    border: 1px solid rgba(180,140,50,0.45);
+    color: #c9a255;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.btn-card-help:hover {
+    background: rgba(100,50,5,0.75);
+    border-color: rgba(255,215,0,0.6);
+    color: #ffd700;
+    box-shadow: 0 0 8px rgba(255,215,0,0.15);
+}
+
+/* 弹窗遮罩 */
+.card-type-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    backdrop-filter: blur(3px);
+}
+
+/* 弹窗主体 */
+.card-type-inner {
+    background: linear-gradient(180deg, #1a0e06 0%, #100806 100%);
+    border: 1px solid rgba(180,140,50,0.45);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(120,20,20,0.15);
+    overflow: hidden;
+}
+
+/* 弹窗顶部标题栏 */
+.ct-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.4);
+    border-bottom: 1px solid rgba(120,80,20,0.35);
+    flex-shrink: 0;
+}
+.ct-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #c9a255;
+    letter-spacing: 1px;
+}
+.ct-close {
+    background: rgba(50,15,5,0.6);
+    border: 1px solid rgba(120,60,20,0.4);
+    color: #8a6030;
+    border-radius: 2px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+.ct-close:hover { color: #f87171; border-color: rgba(200,50,30,0.5); }
+
+/* 弹窗内容区 — 可滚动 */
+.ct-body {
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 牌型分区 */
+.ct-section {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(80,50,10,0.3);
+    border-radius: 3px;
+    padding: 8px 10px;
+}
+.ct-section-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #a07840;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.ct-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.ct-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 80px;
+}
+.ct-cards {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+
+/* 迷你牌面 */
+.ct-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 32px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: #1a1a1a;
+    font-family: var(--font-num);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    flex-shrink: 0;
+}
+.ct-card.red { color: #dc2626; }
+.ct-card.joker-big {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    font-size: 0.55rem;
+    font-weight: 900;
+    border-color: #f59e0b;
+}
+.ct-card.joker-small {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #3730a3;
+    font-size: 0.55rem;
+    font-weight: 900;
+    border-color: #818cf8;
+}
+
+.ct-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #d4b87a;
+    letter-spacing: 0.3px;
+}
+.ct-desc {
+    font-size: 0.62rem;
+    color: #6b4820;
+    line-height: 1.3;
+}
+
+/* 底部提示栏 */
+.ct-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(40,20,5,0.4);
+    border: 1px solid rgba(180,140,50,0.2);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 0.65rem;
+    color: #8a6030;
+    line-height: 1.6;
+}
+.ct-tip i { color: #c9922a; margin-top: 2px; flex-shrink: 0; }
+.btn-icon.danger {
     background: rgba(50,10,5,0.55);
     border-color: rgba(160,40,30,0.4);
     color: #c06050;

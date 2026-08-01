@@ -185,14 +185,19 @@
         <main id="gameTable" class="game-table" style="display: none;">
             <!-- 顶部中区：底牌区域 & 胜负总结横幅 -->
             <div class="table-top-center">
-                <!-- 三张底牌展示区 -->
-                <div class="bottom-cards-box" id="bottomCardsBox">
-                    <div class="box-title">底牌</div>
-                    <div class="bottom-cards-cards" id="bottomCardsContainer">
-                        <div class="card poker-back"></div>
-                        <div class="card poker-back"></div>
-                        <div class="card poker-back"></div>
+                <!-- 三张底牌展示区 + 牌型帮助按钮 -->
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="bottom-cards-box" id="bottomCardsBox">
+                        <div class="box-title">底牌</div>
+                        <div class="bottom-cards-cards" id="bottomCardsContainer">
+                            <div class="card poker-back"></div>
+                            <div class="card poker-back"></div>
+                            <div class="card poker-back"></div>
+                        </div>
                     </div>
+                    <button class="btn-card-help" id="btnCardHelp" title="牌型说明">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </button>
                 </div>
 
                 <!-- 游戏结束胜负总结横幅 (取代弹窗) -->
@@ -373,5 +378,128 @@
     <script src="js/p2p.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- 牌型说明弹窗 -->
+    <div id="cardTypeModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner">
+            <div class="ct-header">
+                <span class="ct-title"><i class="fa-solid fa-book-open"></i> 斗地主牌型速查</span>
+                <button class="ct-close" id="btnCloseCardType"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body">
+
+                <div class="ct-section">
+                    <div class="ct-section-title">🔥 特殊牌型（无敌）</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card joker-big">大王</span><span class="ct-card joker-small">小王</span></div>
+                            <div class="ct-name">火箭</div>
+                            <div class="ct-desc">大小王合一，天下无敌</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">A</span><span class="ct-card">A</span><span class="ct-card">A</span><span class="ct-card">A</span></div>
+                            <div class="ct-name">炸弹</div>
+                            <div class="ct-desc">4张相同点数，可压任意普通牌型</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-section">
+                    <div class="ct-section-title">🃏 基础牌型</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">K</span></div>
+                            <div class="ct-name">单张</div>
+                            <div class="ct-desc">任意一张牌</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">8</span><span class="ct-card">8</span></div>
+                            <div class="ct-name">对子</div>
+                            <div class="ct-desc">2张相同点数</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">J</span><span class="ct-card">J</span><span class="ct-card">J</span></div>
+                            <div class="ct-name">三张</div>
+                            <div class="ct-desc">3张相同点数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-section">
+                    <div class="ct-section-title">🚀 三带系列</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card red">5</span></div>
+                            <div class="ct-name">三带一</div>
+                            <div class="ct-desc">三张 + 任意1单张</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card red">7</span><span class="ct-card red">7</span></div>
+                            <div class="ct-name">三带二</div>
+                            <div class="ct-desc">三张 + 1个对子</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-section">
+                    <div class="ct-section-title">📏 顺子系列</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">5</span><span class="ct-card">6</span><span class="ct-card">7</span><span class="ct-card">8</span><span class="ct-card">9</span></div>
+                            <div class="ct-name">单顺（顺子）</div>
+                            <div class="ct-desc">5张及以上连续单张，最高到A，不含2或王</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">6</span><span class="ct-card">6</span><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card">8</span><span class="ct-card">8</span></div>
+                            <div class="ct-name">双顺（连对）</div>
+                            <div class="ct-desc">3对及以上连续对子，不含2或王</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-section">
+                    <div class="ct-section-title">✈️ 飞机系列</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">9</span><span class="ct-card">9</span><span class="ct-card">9</span></div>
+                            <div class="ct-name">飞机（纯）</div>
+                            <div class="ct-desc">2组及以上连续三张</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">9</span><span class="ct-card">9</span><span class="ct-card">9</span><span class="ct-card red">3</span><span class="ct-card red">K</span></div>
+                            <div class="ct-name">飞机带单</div>
+                            <div class="ct-desc">2组连续三张 + 2张任意单牌</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">8</span><span class="ct-card">9</span><span class="ct-card">9</span><span class="ct-card">9</span><span class="ct-card red">3</span><span class="ct-card red">3</span><span class="ct-card">K</span><span class="ct-card">K</span></div>
+                            <div class="ct-name">飞机带对</div>
+                            <div class="ct-desc">2组连续三张 + 2个对子</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-section">
+                    <div class="ct-section-title">💣 四带系列</div>
+                    <div class="ct-row">
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card red">3</span><span class="ct-card">K</span></div>
+                            <div class="ct-name">四带二单</div>
+                            <div class="ct-desc">4张同点数 + 2张任意单牌</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-cards"><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card">7</span><span class="ct-card red">3</span><span class="ct-card red">3</span><span class="ct-card">K</span><span class="ct-card">K</span></div>
+                            <div class="ct-name">四带两对</div>
+                            <div class="ct-desc">4张同点数 + 2个对子</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ct-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>牌力大小：火箭 &gt; 炸弹 &gt; 普通牌型（同牌型比主牌点数）<br>点数：3 &lt; 4 &lt; 5 … &lt; K &lt; A &lt; 2 &lt; 小王 &lt; 大王</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
