@@ -290,28 +290,52 @@ body, html {
    ❓ 牌型说明按钮 & 弹窗
    ============================================================ */
 
-/* 底牌旁问号按钮 */
+/* 底牌旁牌型说明按钮 — 压花金币风格 */
 .btn-card-help {
-    width: 26px;
-    height: 26px;
+    position: relative;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: rgba(60,30,5,0.6);
-    border: 1px solid rgba(180,140,50,0.45);
-    color: #c9a255;
-    font-size: 0.85rem;
+    /* 金属压花渐变 */
+    background: radial-gradient(circle at 35% 35%, #f5d98a 0%, #c9922a 45%, #7a5010 100%);
+    /* 双圈边框效果 */
+    border: 2px solid #ffd700;
+    outline: 1px solid rgba(120,80,10,0.6);
+    outline-offset: 2px;
+    color: #3d1a00;
+    font-size: 0.9rem;
+    font-weight: 900;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.18s ease;
     flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    box-shadow:
+        0 0 0 3px rgba(201,146,42,0.15),
+        0 3px 8px rgba(0,0,0,0.6),
+        inset 0 1px 2px rgba(255,255,255,0.3);
+    transition: all 0.2s ease;
+    animation: chipPulse 3s ease-in-out infinite;
 }
+
+@keyframes chipPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(201,146,42,0.15), 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3); }
+    50%       { box-shadow: 0 0 0 5px rgba(255,215,0,0.25),  0 3px 12px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.3); }
+}
+
 .btn-card-help:hover {
-    background: rgba(100,50,5,0.75);
-    border-color: rgba(255,215,0,0.6);
-    color: #ffd700;
-    box-shadow: 0 0 8px rgba(255,215,0,0.15);
+    background: radial-gradient(circle at 35% 35%, #fff0b0 0%, #e8b84b 45%, #a07020 100%);
+    border-color: #ffe566;
+    transform: scale(1.1) translateY(-1px);
+    box-shadow:
+        0 0 0 5px rgba(255,215,0,0.3),
+        0 6px 16px rgba(0,0,0,0.7),
+        inset 0 1px 3px rgba(255,255,255,0.4);
+    animation: none;
+}
+
+.btn-card-help:active {
+    transform: scale(0.96) translateY(0);
 }
 
 /* 弹窗遮罩 */
