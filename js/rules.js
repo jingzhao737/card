@@ -217,7 +217,8 @@ const DouDizhuRules = {
         // 收集所有张数 >= 3 的点数
         const tripleRanks = [];
         groupMap.forEach((list, rank) => {
-            if (list.length >= 3 && rank <= 14) {
+            // 必须是正好 3 张（不能是炸弹），且不能包含 2 或王
+            if (list.length === 3 && rank <= 14) {
                 tripleRanks.push(rank);
             }
         });
@@ -386,6 +387,34 @@ const DouDizhuRules = {
                     }
                 }
             }
+        } else if (prev.type === CardType.STRAIGHT) {
+            // 寻找同长度、更高的顺子
+            const needed = prev.length;
+            for (let startRank = 3; startRank <= 14 - needed + 1; startRank++) {
+                const straight = [];
+                for (let r = startRank; r < startRank + needed; r++) {
+                    const g = groupMap.get(r);
+                    if (g && g.length >= 1) straight.push(g[0]);
+                    else break;
+                }
+                if (straight.length === needed && straight[needed - 1].rank > prev.mainRank) {
+                    return straight;
+                }
+            }
+        } else if (prev.type === CardType.CONSECUTIVE_PAIRS) {
+            // 寻找同对数、更高的连对
+            const pairCount = prev.length / 2;
+            for (let startRank = 3; startRank <= 14 - pairCount + 1; startRank++) {
+                const pairs = [];
+                for (let r = startRank; r < startRank + pairCount; r++) {
+                    const g = groupMap.get(r);
+                    if (g && g.length >= 2) pairs.push(...g.slice(0, 2));
+                    else break;
+                }
+                if (pairs.length === prev.length && pairs[pairs.length - 1].rank > prev.mainRank) {
+                    return pairs;
+                }
+            }
         } else if (prev.type === CardType.BOMB) {
             for (const [rank, list] of groupMap.entries()) {
                 if (rank > prev.mainRank && list.length === 4) {
@@ -408,3 +437,4 @@ const DouDizhuRules = {
         return [];
     }
 };
+
