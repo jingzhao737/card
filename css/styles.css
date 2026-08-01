@@ -1653,9 +1653,9 @@ body, html {
         font-size: 0.92rem !important;
     }
 
-    /* 手机端控制按钮组悬浮置顶于手牌上方，大幅拉开距离更显清爽 */
+    /* 手机端控制按钮组悬浮置顶于手牌上方 */
     .controls-bar {
-        margin-bottom: 48px;
+        margin-bottom: 30px;
         z-index: 20;
     }
 
@@ -1686,7 +1686,7 @@ body, html {
 
     .self-profile-mini {
         gap: 4px;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
         padding: 3px 8px;
     }
 
@@ -1706,9 +1706,9 @@ body, html {
     }
 
     .hand-cards-container {
-        min-height: calc(var(--card-h) + 50px);
+        min-height: calc(var(--card-h) + 40px);
         height: auto;
-        padding-top: 75px;
+        padding-top: 55px;
         padding-bottom: 4px;
         width: 100%;
         max-width: 100vw;

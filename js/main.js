@@ -797,6 +797,9 @@ class GameEngineController {
      * 确定地主身份并把底牌分发给地主
      */
     finalizeLandlord(landlordIdx) {
+        // 防重机制：防止网络延迟或定时器导致重复触发领底牌产生 5张Q/重复卡牌 bug！
+        if (this.gameState.phase === 'PLAYING') return;
+
         this.gameState.landlordIndex = landlordIdx;
         this.gameState.phase = 'PLAYING';
         this.gameState.currentTurn = landlordIdx;
@@ -807,8 +810,10 @@ class GameEngineController {
             p.role = idx === landlordIdx ? 'LANDLORD' : 'FARMER';
         });
 
-        // 3 张底牌给地主
-        const landlordHand = [...this.gameState.players[landlordIdx].hand, ...this.gameState.bottomCards];
+        // 3 张底牌给地主 (严格过滤已有 card.id 保证防重)
+        const currentHandIds = new Set(this.gameState.players[landlordIdx].hand.map(c => c.id));
+        const newBottomCards = (this.gameState.bottomCards || []).filter(c => !currentHandIds.has(c.id));
+        const landlordHand = [...this.gameState.players[landlordIdx].hand, ...newBottomCards];
         this.gameState.players[landlordIdx].hand = DouDizhuRules.sortCards(landlordHand);
 
         UIRenderer.showToast(`${this.gameState.players[landlordIdx].name} 成为地主！得 3 张底牌`);
