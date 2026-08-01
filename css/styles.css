@@ -1561,13 +1561,13 @@ body, html {
     }
 
     #playedLeft {
-        left: 8px;
-        top: 90px;
+        left: 8px !important;
+        top: 155px !important;
     }
 
     #playedRight {
-        right: 8px;
-        top: 90px;
+        right: 8px !important;
+        top: 155px !important;
     }
 
     .left-player .speech-bubble {
