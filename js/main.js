@@ -26,7 +26,7 @@ class GameEngineController {
         };
 
         this.turnTimerId = null;
-        this.timerSeconds = 30;
+        this.timerSeconds = 20;
     }
 
     init() {
@@ -1208,7 +1208,7 @@ class GameEngineController {
             this.turnTimerInterval = null;
         }
 
-        this.gameState.timerSeconds = 30;
+        this.gameState.timerSeconds = 20;
         NetworkManager.broadcastState(this.gameState);
 
         this.turnTimerInterval = setInterval(() => {

@@ -535,9 +535,9 @@ const UIRenderer = {
         timerEl.style.display = 'flex';
 
         // 每次回合轮换或服务端大同步时，启动/重置本地秒级流畅倒计时
-        if (this._currentTurnIndex !== currentTurnIndex || seconds === 30) {
+        if (this._currentTurnIndex !== currentTurnIndex || seconds === 20) {
             this._currentTurnIndex = currentTurnIndex;
-            this.startLocalTimer(seconds !== undefined ? seconds : 30);
+            this.startLocalTimer(seconds !== undefined ? seconds : 20);
         }
 
         // 高亮轮到思考/出牌的玩家头像
