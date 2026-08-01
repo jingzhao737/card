@@ -1561,25 +1561,25 @@ body, html {
     }
 
     #playedLeft {
-        left: 78px;
-        top: 35px;
+        left: 8px;
+        top: 90px;
     }
 
     #playedRight {
-        right: 78px;
-        top: 35px;
+        right: 8px;
+        top: 90px;
     }
 
     .left-player .speech-bubble {
         left: 78px;
-        top: 10px;
+        top: 45px;
         font-size: 0.7rem;
         padding: 2px 6px;
     }
 
     .right-player .speech-bubble {
         right: 78px;
-        top: 10px;
+        top: 45px;
         font-size: 0.7rem;
         padding: 2px 6px;
     }
