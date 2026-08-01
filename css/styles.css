@@ -1401,9 +1401,10 @@ body, html {
 
 @media (max-width: 768px) {
     :root {
-        /* 手机端更加精细缩小的扑克牌尺寸 (44px x 64px) */
+        /* 手机端更加精细缩小的扑克牌尺寸 (44px x 64px, 2px 微角) */
         --card-w: 44px;
         --card-h: 64px;
+        --card-radius: 2px;
         --card-overlap: -28px;
     }
     
@@ -1610,9 +1611,10 @@ body, html {
         font-size: 0.9rem !important;
     }
 
-    /* 手机端手牌字体与视口清晰化 */
+    /* 手机端扑克牌精细微小圆角与字体清晰化 */
     .card {
         padding: 2px 3px;
+        border-radius: 2px !important;
         border-width: 1px;
     }
 
