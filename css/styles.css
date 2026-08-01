@@ -121,6 +121,19 @@ body, html {
     color: var(--accent-gold);
 }
 
+/* 顶栏品牌文字 — 与主页大厅标题统一：哑金衬线发光 */
+.brand-badge {
+    font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #f5d98a;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7), 0 0 16px rgba(255,215,0,0.18);
+    user-select: none;
+    position: relative;
+    z-index: 1;
+}
+
 .badge-free {
     font-size: 0.7rem;
     background: rgba(46, 204, 113, 0.2);
