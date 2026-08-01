@@ -763,14 +763,20 @@ body, html {
 }
 
 .btn-primary {
-    background: var(--accent-gold);
-    color: #000;
-    border: none;
-    border-radius: 10px;
+    background: linear-gradient(180deg, #c9922a 0%, #8a5e10 100%);
+    color: #fff9e6;
+    border: 1px solid #7a5a1e;
+    border-radius: 3px;
     padding: 10px 16px;
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, #e8b84b 0%, #c9922a 100%);
 }
 
 .qr-container {
@@ -798,52 +804,61 @@ body, html {
 }
 
 .player-slot {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    background: linear-gradient(180deg, #1a0e06 0%, #100806 100%);
+    border: 1px solid rgba(120,80,20,0.35);
+    border-radius: 3px;
     padding: 14px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    transition: border-color 0.2s ease;
 }
 
 .player-slot.host {
-    border-color: var(--accent-gold);
+    border-color: rgba(201,146,42,0.65);
+    box-shadow: 0 0 12px rgba(201,146,42,0.1);
 }
 
 .player-slot .avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, #2a1a0a 0%, #1a0e06 100%);
+    border: 2px solid rgba(120,80,20,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
+    color: #a07840;
 }
 
 .player-slot.host .avatar {
-    background: rgba(255, 215, 0, 0.2);
-    color: var(--accent-gold);
+    background: linear-gradient(145deg, #5a3a0a 0%, #3a2008 100%);
+    border-color: rgba(255,215,0,0.45);
+    color: #ffd700;
 }
 
 .slot-name {
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #d4b87a;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
+    letter-spacing: 0.2px;
 }
 
 .slot-status {
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #5a4020;
+    letter-spacing: 0.3px;
 }
 
 .slot-status.ready {
-    color: #2ecc71;
+    color: #34d399;
 }
 
 .waiting-actions {
@@ -853,12 +868,20 @@ body, html {
 }
 
 .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    color: var(--text-muted);
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(120,80,20,0.35);
+    color: #8a6830;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 3px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+    border-color: rgba(201,146,42,0.5);
+    color: #c9a255;
 }
 
 /* 牌桌 (Game Table Layout) */
@@ -1644,8 +1667,9 @@ body, html {
 }
 
 .score-table {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 12px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(120,80,20,0.3);
+    border-radius: 3px;
     overflow: hidden;
     margin-bottom: 20px;
 }
@@ -1655,14 +1679,15 @@ body, html {
     grid-template-columns: 2fr 1fr 1fr 1fr;
     padding: 10px 14px;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(100,60,15,0.2);
     font-size: 0.85rem;
 }
 
 .score-row.header {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(80,40,5,0.4);
     font-weight: 700;
-    color: var(--text-muted);
+    color: #8a6830;
+    letter-spacing: 0.5px;
 }
 
 /* 3秒开局倒计时与炫彩动态进度条弹窗 */
@@ -1671,47 +1696,53 @@ body, html {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #111113;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    background: linear-gradient(180deg, #1a0e06 0%, #0e0705 100%);
+    border: 1px solid rgba(180,140,50,0.45);
+    outline: 3px solid rgba(180,140,50,0.1);
+    outline-offset: 3px;
+    border-radius: 4px;
     padding: 24px 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.8), 0 0 40px rgba(120,20,20,0.2);
     z-index: 999;
 }
 
 .start-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #e4e4e7;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #c9a255;
     margin-bottom: 8px;
     white-space: nowrap;
 }
 
 .start-number {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 900;
     font-family: var(--font-num);
-    color: #ffffff;
+    color: #ffd700;
+    text-shadow: 0 0 24px rgba(255,215,0,0.4);
     margin-bottom: 12px;
 }
 
 .progress-bar-track {
     width: 200px;
-    height: 6px;
-    background: #27272a;
-    border-radius: 3px;
+    height: 5px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(120,80,20,0.3);
+    border-radius: 2px;
     overflow: hidden;
 }
 
 .progress-bar-fill {
     width: 0%;
     height: 100%;
-    background: #ffffff;
-    border-radius: 3px;
+    background: linear-gradient(90deg, #c9922a, #ffd700);
+    border-radius: 2px;
     transition: width 0.05s linear;
+    box-shadow: 0 0 6px rgba(255,215,0,0.3);
 }
 
 .role-badge.landlord {
@@ -1744,17 +1775,18 @@ body, html {
     top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid var(--accent-gold);
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 4px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    background: rgba(20,10,5,0.95);
+    border: 1px solid rgba(201,146,42,0.6);
+    color: #f5d98a;
+    padding: 7px 16px;
+    border-radius: 3px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 20px rgba(120,20,20,0.15);
     z-index: 999;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     text-align: center;
     pointer-events: none;
+    letter-spacing: 0.3px;
 }
 
 /* 胜负顶中结算横幅样式 (取代重型弹窗) */
@@ -1766,29 +1798,31 @@ body, html {
 }
 
 .victory-content-wrap {
-    background: #111113;
-    border: 1px solid var(--accent-gold);
-    border-radius: 6px;
-    padding: 6px 16px;
+    background: linear-gradient(180deg, #1a0e06 0%, #100806 100%);
+    border: 1px solid rgba(201,146,42,0.6);
+    border-radius: 3px;
+    padding: 8px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.7), 0 0 20px rgba(201,146,42,0.1);
     animation: popIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .victory-main-title {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 900;
-    color: var(--accent-gold);
-    letter-spacing: 1px;
+    color: #ffd700;
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px rgba(255,215,0,0.4);
 }
 
 .victory-sub-desc {
     font-size: 0.72rem;
-    color: #e4e4e7;
+    color: #c9a255;
     margin-bottom: 2px;
+    letter-spacing: 0.3px;
 }
 
 .btn-restart-round {
@@ -1854,12 +1888,12 @@ body, html {
     bottom: 95px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(17, 17, 19, 0.96);
-    border: 1px solid var(--accent-gold);
-    border-radius: 8px;
-    width: 250px;
+    background: linear-gradient(180deg, #1a0e06 0%, #0e0705 100%);
+    border: 1px solid rgba(180,140,50,0.5);
+    border-radius: 3px;
+    width: 260px;
     max-width: 88vw;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.9), 0 0 20px rgba(120,20,20,0.15);
     z-index: 1000;
     padding: 8px 10px;
     animation: popIn 0.2s cubic-bezier(0.25, 1, 0.5, 1);
@@ -1869,11 +1903,13 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 800;
-    color: var(--accent-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #c9a255;
     padding-bottom: 5px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(120,80,20,0.35);
     margin-bottom: 6px;
 }
 
@@ -1895,21 +1931,22 @@ body, html {
 }
 
 .phrase-item {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    padding: 6px 10px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(100,60,15,0.3);
+    border-radius: 2px;
+    padding: 7px 10px;
     font-size: 0.72rem;
-    color: #e4e4e7;
+    color: #c9a255;
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: all 0.15s ease;
+    letter-spacing: 0.2px;
 }
 
 .phrase-item:hover, .phrase-item:active {
-    background: rgba(255, 215, 0, 0.18);
-    border-color: var(--accent-gold);
-    color: #fff;
+    background: rgba(80,30,5,0.5);
+    border-color: rgba(201,146,42,0.55);
+    color: #ffd700;
 }
 
 .self-profile-mini {
