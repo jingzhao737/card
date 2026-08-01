@@ -1,0 +1,1072 @@
+/* ==========================================================================
+   游戏主逻辑引擎与大厅控制器 (Main Game Controller & Game Engine)
+   ========================================================================== */
+
+class GameEngineController {
+    constructor() {
+        this.gameState = {
+            roomId: '',
+            phase: 'LOBBY', // LOBBY, WAITING, BIDDING, PLAYING, GAMEOVER
+            players: [
+                { id: 0, name: '玩家 1', hand: [], isAi: false, isHost: true, role: 'FARMER' },
+                { id: 1, name: '玩家 2', hand: [], isAi: false, isHost: false, role: 'FARMER' },
+                { id: 2, name: '玩家 3', hand: [], isAi: false, isHost: false, role: 'FARMER' }
+            ],
+            currentTurn: 0,
+            landlordIndex: -1,
+            highestBid: 0,
+            highestBidder: -1,
+            bidsCount: 0,
+            bottomCards: [],
+            lastPlay: null, // { playerIndex: 0, cards: [] }
+            multiplier: 1,
+            baseScore: 150,
+            winnerIndex: -1
+        };
+
+        this.turnTimerId = null;
+        this.timerSeconds = 30;
+    }
+
+    init() {
+        UIRenderer.init();
+
+        // 每次进入/刷新网页时，全自动随机分配一次全新的热梗/B站弹幕昵称
+        const nickInput = document.getElementById('nicknameInput');
+        if (nickInput) {
+            const freshNick = this.generateUniqueNickname();
+            nickInput.value = freshNick;
+            localStorage.setItem('youjing_doudizhu_nickname', freshNick);
+        }
+
+        this.bindLobbyEvents();
+        this.checkUrlRoomParam();
+
+        // 监听网络层的全量状态同步与大厅同步事件
+        NetworkManager.onStateUpdate = (state) => this.onReceiveStateUpdate(state);
+        NetworkManager.onPlayerJoined = (slotIndex, nickname) => this.onPlayerJoined(slotIndex, nickname);
+        NetworkManager.onLobbySync = (lobbyData) => this.onReceiveLobbySync(lobbyData);
+        NetworkManager.onToast = (msg) => UIRenderer.showToast(msg);
+    }
+
+    /**
+     * 随机生成 2026 最新爆火热梗与 B站经典弹幕纯文字昵称
+     */
+    generateUniqueNickname() {
+        const bStationMemes = [
+            // B站经典弹幕与文化梗
+            '一键三连', '我要验牌', '前方高能', '破防了家人们', '下次一定',
+            '满级大佬回新手村', '格局打开', '战术后仰', '要素过多', '伤害不高侮辱极强',
+            '大佬请喝茶', '弹幕护体', '空降成功', '真香定律', '邪修出牌',
+            '硬币都给你', '这波在第五层', '不讲武德', '优势在我', '名场面打卡',
+            // 2026 现象级热梗
+            '爱你老己', '低山臭水遇知音', '助我破鼎', 'DeepSeek附体', '班味退散',
+            '外耗大师', '真冰凉', '活人感拉满', '赛博对账', '浪浪山小妖怪',
+            '敬自己一杯', '情绪价值拉满', '建议手臂加强', '留友看', '后面有车',
+            '硬核拆车', '过程基础结果不基础', '谷子人', '来财', '对三要不起',
+            '绝地王炸', '顺子专业户', '底牌收割机', '王炸破鼎'
+        ];
+        return bStationMemes[Math.floor(Math.random() * bStationMemes.length)];
+    }
+
+    /**
+     * 检查 URL 是否携带有 ?room=XXXXXX 参数，如果有则自动进入加入模式
+     */
+    checkUrlRoomParam() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdParam = urlParams.get('room');
+        if (!roomIdParam) return;
+
+        // 填充房间号输入框
+        document.getElementById('joinRoomInput').value = roomIdParam;
+
+        // 显示顶部流量标识条
+        const banner = document.getElementById('quickJoinBanner');
+        if (banner) {
+            banner.style.display = 'block';
+            document.getElementById('quickJoinRoomDisplay').textContent = roomIdParam;
+        }
+
+        // 隐藏「创建房间」和「单机 AI」按钮，防止手机用户误操作
+        const createBtn = document.getElementById('btnCreateRoom');
+        const aiBtn = document.getElementById('btnPlayAi');
+        const divider = document.querySelector('.divider');
+        if (createBtn) createBtn.style.display = 'none';
+        if (aiBtn) aiBtn.style.display = 'none';
+        if (divider) divider.style.display = 'none';
+
+        // 加入按钮升點显示
+        const joinBtn = document.getElementById('btnJoinRoom');
+        if (joinBtn) {
+            joinBtn.style.background = 'linear-gradient(135deg, #f1c40f, #f39c12)';
+            joinBtn.style.color = '#000';
+            joinBtn.style.fontWeight = '800';
+            joinBtn.style.padding = '12px 24px';
+            joinBtn.textContent = '加入房间 →';
+        }
+
+        // 自动帮助好友秒级加入房间，无需手动再次点击
+        setTimeout(() => {
+            const joinBtn = document.getElementById('btnJoinRoom');
+            if (joinBtn) joinBtn.click();
+        }, 400);
+    }
+
+    /**
+     * 大厅按钮事件绑定
+     */
+    bindLobbyEvents() {
+        // 🎲 随机昵称生成按钮
+        const randNickBtn = document.getElementById('btnRandomNickname');
+        if (randNickBtn) {
+            randNickBtn.addEventListener('click', () => {
+                const newNick = this.generateUniqueNickname();
+                const input = document.getElementById('nicknameInput');
+                if (input) input.value = newNick;
+                localStorage.setItem('youjing_doudizhu_nickname', newNick);
+                UIRenderer.showToast(`🎲 已随机分配昵称：${newNick}`);
+            });
+        }
+
+        // 获取或产生最终昵称并记录本地
+        const getNickname = () => {
+            const input = document.getElementById('nicknameInput');
+            let val = input ? input.value.trim() : '';
+            if (!val) val = this.generateUniqueNickname();
+            localStorage.setItem('youjing_doudizhu_nickname', val);
+            return val;
+        };
+
+        // 创建房间
+        document.getElementById('btnCreateRoom').addEventListener('click', () => {
+            const nickname = getNickname();
+            NetworkManager.createRoom(nickname, (roomId) => {
+                this.setupWaitingScreen(roomId);
+            });
+        });
+
+        // 加入房间
+        document.getElementById('btnJoinRoom').addEventListener('click', () => {
+            const roomId = document.getElementById('joinRoomInput').value.trim();
+            const nickname = getNickname();
+            if (!roomId) {
+                UIRenderer.showToast('请输入有效的 6 位房间号');
+                return;
+            }
+
+            NetworkManager.joinRoom(roomId, nickname, () => {
+                this.enterRoomAsClient(roomId);
+            }, (errMsg) => {
+                UIRenderer.showToast(errMsg);
+            });
+        });
+
+        // 单机练习模式 (对战机器人)
+        document.getElementById('btnPlayAi').addEventListener('click', () => {
+            const nickname = getNickname();
+            this.startAiGame(nickname);
+        });
+
+        // 复制邀请链接
+        document.getElementById('btnCopyInviteUrl').addEventListener('click', () => this.copyInviteUrl());
+        document.getElementById('btnCopyLink').addEventListener('click', () => this.copyInviteUrl());
+
+        // 补齐机器人开局
+        document.getElementById('btnStartWithAi').addEventListener('click', () => {
+            this.fillAiAndStart();
+        });
+
+        // 房主手动点击开始游戏（自动补齐空位为 AI）
+        document.getElementById('btnStartGame').addEventListener('click', () => {
+            this.fillAiAndStart();
+        });
+
+        // 离开/取消等待
+        document.getElementById('btnCancelWaiting').addEventListener('click', () => this.resetToLobby());
+        document.getElementById('btnLeaveRoom').addEventListener('click', () => this.resetToLobby());
+
+        // 音效开关
+        document.getElementById('btnToggleSound').addEventListener('click', () => {
+            const isEnabled = SoundEngine.toggleSound();
+            document.getElementById('soundIcon').className = isEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            UIRenderer.showToast(isEnabled ? '音效已开启' : '音效已静音');
+        });
+
+        // 按钮组事件绑定 (抢手速叫地主/不叫/出牌/不出/提示)
+        const bidLandlordBtn = document.getElementById('btnBidLandlord');
+        if (bidLandlordBtn) bidLandlordBtn.addEventListener('click', () => this.handleSelfAction('BID', 'CLAIM'));
+
+        const bidPassBtn = document.getElementById('btnBidPass');
+        if (bidPassBtn) bidPassBtn.addEventListener('click', () => this.handleSelfAction('BID', 'PASS'));
+
+        const reBid1Btn = document.getElementById('btnReBid1');
+        if (reBid1Btn) reBid1Btn.addEventListener('click', () => this.handleSelfAction('BID', 'CLAIM'));
+
+        const reBidPassBtn = document.getElementById('btnReBidPass');
+        if (reBidPassBtn) reBidPassBtn.addEventListener('click', () => this.handleSelfAction('BID', 'PASS'));
+
+        document.getElementById('btnPass').addEventListener('click', () => this.handleSelfAction('PLAY', []));
+        document.getElementById('btnHint').addEventListener('click', () => this.triggerSmartHint());
+        document.getElementById('btnPlayCard').addEventListener('click', () => this.triggerPlayCard());
+
+        // 结算屏按钮
+        document.getElementById('btnPlayAgain').addEventListener('click', () => {
+            if (NetworkManager.isHost || NetworkManager.isAiMode) {
+                this.startNewRound();
+            } else {
+                UIRenderer.showToast('请等待房主重新开局');
+            }
+        });
+        document.getElementById('btnBackToLobby').addEventListener('click', () => this.resetToLobby());
+    }
+
+    /**
+     * 进入等待解界面 (Host视角)
+     */
+    setupWaitingScreen(roomId) {
+        document.getElementById('lobbyScreen').classList.remove('active');
+        document.getElementById('lobbyScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'flex';
+        document.getElementById('waitingScreen').classList.add('active');
+
+        // 如果在 localhost 下运行，提示换成本机 IP
+        let origin = window.location.origin;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            UIRenderer.showToast('提示：同一 Wi-Fi 测试请访问局域网 IP 地址', 4000);
+        }
+
+        const shareUrl = `${origin}${window.location.pathname}?room=${roomId}`;
+        document.getElementById('inviteUrlInput').value = shareUrl;
+        document.getElementById('displayRoomId').textContent = roomId;
+        document.getElementById('roomInfoBar').style.display = 'flex';
+
+        // 生成二维码
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+        if (window.QRCode) {
+            new QRCode(qrContainer, {
+                text: shareUrl,
+                width: 120,
+                height: 120
+            });
+        }
+
+        // 初始化房主 slot0
+        this.gameState.players[0].name = NetworkManager.nickname;
+        this.gameState.players[0].isAi = false;
+        document.getElementById('slotName0').textContent = `${NetworkManager.nickname} (房主)`;
+        document.getElementById('btnStartWithAi').style.display = 'block';
+
+        this.broadcastLobbyState();
+    }
+
+    /**
+     * 客户端加入房间视图更新
+     */
+    enterRoomAsClient(roomId) {
+        document.getElementById('lobbyScreen').classList.remove('active');
+        document.getElementById('lobbyScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'flex';
+        document.getElementById('waitingScreen').classList.add('active');
+        document.getElementById('displayRoomId').textContent = roomId;
+        document.getElementById('roomInfoBar').style.display = 'flex';
+        document.getElementById('btnStartGame').style.display = 'none';
+        document.getElementById('btnStartWithAi').style.display = 'none';
+        
+        // 隐藏不需要给客户端展示的二维码和分享框，保持界面干净
+        const qrContainer = document.querySelector('.qr-container');
+        if (qrContainer) qrContainer.style.display = 'none';
+        const shareBox = document.querySelector('.share-box');
+        if (shareBox) shareBox.style.display = 'none';
+
+        UIRenderer.showToast('已进入房间，等待房主开始游戏...');
+    }
+
+    /**
+     * 当有新玩家加入 (Host处理)
+     */
+    onPlayerJoined(slotIndex, nickname) {
+        if (!NetworkManager.isHost) return;
+
+        const name = nickname || `玩家 ${slotIndex + 1}`;
+        this.gameState.players[slotIndex].name = name;
+        this.gameState.players[slotIndex].isAi = false;
+
+        document.getElementById(`slotName${slotIndex}`).textContent = name;
+        document.getElementById(`slot${slotIndex}`).querySelector('.slot-status').textContent = '已就绪';
+        document.getElementById(`slot${slotIndex}`).querySelector('.slot-status').classList.add('ready');
+
+        const readyCount = this.gameState.players.filter(p => !p.isAi && p.name).length;
+        document.getElementById('connectedCount').textContent = readyCount;
+
+        // 有人加入就显示【开始游戏】按钮，房主随时可以开局（空位自动补 AI）
+        if (readyCount >= 2) {
+            document.getElementById('btnStartGame').style.display = 'block';
+        }
+        if (readyCount === 3) {
+            document.getElementById('btnStartWithAi').style.display = 'none';
+            UIRenderer.showToast('全员就位，可以开始游戏了！');
+        }
+
+        // 广播更新大厅所有玩家卡槽
+        this.broadcastLobbyState();
+    }
+
+    /**
+     * 房主广播组局大厅玩家状态
+     */
+    broadcastLobbyState() {
+        if (!NetworkManager.isHost) return;
+        const lobbyData = {
+            players: this.gameState.players.map(p => ({
+                name: p.name,
+                isAi: p.isAi,
+                isHost: p.isHost
+            }))
+        };
+        NetworkManager.broadcastLobbySync(lobbyData);
+    }
+
+    /**
+     * 客户端接收并渲染房间大厅玩家列表
+     */
+    onReceiveLobbySync(lobbyData) {
+        if (!lobbyData || !lobbyData.players) return;
+        const myIndex = NetworkManager.myPlayerIndex;
+
+        let readyCount = 0;
+        lobbyData.players.forEach((p, i) => {
+            const slotEl = document.getElementById(`slot${i}`);
+            const nameEl = document.getElementById(`slotName${i}`);
+            if (!slotEl || !nameEl) return;
+
+            const statusEl = slotEl.querySelector('.slot-status');
+
+            if (p.name && !p.name.includes('等待')) {
+                readyCount++;
+                let displayName = p.name;
+                if (i === 0) displayName += ' (房主)';
+                if (i === myIndex) displayName += ' (你)';
+                nameEl.textContent = displayName;
+                if (statusEl) {
+                    statusEl.textContent = '已就绪';
+                    statusEl.classList.add('ready');
+                }
+            } else {
+                nameEl.textContent = `等待好友 ${i + 1}...`;
+                if (statusEl) {
+                    statusEl.textContent = '连接中';
+                    statusEl.classList.remove('ready');
+                }
+            }
+        });
+
+        document.getElementById('connectedCount').textContent = readyCount;
+    }
+
+    /**
+     * 复制分享链接
+     */
+    copyInviteUrl() {
+        const input = document.getElementById('inviteUrlInput');
+        if (input && input.value) {
+            navigator.clipboard.writeText(input.value).then(() => {
+                UIRenderer.showToast('邀请链接已复制！快速发给微信/QQ好友吧！');
+            }).catch(() => {
+                input.select();
+                document.execCommand('copy');
+                UIRenderer.showToast('链接已复制到剪贴板');
+            });
+        }
+    }
+
+    /**
+     * 补齐机器人并开始
+     */
+    fillAiAndStart() {
+        for (let i = 1; i <= 2; i++) {
+            if (!this.gameState.players[i].name || this.gameState.players[i].name.includes('等待')) {
+                this.gameState.players[i].name = `机器人 AI_${i}`;
+                this.gameState.players[i].isAi = true;
+            }
+        }
+        this.startNewRound();
+    }
+
+    /**
+     * 启动单机练习模式 (对战 2 个 AI 机器人)
+     */
+    startAiGame(nickname) {
+        NetworkManager.isAiMode = true;
+        NetworkManager.isHost = true;
+        NetworkManager.myPlayerIndex = 0;
+
+        this.gameState.players[0] = { id: 0, name: nickname, hand: [], isAi: false, isHost: true, role: 'FARMER', passedBid: false };
+        this.gameState.players[1] = { id: 1, name: '智能机器人 1号', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
+        this.gameState.players[2] = { id: 2, name: '智能机器人 2号', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
+
+        document.getElementById('lobbyScreen').classList.remove('active');
+        document.getElementById('lobbyScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'none';
+        document.getElementById('gameTable').style.display = 'grid';
+        this.startNewRound();
+    }
+
+    /**
+     * 重新回到初始大厅
+     */
+    resetToLobby() {
+        window.location.href = window.location.pathname;
+    }
+
+    /**
+     * 开始新一局 (洗牌、发牌、全员就位加载完毕后展开 3秒倒计时 + 动态进度条)
+     */
+    startNewRound() {
+        document.getElementById('waitingScreen').style.display = 'none';
+        document.getElementById('gameOverModal').style.display = 'none';
+        document.getElementById('gameTable').style.display = 'grid';
+        document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+
+        // 1. 生成洗牌
+        const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck());
+
+        // 2. 发牌: 3人各 17 张，留 3 张底牌
+        const p0Hand = DouDizhuRules.sortCards(deck.slice(0, 17));
+        const p1Hand = DouDizhuRules.sortCards(deck.slice(17, 34));
+        const p2Hand = DouDizhuRules.sortCards(deck.slice(34, 51));
+        const bottom = deck.slice(51, 54);
+
+        // 3. 构造重置 GameState
+        this.gameState.phase = 'BIDDING';
+        this.gameState.players[0].hand = p0Hand;
+        this.gameState.players[1].hand = p1Hand;
+        this.gameState.players[2].hand = p2Hand;
+
+        this.gameState.players.forEach(p => {
+            p.role = 'FARMER';
+            p.passedBid = false;
+        });
+
+        this.gameState.bottomCards = bottom;
+        this.gameState.currentTurn = 0;
+        this.gameState.landlordIndex = -1;
+        this.gameState.highestBid = 0;
+        this.gameState.highestBidder = -1;
+        this.gameState.bidsCount = 0;
+        this.gameState.lastPlay = null;
+        this.gameState.recentPlays = { 0: null, 1: null, 2: null };
+        this.gameState.multiplier = 1;
+        this.gameState.winnerIndex = -1;
+
+        UIRenderer.clearSelectedCards();
+
+        // 先标记开局倒计时状态，再广播，确保客户端收到时能触发倒计时动画
+        this.gameState.isOpeningCountdown = true;
+
+        // 房主初始化完毕，立即同步全量状态给其他客户端，让大家切入打牌界面
+        if (NetworkManager.isHost) {
+            NetworkManager.broadcastState(this.gameState);
+        }
+
+        // 触发本地 3 秒全员就位加载倒计时与动态进度条
+        this.startOpeningCountdown();
+    }
+
+    /**
+     * 确认人齐加载完毕后的 3 秒开局倒计时与动态进度条
+     */
+    startOpeningCountdown() {
+        const overlay = document.getElementById('startCountdownOverlay');
+        const numEl = document.getElementById('startCountdownNum');
+        const fillEl = document.getElementById('startProgressBarFill');
+
+        if (overlay) overlay.style.display = 'flex';
+        if (numEl) numEl.textContent = '3';
+        if (fillEl) fillEl.style.width = '0%';
+
+        this._isCountingDownLocally = true;
+        this.updateControlButtons(NetworkManager.myPlayerIndex);
+
+        let elapsed = 0;
+        const totalDuration = 3000; // 3.0 秒
+        const step = 50;
+
+        clearInterval(this._startCountdownTimer);
+        this._startCountdownTimer = setInterval(() => {
+            elapsed += step;
+            const pct = Math.min(100, (elapsed / totalDuration) * 100);
+            if (fillEl) fillEl.style.width = `${pct}%`;
+
+            const remainingSecs = Math.ceil((totalDuration - elapsed) / 1000);
+            if (numEl) numEl.textContent = remainingSecs > 0 ? remainingSecs : '抢！';
+
+            if (elapsed >= totalDuration) {
+                clearInterval(this._startCountdownTimer);
+                this._isCountingDownLocally = false;
+                setTimeout(() => {
+                    if (overlay) overlay.style.display = 'none';
+                    if (NetworkManager.isHost) {
+                        this.gameState.isOpeningCountdown = false;
+                        NetworkManager.broadcastState(this.gameState); // 倒计时结束，同步状态解锁大家的操作按钮
+                    }
+                    this.updateControlButtons(NetworkManager.myPlayerIndex);
+                    UIRenderer.showToast('🔥 3秒到！手速抢地主开始！');
+                    SoundEngine.playBid();
+
+                    // 如果是单机人机模式，AI 随机模拟拉长延迟以防抢不过玩家
+                    if (NetworkManager.isHost && NetworkManager.isAiMode) {
+                        this.scheduleAiBids();
+                    }
+                }, 200);
+            }
+        }, step);
+    }
+
+    /**
+     * AI 单机模式下的手速叫牌模拟
+     */
+    scheduleAiBids() {
+        [1, 2].forEach(aiIdx => {
+            const delay = 2200 + Math.random() * 2600; // 给玩家留出 2 秒以上的抢按时间
+            setTimeout(() => {
+                if (this.gameState.phase === 'BIDDING' && !this.gameState.players[aiIdx].passedBid) {
+                    // AI 有 40% 几率抢叫，60% 几率放弃不叫
+                    const willClaim = Math.random() < 0.4;
+                    this.processBid(aiIdx, willClaim ? 'CLAIM' : 'PASS');
+                    NetworkManager.broadcastState(this.gameState);
+                }
+            }, delay);
+        });
+    }
+
+    /**
+     * 收到服务端/全网同步状态时的 UI 刷新入口
+     */
+    onReceiveStateUpdate(state) {
+        this.gameState = state;
+        const myIndex = NetworkManager.myPlayerIndex;
+        const rel = UIRenderer.getRelativePlayerIndices(myIndex);
+
+        // 如果游戏已经开始（叫牌/打牌阶段），确保手机客户端也自动切入牌桌界面！
+        if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
+            document.getElementById('lobbyScreen').classList.remove('active');
+            document.getElementById('lobbyScreen').style.display = 'none';
+            document.getElementById('waitingScreen').style.display = 'none';
+            document.getElementById('gameOverModal').style.display = 'none';
+            document.getElementById('gameTable').style.display = 'grid';
+            document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+        }
+
+        // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时
+        if (this.gameState.isOpeningCountdown && !this._isCountingDownLocally) {
+            this.startOpeningCountdown();
+        }
+
+        // 1. 顶部底牌与倍数
+        const isBottomRevealed = this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER';
+        UIRenderer.renderBottomCards(this.gameState.bottomCards, isBottomRevealed);
+        document.getElementById('gameMultiplier').textContent = `x${this.gameState.multiplier}`;
+
+        // 2. 玩家面板信息 (头像/名字/剩余手牌)
+        document.getElementById('nameSelf').textContent = this.gameState.players[rel.self].name;
+        document.getElementById('nameLeft').textContent = this.gameState.players[rel.left].name;
+        document.getElementById('nameRight').textContent = this.gameState.players[rel.right].name;
+
+        document.getElementById('cardCountLeft').querySelector('.count').textContent = this.gameState.players[rel.left].hand.length;
+        document.getElementById('cardCountRight').querySelector('.count').textContent = this.gameState.players[rel.right].hand.length;
+
+        // 3. 身份徽章标识 (抢地主结束后，在每个人ID左侧高亮放置【👑 地主】或【🌾 农民】徽章)
+        const isBiddingDone = (this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER');
+        const landlordIdx = this.gameState.landlordIndex;
+
+        const updateRoleBadge = (badgeId, playerIdx) => {
+            const el = document.getElementById(badgeId);
+            if (!el) return;
+            if (isBiddingDone && landlordIdx !== -1) {
+                el.style.display = 'inline-flex';
+                const isLandlord = (playerIdx === landlordIdx);
+                el.className = `role-identity-badge ${isLandlord ? 'landlord' : 'farmer'}`;
+                el.textContent = isLandlord ? '👑 地主' : '🌾 农民';
+            } else {
+                el.style.display = 'none';
+            }
+        };
+
+        updateRoleBadge('roleBadgeSelf', rel.self);
+        updateRoleBadge('roleBadgeLeft', rel.left);
+        updateRoleBadge('roleBadgeRight', rel.right);
+
+        // 4. 渲染自己手牌
+        const myHand = this.gameState.players[myIndex].hand || [];
+        UIRenderer.renderSelfHand(myHand);
+
+        // 5. 渲染桌面打出的牌 (保留一轮内所有人出的牌，最最新出的牌金光高亮)
+        const recent = this.gameState.recentPlays || {};
+        const selfPlay = recent[rel.self];
+        const leftPlay = recent[rel.left];
+        const rightPlay = recent[rel.right];
+
+        UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
+        UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
+        UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
+
+        // 6. 思考出牌/叫地主文本提示与头像高亮
+        const currentTurnIdx = this.gameState.currentTurn;
+        const currentTurnPlayer = this.gameState.players[currentTurnIdx];
+        const promptContainer = document.getElementById('thinkingStatusPrompt');
+        const promptTextEl = document.getElementById('thinkingStatusText');
+
+        if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
+            if (promptContainer && promptTextEl && currentTurnPlayer) {
+                promptContainer.style.display = 'inline-flex';
+                const pName = (currentTurnIdx === myIndex) ? '你' : currentTurnPlayer.name;
+                const actionDesc = (this.gameState.phase === 'BIDDING') ? '叫地主中...' : '思考出牌中...';
+                promptTextEl.textContent = `轮到 【${pName}】 ${actionDesc}`;
+            }
+        } else {
+            if (promptContainer) promptContainer.style.display = 'none';
+        }
+
+        // 7. 交互控制按钮面板
+        this.updateControlButtons(myIndex);
+
+        // 7. 倒计时指示
+        UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
+
+        // 8. 处理 AI 或当前回合的自动触发 (如果是房主)
+        if (NetworkManager.isHost && this.gameState.phase !== 'GAMEOVER') {
+            this.checkAiTurn();
+        }
+
+        // 9. 结算处理
+        if (this.gameState.phase === 'GAMEOVER') {
+            this.showGameOverModal();
+        }
+    }
+
+    /**
+     * 更新操作按钮显示 (抢手速叫地主/不叫/出牌)
+     */
+    updateControlButtons(myIndex) {
+        const controlsBar = document.getElementById('controlsBar');
+        const biddingControls = document.getElementById('biddingControls');
+        const reBidControls = document.getElementById('reBidControls');
+        const playControls = document.getElementById('playControls');
+
+        if (this.gameState.phase === 'GAMEOVER' || this.gameState.phase === 'WAITING') {
+            controlsBar.style.display = 'none';
+            return;
+        }
+
+        controlsBar.style.display = 'block';
+
+        if (this.gameState.phase === 'BIDDING') {
+            biddingControls.style.display = 'flex';
+            reBidControls.style.display = 'none';
+            playControls.style.display = 'none';
+
+            const myPlayer = this.gameState.players[myIndex];
+            const isOpeningCountdown = !!this.gameState.isOpeningCountdown;
+            const hasPassed = myPlayer && myPlayer.passedBid;
+
+            const passBtn = document.getElementById('btnBidPass');
+            const landlordBtn = document.getElementById('btnBidLandlord');
+
+            if (isOpeningCountdown || hasPassed) {
+                // 3秒倒计时中，或者已经放弃的玩家，置灰按钮
+                if (passBtn) { passBtn.disabled = true; passBtn.classList.add('disabled'); }
+                if (landlordBtn) { landlordBtn.disabled = true; landlordBtn.classList.add('disabled'); }
+            } else {
+                // 倒计时结束，全员拼手速！
+                if (passBtn) { passBtn.disabled = false; passBtn.classList.remove('disabled'); }
+                if (landlordBtn) { landlordBtn.disabled = false; landlordBtn.classList.remove('disabled'); }
+            }
+        } else if (this.gameState.phase === 'PLAYING') {
+            biddingControls.style.display = 'none';
+            reBidControls.style.display = 'none';
+            playControls.style.display = 'flex';
+
+            const isAiMode = NetworkManager.isAiMode;
+            const hintBtn = document.getElementById('btnHint');
+            if (hintBtn) hintBtn.style.display = isAiMode ? 'inline-flex' : 'none';
+
+            const isFreePlay = !this.gameState.lastPlay || this.gameState.lastPlay.playerIndex === myIndex;
+            const passBtn = document.getElementById('btnPass');
+            passBtn.style.display = isFreePlay ? 'none' : 'inline-block';
+
+            const playBtn = document.getElementById('btnPlayCard');
+            const isMyTurn = (this.gameState.currentTurn === myIndex);
+
+            if (!isMyTurn) {
+                // 不在自己回合，出牌阶段按钮全盘置灰
+                passBtn.disabled = true;
+                passBtn.classList.add('disabled');
+                playBtn.disabled = true;
+                playBtn.classList.add('disabled');
+                if (hintBtn) {
+                    hintBtn.disabled = true;
+                    hintBtn.classList.add('disabled');
+                }
+            } else {
+                // 轮到自己回合
+                passBtn.disabled = false;
+                passBtn.classList.remove('disabled');
+                if (hintBtn) {
+                    hintBtn.disabled = false;
+                    hintBtn.classList.remove('disabled');
+                }
+                UIRenderer.updatePlayButtonState();
+            }
+        }
+    }
+
+    /**
+     * 响应玩家（自己或远程客户端）的点击动作
+     */
+    handleSelfAction(actionType, payload) {
+        NetworkManager.sendActionToHost(actionType, payload);
+    }
+
+    /**
+     * 房主引擎处理动作分发
+     */
+    handlePlayerAction(playerIndex, actionType, payload) {
+        if (!NetworkManager.isHost) return;
+
+        if (actionType === 'BID') {
+            this.processBid(playerIndex, payload);
+        } else if (actionType === 'PLAY') {
+            this.processPlay(playerIndex, payload);
+        }
+    }
+
+    /**
+     * 处理抢手速叫地主逻辑
+     */
+    processBid(playerIndex, action) {
+        if (this.gameState.phase !== 'BIDDING') return;
+
+        // 如果处于 3 秒开局倒计时中，拒绝任何叫牌操作
+        if (this.gameState.isOpeningCountdown) return;
+
+        const player = this.gameState.players[playerIndex];
+        if (!player || player.passedBid) return; // 已经不叫退出的玩家不能再叫
+
+        const rel = UIRenderer.getRelativePlayerIndices(NetworkManager.myPlayerIndex);
+        let bubbleTarget = 'bubbleSelf';
+        if (playerIndex === rel.left) bubbleTarget = 'bubbleLeft';
+        if (playerIndex === rel.right) bubbleTarget = 'bubbleRight';
+
+        if (action === 'CLAIM' || action === 1 || action === 2 || action === 3) {
+            // 谁先点击到了【叫地主】，谁就瞬间成为地主！
+            SoundEngine.playBid();
+            UIRenderer.showBubble(bubbleTarget, '👑 叫地主！');
+            UIRenderer.showToast(`👑 ${player.name} 手速拔得头筹，成功抢到地主！`);
+            this.finalizeLandlord(playerIndex);
+            return;
+        } else if (action === 'PASS' || action === 0) {
+            // 玩家点击【不叫】，退出叫地主
+            player.passedBid = true;
+            SoundEngine.playPass();
+            UIRenderer.showBubble(bubbleTarget, '不叫');
+            UIRenderer.showToast(`${player.name} 放弃叫地主`);
+
+            // 统计剩下没有退出的玩家
+            const activeBidders = this.gameState.players.filter(p => !p.passedBid);
+
+            if (activeBidders.length === 1) {
+                // 其他人都退出了，剩下的唯一一个人自动变成地主！
+                const lastPlayer = activeBidders[0];
+                SoundEngine.playBid();
+                UIRenderer.showToast(`🌾 其他玩家均已退出，${lastPlayer.name} 自动获封地主！`);
+                setTimeout(() => {
+                    this.finalizeLandlord(lastPlayer.id);
+                }, 1000);
+                return;
+            } else if (activeBidders.length === 0) {
+                // 3 个玩家全都退出了 -> 重新发牌
+                UIRenderer.showToast('全员放弃叫地主，重新发牌！');
+                setTimeout(() => this.startNewRound(), 1500);
+                return;
+            }
+        }
+    }
+
+    /**
+     * 确定地主身份并把底牌分发给地主
+     */
+    finalizeLandlord(landlordIdx) {
+        this.gameState.landlordIndex = landlordIdx;
+        this.gameState.phase = 'PLAYING';
+        this.gameState.currentTurn = landlordIdx;
+        this.gameState.multiplier = Math.max(1, this.gameState.highestBid);
+
+        // 赋予角色
+        this.gameState.players.forEach((p, idx) => {
+            p.role = idx === landlordIdx ? 'LANDLORD' : 'FARMER';
+        });
+
+        // 3 张底牌给地主
+        const landlordHand = [...this.gameState.players[landlordIdx].hand, ...this.gameState.bottomCards];
+        this.gameState.players[landlordIdx].hand = DouDizhuRules.sortCards(landlordHand);
+
+        UIRenderer.showToast(`${this.gameState.players[landlordIdx].name} 成为地主！得 3 张底牌`);
+        SoundEngine.playBid();
+        this.startTurnTimer();
+    }
+
+    /**
+     * 处理出牌逻辑
+     */
+    processPlay(playerIndex, cards) {
+        if (this.gameState.phase !== 'PLAYING') return;
+
+        const rel = UIRenderer.getRelativePlayerIndices(NetworkManager.myPlayerIndex);
+        let bubbleTarget = 'bubbleSelf';
+        if (playerIndex === rel.left) bubbleTarget = 'bubbleLeft';
+        if (playerIndex === rel.right) bubbleTarget = 'bubbleRight';
+
+        const isFreePlay = !this.gameState.lastPlay || !this.gameState.lastPlay.cards || this.gameState.lastPlay.cards.length === 0 || this.gameState.lastPlay.playerIndex === playerIndex;
+
+        if (!cards || cards.length === 0) {
+            // 选择过 / 不出
+            SoundEngine.playPass();
+            UIRenderer.showBubble(bubbleTarget, '要不起');
+        } else {
+            // 校验是否符合斗地主出牌规则 (传入 playerIndex 确保赢牌后属于自由首出)
+            const canPlay = DouDizhuRules.canBeat(cards, this.gameState.lastPlay, playerIndex);
+            if (!canPlay) {
+                if (playerIndex === NetworkManager.myPlayerIndex) {
+                    UIRenderer.showToast('不符合出牌规则或压不住桌上的牌！');
+                }
+                return;
+            }
+
+            // 如果是自由首出（开启新一轮叫/打牌），清空上一轮大家打出的残牌！
+            if (isFreePlay) {
+                this.gameState.recentPlays = { 0: null, 1: null, 2: null };
+            }
+
+            // 规则合规！从玩家手牌中扣除
+            const playedIds = new Set(cards.map(c => c.id));
+            this.gameState.players[playerIndex].hand = this.gameState.players[playerIndex].hand.filter(c => !playedIds.has(c.id));
+
+            this.gameState.lastPlay = { playerIndex, cards };
+
+            if (!this.gameState.recentPlays) {
+                this.gameState.recentPlays = { 0: null, 1: null, 2: null };
+            }
+
+            // 取消之前玩家出牌的 isLatest 金光高亮标记
+            for (let i = 0; i < 3; i++) {
+                if (this.gameState.recentPlays[i]) {
+                    this.gameState.recentPlays[i].isLatest = false;
+                }
+            }
+
+            // 记录当前玩家打出的牌
+            this.gameState.recentPlays[playerIndex] = {
+                cards: cards,
+                isLatest: true
+            };
+
+            // 检查炸弹 / 火箭翻倍
+            const analysis = DouDizhuRules.analyzeCards(cards);
+            if (analysis.type === CardType.BOMB || analysis.type === CardType.ROCKET) {
+                this.gameState.multiplier *= 2;
+                SoundEngine.playBomb();
+                UIRenderer.showToast(analysis.type === CardType.ROCKET ? '🚀 王炸！倍数 x2' : '💣 炸弹！倍数 x2');
+            } else {
+                SoundEngine.playCardPlay();
+            }
+
+            // 检查胜利条件！
+            if (this.gameState.players[playerIndex].hand.length === 0) {
+                this.gameState.phase = 'GAMEOVER';
+                this.gameState.winnerIndex = playerIndex;
+                NetworkManager.broadcastState(this.gameState);
+                return;
+            }
+        }
+
+        // 轮到下一位
+        this.gameState.currentTurn = (playerIndex + 1) % 3;
+        this.startTurnTimer();
+    }
+
+    /**
+     * 启动/刷新真实 1 秒级实时倒计时 (Host节点主导)
+     */
+    startTurnTimer() {
+        if (!NetworkManager.isHost) return;
+
+        if (this.turnTimerInterval) {
+            clearInterval(this.turnTimerInterval);
+            this.turnTimerInterval = null;
+        }
+
+        this.gameState.timerSeconds = 30;
+        NetworkManager.broadcastState(this.gameState);
+
+        this.turnTimerInterval = setInterval(() => {
+            if (this.gameState.phase !== 'BIDDING' && this.gameState.phase !== 'PLAYING') {
+                clearInterval(this.turnTimerInterval);
+                this.turnTimerInterval = null;
+                return;
+            }
+
+            this.gameState.timerSeconds--;
+
+            if (this.gameState.timerSeconds <= 0) {
+                clearInterval(this.turnTimerInterval);
+                this.turnTimerInterval = null;
+                this.handleTurnTimeout();
+            }
+        }, 1000);
+    }
+
+    /**
+     * 倒计时超时自动处理逻辑 (根据斗地主标准规则)
+     */
+    handleTurnTimeout() {
+        if (!NetworkManager.isHost) return;
+        const turn = this.gameState.currentTurn;
+
+        if (this.gameState.phase === 'BIDDING') {
+            // 叫地主阶段超时：默认【不叫 / 不抢】
+            UIRenderer.showToast(`${this.gameState.players[turn].name} 思考超时，默认不叫`);
+            this.processBid(turn, 0);
+        } else if (this.gameState.phase === 'PLAYING') {
+            const isFreePlay = !this.gameState.lastPlay || !this.gameState.lastPlay.cards || this.gameState.lastPlay.cards.length === 0 || this.gameState.lastPlay.playerIndex === turn;
+
+            if (isFreePlay) {
+                // 出牌阶段 - 自由首出超时：默认打出手牌中【最小的单张】
+                const hand = this.gameState.players[turn].hand;
+                if (hand && hand.length > 0) {
+                    const smallestCard = hand[hand.length - 1]; // sortCards 降序，最后一张即最小
+                    UIRenderer.showToast(`${this.gameState.players[turn].name} 思考超时，自动出最小单牌`);
+                    this.processPlay(turn, [smallestCard]);
+                } else {
+                    this.processPlay(turn, []);
+                }
+            } else {
+                // 出牌阶段 - 跟牌压牌超时：默认【要不起 / 过 (PASS)】
+                UIRenderer.showToast(`${this.gameState.players[turn].name} 思考超时，默认选择过`);
+                this.processPlay(turn, []);
+            }
+        }
+    }
+
+    /**
+     * 手牌整理排序
+     */
+    sortSelfHand() {
+        const myIndex = NetworkManager.myPlayerIndex;
+        if (this.gameState.players[myIndex]) {
+            this.gameState.players[myIndex].hand = DouDizhuRules.sortCards(this.gameState.players[myIndex].hand);
+            UIRenderer.renderSelfHand(this.gameState.players[myIndex].hand);
+        }
+    }
+
+    /**
+     * 智能提示按钮点击
+     */
+    triggerSmartHint() {
+        const myIndex = NetworkManager.myPlayerIndex;
+        const myHand = this.gameState.players[myIndex].hand;
+        const lastPlay = (this.gameState.lastPlay && this.gameState.lastPlay.playerIndex !== myIndex) ? this.gameState.lastPlay : null;
+
+        const hintCards = DouDizhuRules.findSmartHint(myHand, lastPlay);
+        if (hintCards.length > 0) {
+            UIRenderer.setSelectedCards(hintCards);
+        } else {
+            UIRenderer.showToast('没有能压过上家的牌');
+        }
+    }
+
+    /**
+     * 主动点击出牌按钮
+     */
+    triggerPlayCard() {
+        const myIndex = NetworkManager.myPlayerIndex;
+        const selected = UIRenderer.getSelectedCards(this.gameState.players[myIndex].hand);
+        if (selected.length === 0) {
+            UIRenderer.showToast('请先选择要出的牌');
+            return;
+        }
+
+        this.handleSelfAction('PLAY', selected);
+    }
+
+    /**
+     * 检查当前回合是否为机器人，是则自动出牌
+     */
+    checkAiTurn() {
+        const turnIdx = this.gameState.currentTurn;
+        const currentPlayer = this.gameState.players[turnIdx];
+        if (!currentPlayer || !currentPlayer.isAi) return;
+
+        // 延迟 1.2 秒模拟思考
+        setTimeout(() => {
+            if (this.gameState.phase === 'BIDDING') {
+                // 机器人自动叫牌逻辑
+                const bid = Math.floor(Math.random() * 2) === 1 ? 3 : 0;
+                this.processBid(turnIdx, bid);
+            } else if (this.gameState.phase === 'PLAYING') {
+                // 机器人出牌逻辑
+                const lastPlay = (this.gameState.lastPlay && this.gameState.lastPlay.playerIndex !== turnIdx) ? this.gameState.lastPlay : null;
+                const hintCards = DouDizhuRules.findSmartHint(currentPlayer.hand, lastPlay);
+
+                this.processPlay(turnIdx, hintCards);
+            }
+        }, 1200);
+    }
+
+    /**
+     * 展示结算弹窗
+     */
+    showGameOverModal() {
+        const modal = document.getElementById('gameOverModal');
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+
+        const winner = this.gameState.players[this.gameState.winnerIndex];
+        const isLandlordWin = (winner.role === 'LANDLORD');
+
+        document.getElementById('gameOverTitle').innerHTML = isLandlordWin ? '<h2>👑 地主胜利！</h2>' : '<h2>🌾 农民胜利！</h2>';
+        document.getElementById('winnerIdentity').textContent = `获胜者: ${winner.name} (${isLandlordWin ? '地主' : '农民'})`;
+
+        const totalPoints = this.gameState.baseScore * this.gameState.multiplier;
+
+        this.gameState.players.forEach((p, idx) => {
+            document.getElementById(`scoreName${idx}`).textContent = p.name;
+            document.getElementById(`scoreRole${idx}`).textContent = p.role === 'LANDLORD' ? '地主' : '农民';
+            document.getElementById(`scoreRole${idx}`).className = `role-badge ${p.role === 'LANDLORD' ? 'landlord' : ''}`;
+            document.getElementById(`scoreCards${idx}`).textContent = `${p.hand.length} 张`;
+
+            let pts = 0;
+            if (isLandlordWin) {
+                pts = (p.role === 'LANDLORD') ? totalPoints * 2 : -totalPoints;
+            } else {
+                pts = (p.role === 'LANDLORD') ? -totalPoints * 2 : totalPoints;
+            }
+
+            const ptsEl = document.getElementById(`scorePoints${idx}`);
+            ptsEl.textContent = pts > 0 ? `+${pts}` : `${pts}`;
+            ptsEl.className = pts > 0 ? 'plus' : 'minus';
+        });
+
+        const myIndex = NetworkManager.myPlayerIndex;
+        const myRole = this.gameState.players[myIndex].role;
+        const iWon = (isLandlordWin && myRole === 'LANDLORD') || (!isLandlordWin && myRole === 'FARMER');
+
+        if (iWon) SoundEngine.playWin();
+    }
+}
+
+// 挂载引擎单例
+window.GameEngine = new GameEngineController();
+document.addEventListener('DOMContentLoaded', () => {
+    window.GameEngine.init();
+});

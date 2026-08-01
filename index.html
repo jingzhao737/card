@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>游鲸斗地主 - 随时在线打牌</title>
+    <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PeerJS for WebRTC P2P -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <!-- QRCode Generator for instant mobile joining -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="app" class="game-container">
+        <!-- 顶部导航栏 -->
+        <header class="top-nav">
+            <div class="brand">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>游鲸斗地主</span>
+            </div>
+            
+            <div class="room-info" id="roomInfoBar" style="display: none;">
+                <span class="room-label">房间号:</span>
+                <span class="room-code" id="displayRoomId">------</span>
+                <button class="btn-icon" id="btnCopyLink" title="复制邀请链接">
+                    <i class="fa-solid fa-share-nodes"></i> <span>邀请</span>
+                </button>
+            </div>
+
+            <div class="header-controls">
+                <button class="btn-icon" id="btnToggleSound" title="切换音效">
+                    <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                </button>
+                <button class="btn-icon danger" id="btnLeaveRoom" style="display: none;" title="离开房间">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 主大厅/大厅模式选择 (Lobby Modal) -->
+        <div id="lobbyScreen" class="overlay-screen active">
+            <div class="lobby-card hero-lobby-card">
+                <div class="lobby-header">
+                    <div class="brand-badge">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>游鲸斗地主</span>
+                    </div>
+                    <div class="hero-tags">
+                        <span class="badge-tag"><i class="fa-solid fa-bolt"></i> 3秒极速开局</span>
+                        <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> 网页点对点</span>
+                    </div>
+                </div>
+
+                <div id="quickJoinBanner" style="display:none; background:#27272a; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; margin-bottom:20px; font-size:0.85rem; color:#e4e4e7; text-align:left;">
+                    <i class="fa-solid fa-link" style="color:#ffffff;"></i> 检测到邀请链接，房间号：<strong id="quickJoinRoomDisplay" style="color:#ffffff; font-family:var(--font-num);"></strong><br>
+                    <span style="color:#a1a1aa; display:inline-block; margin-top:4px;">确认昵称后点击「加入房间」即可开启对局</span>
+                </div>
+
+                <div class="lobby-form">
+                    <!-- 玩家名片框 -->
+                    <div class="nickname-section">
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-user-astronaut input-icon"></i>
+                            <input type="text" id="nicknameInput" maxlength="10" placeholder="设置你的游戏昵称">
+                            <button class="btn-random-nick" id="btnRandomNickname" type="button" title="随机生成炫酷昵称">
+                                <i class="fa-solid fa-dice"></i> 换一个
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 模式选择区 -->
+                    <div class="mode-selection" id="fullModeSelection">
+                        <!-- 创建房间按钮 -->
+                        <button class="mode-card" id="btnCreateRoom">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>创建房间</span>
+                                    <span class="pill-badge">房主</span>
+                                </div>
+                                <div class="card-desc">生成 6 位专属房间号发给好友</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
+                        <!-- 输入房间号加入 -->
+                        <div class="mode-card card-join">
+                            <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入房间号加入</div>
+                            <div class="join-input-row">
+                                <input type="text" id="joinRoomInput" placeholder="输入 6 位房间号">
+                                <button class="btn-join-action" id="btnJoinRoom">加入房间 →</button>
+                            </div>
+                        </div>
+
+                        <div class="divider"><span>或</span></div>
+
+                        <!-- 单机 AI 模式 -->
+                        <button class="mode-card" id="btnPlayAi">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>单机练习</span>
+                                    <span class="pill-badge">AI</span>
+                                </div>
+                                <div class="card-desc">无需等待人齐，智能 AI 陪你切磋</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lobby-footer">
+                    <span><i class="fa-solid fa-shield-halved"></i> WebRTC 点对点加密直连</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 房间等待大厅 (Waiting Room) -->
+        <div id="waitingScreen" class="overlay-screen" style="display: none;">
+            <div class="lobby-card waiting-card">
+                <h2><i class="fa-solid fa-users"></i> 组局等待中 (<span id="connectedCount">1</span>/3)</h2>
+                <p class="share-hint">将下方链接或二维码发给微信/QQ好友，好友点击即刻加入！</p>
+
+                <div class="share-box">
+                    <input type="text" id="inviteUrlInput" readonly>
+                    <button class="btn-primary" id="btnCopyInviteUrl"><i class="fa-solid fa-copy"></i> 复制链接</button>
+                </div>
+
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                    <span>扫码在手机上直接玩</span>
+                </div>
+
+                <div class="slots-container">
+                    <div class="player-slot host" id="slot0">
+                        <div class="avatar"><i class="fa-solid fa-crown"></i></div>
+                        <div class="slot-name" id="slotName0">房主 (你)</div>
+                        <div class="slot-status ready">已就绪</div>
+                    </div>
+                    <div class="player-slot" id="slot1">
+                        <div class="avatar"><i class="fa-solid fa-user-gear"></i></div>
+                        <div class="slot-name" id="slotName1">等待好友 1...</div>
+                        <div class="slot-status">连接中</div>
+                    </div>
+                    <div class="player-slot" id="slot2">
+                        <div class="avatar"><i class="fa-solid fa-user-gear"></i></div>
+                        <div class="slot-name" id="slotName2">等待好友 2...</div>
+                        <div class="slot-status">连接中</div>
+                    </div>
+                </div>
+
+                <div class="waiting-actions">
+                    <button class="btn-mode primary" id="btnStartGame" style="display: none;">
+                        <i class="fa-solid fa-play"></i> 开始游戏
+                    </button>
+                    <button class="btn-mode primary" id="btnStartWithAi" style="display: none;">
+                        <i class="fa-solid fa-robot"></i> 补齐机器人并立即开局
+                    </button>
+                    <button class="btn-secondary" id="btnCancelWaiting">返回大厅</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏桌布/主战场 (Game Table) -->
+        <main id="gameTable" class="game-table" style="display: none;">
+            <!-- 顶部中区：底牌 & 提示 & 倍数 -->
+            <div class="table-top-center">
+                <!-- 三张底牌展示区 -->
+                <div class="bottom-cards-box">
+                    <div class="box-title">底牌</div>
+                    <div class="bottom-cards-cards" id="bottomCardsContainer">
+                        <div class="card poker-back"></div>
+                        <div class="card poker-back"></div>
+                        <div class="card poker-back"></div>
+                    </div>
+                </div>
+
+                <!-- 游戏倍数 & 状态标识 -->
+                <div class="game-stats-badge">
+                    <div class="stat-item">
+                        <span class="label">倍数</span>
+                        <span class="value" id="gameMultiplier">x1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">底分</span>
+                        <span class="value" id="baseScore">150</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 左侧玩家 (Player 2 - 顺时针上家/下家) -->
+            <div class="player-area left-player" id="playerAreaLeft">
+                <div class="player-profile">
+                    <div class="avatar-box" id="avatarLeft">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="player-name-row">
+                        <span class="role-identity-badge" id="roleBadgeLeft" style="display:none;">地主</span>
+                        <div class="player-name" id="nameLeft">玩家 2</div>
+                    </div>
+                    <div class="card-count-badge" id="cardCountLeft">
+                        <i class="fa-solid fa-cards"></i> <span class="count">17</span> 张
+                    </div>
+                </div>
+                <!-- 左家对话气泡/出牌状态 -->
+                <div class="speech-bubble" id="bubbleLeft" style="display: none;"></div>
+                <!-- 左家出牌展示区 -->
+                <div class="played-cards-area" id="playedLeft"></div>
+            </div>
+
+            <!-- 右侧玩家 (Player 3) -->
+            <div class="player-area right-player" id="playerAreaRight">
+                <div class="player-profile">
+                    <div class="avatar-box" id="avatarRight">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="player-name-row">
+                        <span class="role-identity-badge" id="roleBadgeRight" style="display:none;">农民</span>
+                        <div class="player-name" id="nameRight">玩家 3</div>
+                    </div>
+                    <div class="card-count-badge" id="cardCountRight">
+                        <i class="fa-solid fa-cards"></i> <span class="count">17</span> 张
+                    </div>
+                </div>
+                <!-- 右家对话气泡/出牌状态 -->
+                <div class="speech-bubble" id="bubbleRight" style="display: none;"></div>
+                <!-- 右家出牌展示区 -->
+                <div class="played-cards-area" id="playedRight"></div>
+            </div>
+
+            <!-- 牌桌中央：自己出牌展示区 & 倒计时 & 开局3秒抢地主进度条 -->
+            <div class="table-center-area">
+                <!-- 开局3秒倒计时与动态进度条 (人齐加载完毕后展示) -->
+                <div class="start-countdown-overlay" id="startCountdownOverlay" style="display: none;">
+                    <div class="start-countdown-box">
+                        <div class="start-title">全员就位，准备手速抢地主</div>
+                        <div class="start-number" id="startCountdownNum">3</div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="startProgressBarFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timer-badge" id="turnTimer" style="display: none;">
+                    <i class="fa-solid fa-stopwatch"></i> <span id="timerSeconds">30</span>s
+                </div>
+                <div class="played-cards-area self-played" id="playedSelf"></div>
+                <div class="speech-bubble self-bubble" id="bubbleSelf" style="display: none;"></div>
+            </div>
+
+            <!-- 底部玩家 (Self / Player 1) -->
+            <div class="player-area self-player">
+                <!-- 自己 ID 头像小条 (置顶上移) -->
+                <div class="self-profile-mini">
+                    <div class="avatar-box self-avatar" id="avatarSelf">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span class="role-identity-badge" id="roleBadgeSelf" style="display:none;">地主</span>
+                    <span class="self-name" id="nameSelf">我</span>
+                    <button class="btn-sort" id="btnSortCards" title="整理手牌"><i class="fa-solid fa-arrow-down-short-wide"></i> 理牌</button>
+                </div>
+
+                <!-- 交互控制面板 (叫地主/出牌按钮组) -->
+                <div class="controls-bar" id="controlsBar" style="display: none;">
+                    <!-- 抢手速叫地主阶段按钮 -->
+                    <div id="biddingControls" class="btn-group" style="display: none;">
+                        <button class="btn-action danger" id="btnBidPass">不叫</button>
+                        <button class="btn-action primary" id="btnBidLandlord">叫地主</button>
+                    </div>
+
+                    <!-- 备用按钮组 -->
+                    <div id="reBidControls" class="btn-group" style="display: none;">
+                        <button class="btn-action danger" id="btnReBidPass">不叫</button>
+                        <button class="btn-action primary" id="btnReBid1">抢地主</button>
+                    </div>
+
+                    <!-- 出牌阶段按钮 -->
+                    <div id="playControls" class="btn-group" style="display: none;">
+                        <button class="btn-action danger" id="btnPass">不出 (过)</button>
+                        <button class="btn-action secondary" id="btnHint">提示</button>
+                        <button class="btn-action primary" id="btnPlayCard">出牌</button>
+                    </div>
+                </div>
+
+                <!-- 自己手牌区域 -->
+                <div class="self-cards-wrapper">
+                    <div class="hand-cards-container" id="selfHandCards">
+                        <!-- 手牌动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 结算弹窗 (Game Over Modal) -->
+        <div id="gameOverModal" class="overlay-screen" style="display: none;">
+            <div class="lobby-card gameover-card">
+                <div class="gameover-header" id="gameOverTitle">
+                    <h2>🎉 胜利！</h2>
+                </div>
+                <div class="gameover-body">
+                    <div class="winner-identity" id="winnerIdentity">地主获得胜利</div>
+                    <div class="score-table">
+                        <div class="score-row header">
+                            <span>玩家</span>
+                            <span>身份</span>
+                            <span>剩牌</span>
+                            <span>得分</span>
+                        </div>
+                        <div class="score-row" id="scoreRow0">
+                            <span id="scoreName0">你</span>
+                            <span id="scoreRole0" class="role-badge">农民</span>
+                            <span id="scoreCards0">0 张</span>
+                            <span id="scorePoints0" class="plus">+300</span>
+                        </div>
+                        <div class="score-row" id="scoreRow1">
+                            <span id="scoreName1">玩家2</span>
+                            <span id="scoreRole1" class="role-badge">农民</span>
+                            <span id="scoreCards1">5 张</span>
+                            <span id="scorePoints1" class="plus">+300</span>
+                        </div>
+                        <div class="score-row" id="scoreRow2">
+                            <span id="scoreName2">玩家3</span>
+                            <span id="scoreRole2" class="role-badge landlord">地主</span>
+                            <span id="scoreCards2">12 张</span>
+                            <span id="scorePoints2" class="minus">-600</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gameover-footer">
+                    <button class="btn-mode primary" id="btnPlayAgain"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>
+                    <button class="btn-secondary" id="btnBackToLobby">返回大厅</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 浮动通知消息 Toast -->
+        <div id="toast" class="toast-message" style="display: none;">提示文本</div>
+    </div>
+
+    <!-- 游戏脚本载入 -->
+    <script src="js/rules.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/p2p.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
