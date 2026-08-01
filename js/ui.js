@@ -427,6 +427,33 @@ const UIRenderer = {
         container.innerHTML = '';
         if (!cards || cards.length === 0) return;
 
+        // 根据出牌方位与张数，动态计算张数过多（如长顺子）时的紧凑叠牌 margin-right，防止撑大画面结构
+        const isMobile = window.innerWidth <= 768;
+        const count = cards.length;
+
+        let cardW = 86;
+        let defaultStep = 54; // 86 - 32
+        let maxContainerW = isMobile ? 220 : 400;
+
+        if (targetAreaId === 'playedSelf') {
+            cardW = isMobile ? 40 : 86;
+            defaultStep = isMobile ? 22 : 54;
+            maxContainerW = isMobile ? 210 : 380;
+        } else {
+            cardW = isMobile ? 34 : 48;
+            defaultStep = isMobile ? 18 : 24;
+            maxContainerW = isMobile ? 120 : 200;
+        }
+
+        let actualStep = defaultStep;
+        if (count > 1) {
+            const needW = cardW + (count - 1) * defaultStep;
+            if (needW > maxContainerW) {
+                actualStep = Math.max(isMobile ? 10 : 16, Math.floor((maxContainerW - cardW) / (count - 1)));
+            }
+        }
+        const calculatedMarginRight = `-${cardW - actualStep}px`;
+
         // 根据出牌方位判定飞牌轨道方向
         let animClass = '';
         if (targetAreaId === 'playedSelf') animClass = 'anim-fly-self';
@@ -435,6 +462,12 @@ const UIRenderer = {
 
         cards.forEach((card, idx) => {
             const el = this.createCardElement(card, false);
+            if (idx < count - 1) {
+                el.style.marginRight = calculatedMarginRight;
+            } else {
+                el.style.marginRight = '0px';
+            }
+
             if (isLatest && animClass) {
                 el.style.animationDelay = `${idx * 0.02}s`;
                 el.classList.add(animClass);

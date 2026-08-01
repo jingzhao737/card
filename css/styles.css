@@ -1529,10 +1529,11 @@ body, html {
 /* 我自己打出的牌：保持标准清晰尺寸，下移贴近我方区域 */
 #playedSelf {
     transform: translateY(18px);
+    max-width: 90%;
 }
 
 #playedSelf .card {
-    margin-right: -32px !important;
+    margin-right: -32px;
 }
 
 #playedSelf .card:last-child {
@@ -1545,7 +1546,7 @@ body, html {
     height: 66px !important;
     border-radius: 3px !important;
     padding: 3px 5px !important;
-    margin-right: -24px !important;
+    margin-right: -24px;
     border: 1px solid rgba(0, 0, 0, 0.22) !important;
 }
 
@@ -2705,7 +2706,7 @@ body, html {
         width: 34px !important;
         height: 48px !important;
         padding: 2px 3px !important;
-        margin-right: -16px !important;
+        margin-right: -16px;
     }
 
     #playedLeft .card .card-value, #playedRight .card .card-value {
@@ -2762,7 +2763,7 @@ body, html {
         width: 40px !important;
         height: 56px !important;
         padding: 2px 2px !important;
-        margin-right: -18px !important;
+        margin-right: -18px;
     }
 
     #playedSelf .card:last-child {
