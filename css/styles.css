@@ -580,7 +580,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 18px;
+    margin-top: 32px;
 }
 
 .bottom-cards-box {
@@ -1478,7 +1478,7 @@ body, html {
     }
 
     .table-top-center {
-        margin-top: 20px;
+        margin-top: 40px;
         justify-content: center;
         align-items: center;
         width: 100%;

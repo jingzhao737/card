@@ -565,6 +565,7 @@ class GameEngineController {
 
         // 1. 顶部底牌与倍数
         const isBottomRevealed = this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER';
+        UIRenderer.renderBottomCards(this.gameState.bottomCards, isBottomRevealed);
         const multEl = document.getElementById('gameMultiplier');
         if (multEl) multEl.textContent = `x${this.gameState.multiplier}`;
 
