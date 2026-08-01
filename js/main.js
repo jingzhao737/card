@@ -616,9 +616,19 @@ class GameEngineController {
         updateRoleBadge('roleBadgeLeft', rel.left);
         updateRoleBadge('roleBadgeRight', rel.right);
 
-        // 4. 渲染自己手牌
+        // 4. 渲染自己手牌并控制【理牌】按钮显隐 (单次对局理牌后自动隐藏，开局乱序时显示)
         const myHand = this.gameState.players[myIndex].hand || [];
         UIRenderer.renderSelfHand(myHand);
+
+        const btnSort = document.getElementById('btnSortCards');
+        if (btnSort) {
+            const isHandSorted = myHand.length > 0 && myHand.every((c, i) => i === 0 || c.rank <= myHand[i - 1].rank);
+            if (isHandSorted || this.gameState.phase === 'GAMEOVER') {
+                btnSort.style.display = 'none';
+            } else {
+                btnSort.style.display = 'inline-flex';
+            }
+        }
 
         // 5. 渲染桌面打出的牌 / 结算明牌展示
         if (this.gameState.phase === 'GAMEOVER') {
@@ -1030,6 +1040,8 @@ class GameEngineController {
             this.gameState.players[myIndex].hand = DouDizhuRules.sortCards(this.gameState.players[myIndex].hand);
             UIRenderer.renderSelfHand(this.gameState.players[myIndex].hand);
             SoundEngine.playCardSort();
+            const btnSort = document.getElementById('btnSortCards');
+            if (btnSort) btnSort.style.display = 'none';
         }
     }
 
