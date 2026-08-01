@@ -1402,10 +1402,10 @@ body, html {
 
 @media (max-width: 768px) {
     :root {
-        /* 手机端更加精细比例的扑克牌尺寸 */
-        --card-w: 52px;
-        --card-h: 76px;
-        --card-overlap: -34px;
+        /* 手机端更加精细缩小的扑克牌尺寸 (44px x 64px) */
+        --card-w: 44px;
+        --card-h: 64px;
+        --card-overlap: -28px;
     }
     
     html, body {
@@ -1617,24 +1617,24 @@ body, html {
     }
 
     .card .card-value {
-        font-size: 0.92rem;
+        font-size: 0.82rem;
         font-weight: 900;
     }
 
     .card .card-suit {
-        font-size: 0.7rem;
+        font-size: 0.62rem;
     }
 
     .card .card-center-symbol {
-        font-size: 1.35rem;
+        font-size: 1.15rem;
     }
 
-    /* 手机端自己打出的牌：稍微缩小显示，显得精致精致不抢占中心空间 */
+    /* 手机端自己打出的牌：更精致微型显示 (36px x 52px)，极度省空间 */
     #playedSelf .card {
-        width: 44px !important;
-        height: 64px !important;
-        padding: 2px 3px !important;
-        margin-right: -20px !important;
+        width: 36px !important;
+        height: 52px !important;
+        padding: 2px 2px !important;
+        margin-right: -18px !important;
     }
 
     #playedSelf .card:last-child {
@@ -1642,15 +1642,15 @@ body, html {
     }
 
     #playedSelf .card .card-value {
-        font-size: 0.85rem !important;
+        font-size: 0.78rem !important;
     }
 
     #playedSelf .card .card-suit {
-        font-size: 0.65rem !important;
+        font-size: 0.58rem !important;
     }
 
     #playedSelf .card .card-center-symbol {
-        font-size: 1.1rem !important;
+        font-size: 0.92rem !important;
     }
 
     /* 手机端控制按钮组悬浮置顶于手牌上方，拉开距离不压牌 */

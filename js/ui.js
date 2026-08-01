@@ -298,7 +298,7 @@ const UIRenderer = {
         if (count === 0) return;
 
         const isMobile = window.innerWidth <= 768;
-        const cardWidth = isMobile ? 52 : 86;
+        const cardWidth = isMobile ? 44 : 86;
 
         // 1. 按点数分组收集列 (Rank Columns)
         const rankGroups = [];
@@ -316,11 +316,11 @@ const UIRenderer = {
         const groupCount = rankGroups.length;
         const containerWidth = Math.min(window.innerWidth - 12, container.clientWidth || (isMobile ? window.innerWidth - 16 : 800));
         
-        let columnOverlap = isMobile ? -28 : -50;
+        let columnOverlap = isMobile ? -22 : -50;
         if (groupCount > 1) {
             const calcOverlap = -Math.floor((cardWidth * groupCount - containerWidth) / (groupCount - 1));
             if (calcOverlap < columnOverlap) {
-                columnOverlap = Math.max(calcOverlap, isMobile ? -36 : -68);
+                columnOverlap = Math.max(calcOverlap, isMobile ? -30 : -68);
             }
         }
 
@@ -332,8 +332,8 @@ const UIRenderer = {
             groupCards.forEach((card, stackIdx) => {
                 const el = this.createCardElement(card, true);
 
-                // 向上出头偏移量 (同点数垂直向上露头堆叠：移动端 -30px, 桌面 -38px 确保选下方牌时绝不压盖上方牌)
-                const stackOffsetY = stackIdx * (isMobile ? -30 : -38);
+                // 向上出头偏移量 (同点数垂直向上露头堆叠：移动端 -24px, 桌面 -38px 确保选下方牌时绝不压盖上方牌)
+                const stackOffsetY = stackIdx * (isMobile ? -24 : -38);
                 el.style.setProperty('--stack-y', `${stackOffsetY}px`);
                 
                 // Z轴层级：第1张在最下在前 (z-index 30)，后面张在后 (依次递减 z-index) 向上出头
