@@ -1382,31 +1382,33 @@ body, html {
 .speech-bubble {
     background: rgba(17, 17, 19, 0.96);
     color: #ffffff;
-    font-weight: 800;
-    padding: 4px 10px;
+    font-weight: 700;
+    padding: 6px 10px;
     border-radius: 4px;
-    font-size: 0.76rem;
+    font-size: 0.74rem;
+    line-height: 1.4;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
     position: absolute;
     z-index: 60;
     border: 1px solid var(--accent-gold);
-    white-space: nowrap;
-    max-width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;       /* 允许换行 */
+    word-break: break-all;
+    max-width: 160px;          /* 足够宽显示长句 */
     animation: popIn 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .left-player .speech-bubble {
-    top: -30px;
+    bottom: calc(100% + 6px); /* 占完整高度后向上顶 */
+    top: auto;
     left: 0;
-    max-width: 140px;
+    max-width: 160px;
 }
 
 .right-player .speech-bubble {
-    top: -30px;
+    bottom: calc(100% + 6px);
+    top: auto;
     right: 0;
-    max-width: 140px;
+    max-width: 160px;
 }
 
 .self-bubble {
