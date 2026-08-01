@@ -757,8 +757,14 @@ class GameEngineController {
 
         // 5. 渲染桌面打出的牌 / 结算明牌展示
         if (this.gameState.phase === 'GAMEOVER') {
-            const bBox = document.getElementById('bottomCardsBox');
-            if (bBox) bBox.style.display = 'none';
+            const bWrap = document.getElementById('bottomCardsWrapper');
+            if (bWrap) bWrap.style.display = 'none';
+
+            if (this.turnTimerInterval) {
+                clearInterval(this.turnTimerInterval);
+                this.turnTimerInterval = null;
+            }
+
             const victoryBox = document.getElementById('victoryBannerBox');
             if (victoryBox) {
                 victoryBox.style.display = 'flex';
@@ -789,8 +795,8 @@ class GameEngineController {
             UIRenderer.renderOpenHand('playedLeft', this.gameState.players[rel.left].hand || []);
             UIRenderer.renderOpenHand('playedRight', this.gameState.players[rel.right].hand || []);
         } else {
-            const bBox = document.getElementById('bottomCardsBox');
-            if (bBox) bBox.style.display = 'flex';
+            const bWrap = document.getElementById('bottomCardsWrapper');
+            if (bWrap) bWrap.style.display = 'flex';
             const vBox = document.getElementById('victoryBannerBox');
             if (vBox) vBox.style.display = 'none';
 
@@ -824,8 +830,13 @@ class GameEngineController {
         // 7. 交互控制按钮面板
         this.updateControlButtons(myIndex);
 
-        // 7. 倒计时指示
-        UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
+        // 7. 倒计时指示 (对局结束时隐藏倒计时)
+        if (this.gameState.phase === 'GAMEOVER') {
+            UIRenderer.updateTurnIndicator(-1, myIndex);
+        } else {
+            UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
+        }
+
 
         // 8. 处理 AI 或当前回合的自动触发 (如果是房主)
         if (NetworkManager.isHost && this.gameState.phase !== 'GAMEOVER') {

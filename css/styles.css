@@ -1160,7 +1160,9 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 32px;
+    margin-top: 24px;
+    position: relative;
+    z-index: 100;
 }
 
 .bottom-cards-box {
@@ -2067,46 +2069,59 @@ body, html {
     justify-content: center;
     align-items: center;
     width: 100%;
+    position: relative;
+    z-index: 120;
+    pointer-events: auto;
 }
 
 .victory-content-wrap {
-    background: linear-gradient(180deg, #1a0e06 0%, #100806 100%);
-    border: 1px solid rgba(201,146,42,0.6);
-    border-radius: 3px;
-    padding: 8px 20px;
+    background: linear-gradient(180deg, #241207 0%, #120804 100%);
+    border: 1px solid rgba(255, 215, 0, 0.65);
+    border-radius: 6px;
+    padding: 10px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.7), 0 0 20px rgba(201,146,42,0.1);
+    gap: 4px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.85), 0 0 25px rgba(255,215,0,0.18);
     animation: popIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+    z-index: 121;
+    pointer-events: auto;
 }
 
 .victory-main-title {
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-weight: 900;
     color: #ffd700;
     letter-spacing: 2px;
-    text-shadow: 0 0 12px rgba(255,215,0,0.4);
+    text-shadow: 0 0 14px rgba(255,215,0,0.5);
+    font-family: 'Noto Serif SC', serif;
 }
 
 .victory-sub-desc {
-    font-size: 0.72rem;
-    color: #c9a255;
-    margin-bottom: 2px;
-    letter-spacing: 0.3px;
+    font-size: 0.78rem;
+    color: #f5d98a;
+    letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .btn-restart-round {
-    padding: 4px 12px !important;
-    font-size: 0.75rem !important;
-    margin-top: 2px;
+    padding: 6px 18px !important;
+    font-size: 0.82rem !important;
+    margin-top: 4px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 122 !important;
 }
 
 .waiting-host-tag {
-    font-size: 0.65rem;
-    color: var(--text-muted);
+    font-size: 0.72rem;
+    color: #a07840;
+    margin-top: 4px;
 }
+
 
 /* 游戏结束明牌公开展示样式 (手牌多时自动折到第 2 排、第 3 排) */
 .open-hand-container {
@@ -2486,10 +2501,12 @@ body, html {
     }
 
     .table-top-center {
-        margin-top: 40px;
+        margin-top: 8px;
         justify-content: center;
         align-items: center;
         width: 100%;
+        position: relative;
+        z-index: 100;
     }
 
     .timer-badge {
