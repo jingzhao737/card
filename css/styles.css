@@ -1526,7 +1526,11 @@ body, html {
     z-index: 15;
 }
 
-/* 我自己打出的牌：保持标准清晰尺寸，不缩小 */
+/* 我自己打出的牌：保持标准清晰尺寸，下移贴近我方区域 */
+#playedSelf {
+    transform: translateY(18px);
+}
+
 #playedSelf .card {
     margin-right: -32px !important;
 }
@@ -2572,11 +2576,11 @@ body, html {
 
     .table-center-area {
         justify-content: flex-end;
-        padding-bottom: 48px;
+        padding-bottom: 20px;
     }
 
     #playedSelf {
-        transform: translateY(-16px);
+        transform: translateY(4px);
     }
 
     .table-top-center {
