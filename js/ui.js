@@ -421,6 +421,30 @@ const UIRenderer = {
     },
 
     /**
+     * 游戏结束：明牌显示所有玩家剩余手牌 (自动换行排列，第一排满 5/6 张自动折到第二排、第三排)
+     */
+    renderOpenHand(targetAreaId, cards) {
+        const container = document.getElementById(targetAreaId);
+        if (!container) return;
+
+        container.classList.remove('latest-play-container');
+        container.classList.add('open-hand-container');
+        container._renderedCardIdsStr = null;
+        container.innerHTML = '';
+
+        if (!cards || cards.length === 0) {
+            container.innerHTML = '<span class="empty-hand-tag">🎉 牌已出完</span>';
+            return;
+        }
+
+        cards.forEach((card) => {
+            const el = this.createCardElement(card, false);
+            el.classList.add('open-hand-card');
+            container.appendChild(el);
+        });
+    },
+
+    /**
      * 显示对话气泡 (叫分/过/文字状态)
      */
     showBubble(bubbleId, text, duration = 3000) {

@@ -176,6 +176,16 @@ class GameEngineController {
             this.fillAiAndStart();
         });
 
+        // 绑定胜负横幅【再来一局】全局事件
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('#btnRestartGame');
+            if (btn) {
+                if (NetworkManager.isHost) {
+                    this.fillAiAndStart();
+                }
+            }
+        });
+
         // 房主手动点击开始游戏（自动补齐空位为 AI）
         document.getElementById('btnStartGame').addEventListener('click', () => {
             this.fillAiAndStart();
@@ -602,15 +612,54 @@ class GameEngineController {
         const myHand = this.gameState.players[myIndex].hand || [];
         UIRenderer.renderSelfHand(myHand);
 
-        // 5. 渲染桌面打出的牌 (保留一轮内所有人出的牌，最最新出的牌金光高亮)
-        const recent = this.gameState.recentPlays || {};
-        const selfPlay = recent[rel.self];
-        const leftPlay = recent[rel.left];
-        const rightPlay = recent[rel.right];
+        // 5. 渲染桌面打出的牌 / 结算明牌展示
+        if (this.gameState.phase === 'GAMEOVER') {
+            const bBox = document.getElementById('bottomCardsBox');
+            if (bBox) bBox.style.display = 'none';
+            const victoryBox = document.getElementById('victoryBannerBox');
+            if (victoryBox) {
+                victoryBox.style.display = 'flex';
+                const winner = this.gameState.players[this.gameState.winnerIndex];
+                const isLandlordWin = (winner && winner.role === 'LANDLORD');
 
-        UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
-        UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
-        UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
+                let titleText = isLandlordWin ? '👑 地主胜利！' : '🌾 农民胜利！';
+                let winnerDesc = '';
+                if (isLandlordWin) {
+                    winnerDesc = `地主【${winner.name}】独占鳌头`;
+                } else {
+                    const farmers = this.gameState.players.filter(p => p.role === 'FARMER').map(p => p.name).join(' & ');
+                    winnerDesc = `农民【${farmers}】联手获胜`;
+                }
+
+                const isHost = NetworkManager.isHost;
+                victoryBox.innerHTML = `
+                    <div class="victory-content-wrap">
+                        <div class="victory-main-title">${titleText}</div>
+                        <div class="victory-sub-desc">${winnerDesc}</div>
+                        ${isHost ? '<button class="btn-action primary btn-restart-round" id="btnRestartGame"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>' : '<span class="waiting-host-tag">等待房主重新开局...</span>'}
+                    </div>
+                `;
+            }
+
+            // 结算时明牌公开展示全场剩余手牌 (自动折到第二排、第三排)
+            UIRenderer.renderOpenHand('playedSelf', this.gameState.players[rel.self].hand || []);
+            UIRenderer.renderOpenHand('playedLeft', this.gameState.players[rel.left].hand || []);
+            UIRenderer.renderOpenHand('playedRight', this.gameState.players[rel.right].hand || []);
+        } else {
+            const bBox = document.getElementById('bottomCardsBox');
+            if (bBox) bBox.style.display = 'flex';
+            const vBox = document.getElementById('victoryBannerBox');
+            if (vBox) vBox.style.display = 'none';
+
+            const recent = this.gameState.recentPlays || {};
+            const selfPlay = recent[rel.self];
+            const leftPlay = recent[rel.left];
+            const rightPlay = recent[rel.right];
+
+            UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
+            UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
+            UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
+        }
 
         // 6. 思考出牌/叫地主文本提示与头像高亮
         const currentTurnIdx = this.gameState.currentTurn;
@@ -1033,35 +1082,12 @@ class GameEngineController {
      * 展示结算弹窗
      */
     showGameOverModal() {
+        // 去除重型弹窗遮罩，直接在主桌面上进行优雅总结
         const modal = document.getElementById('gameOverModal');
-        modal.style.display = 'flex';
-        modal.classList.add('active');
+        if (modal) modal.style.display = 'none';
 
         const winner = this.gameState.players[this.gameState.winnerIndex];
-        const isLandlordWin = (winner.role === 'LANDLORD');
-
-        document.getElementById('gameOverTitle').innerHTML = isLandlordWin ? '<h2>👑 地主胜利！</h2>' : '<h2>🌾 农民胜利！</h2>';
-        document.getElementById('winnerIdentity').textContent = `获胜者: ${winner.name} (${isLandlordWin ? '地主' : '农民'})`;
-
-        const totalPoints = this.gameState.baseScore * this.gameState.multiplier;
-
-        this.gameState.players.forEach((p, idx) => {
-            document.getElementById(`scoreName${idx}`).textContent = p.name;
-            document.getElementById(`scoreRole${idx}`).textContent = p.role === 'LANDLORD' ? '地主' : '农民';
-            document.getElementById(`scoreRole${idx}`).className = `role-badge ${p.role === 'LANDLORD' ? 'landlord' : ''}`;
-            document.getElementById(`scoreCards${idx}`).textContent = `${p.hand.length} 张`;
-
-            let pts = 0;
-            if (isLandlordWin) {
-                pts = (p.role === 'LANDLORD') ? totalPoints * 2 : -totalPoints;
-            } else {
-                pts = (p.role === 'LANDLORD') ? -totalPoints * 2 : totalPoints;
-            }
-
-            const ptsEl = document.getElementById(`scorePoints${idx}`);
-            ptsEl.textContent = pts > 0 ? `+${pts}` : `${pts}`;
-            ptsEl.className = pts > 0 ? 'plus' : 'minus';
-        });
+        const isLandlordWin = (winner && winner.role === 'LANDLORD');
 
         const myIndex = NetworkManager.myPlayerIndex;
         const myRole = this.gameState.players[myIndex].role;

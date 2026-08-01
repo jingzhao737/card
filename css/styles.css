@@ -1397,6 +1397,97 @@ body, html {
     pointer-events: none;
 }
 
+/* 胜负顶中结算横幅样式 (取代重型弹窗) */
+.victory-banner-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.victory-content-wrap {
+    background: #111113;
+    border: 1px solid var(--accent-gold);
+    border-radius: 6px;
+    padding: 6px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    animation: popIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.victory-main-title {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: var(--accent-gold);
+    letter-spacing: 1px;
+}
+
+.victory-sub-desc {
+    font-size: 0.72rem;
+    color: #e4e4e7;
+    margin-bottom: 2px;
+}
+
+.btn-restart-round {
+    padding: 4px 12px !important;
+    font-size: 0.75rem !important;
+    margin-top: 2px;
+}
+
+.waiting-host-tag {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* 游戏结束明牌公开展示样式 (手牌多时自动折到第 2 排、第 3 排) */
+.open-hand-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    max-width: 165px !important;
+    gap: 3px !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    background: rgba(10, 15, 25, 0.8) !important;
+    border: 1px solid rgba(255, 215, 0, 0.4) !important;
+    padding: 4px 5px !important;
+    border-radius: 4px !important;
+    z-index: 25 !important;
+    box-sizing: border-box !important;
+}
+
+.open-hand-card {
+    width: 28px !important;
+    height: 40px !important;
+    padding: 1px 2px !important;
+    margin-right: 0 !important;
+    margin-bottom: 2px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 2px !important;
+}
+
+.open-hand-card .card-value {
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+}
+
+.open-hand-card .card-suit {
+    font-size: 0.5rem !important;
+}
+
+.open-hand-card .card-center-symbol {
+    font-size: 0.75rem !important;
+}
+
+.empty-hand-tag {
+    font-size: 0.7rem;
+    color: #f59e0b;
+    font-weight: 700;
+    padding: 2px 4px;
+}
+
 /* ==========================================================================
    📱 移动端/手机界面重磅专项优化 (Mobile Viewport Optimization)
    ========================================================================== */

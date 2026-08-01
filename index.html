@@ -174,10 +174,10 @@
 
         <!-- 游戏桌布/主战场 (Game Table) -->
         <main id="gameTable" class="game-table" style="display: none;">
-            <!-- 顶部中区：底牌区域 -->
+            <!-- 顶部中区：底牌区域 & 胜负总结横幅 -->
             <div class="table-top-center">
                 <!-- 三张底牌展示区 -->
-                <div class="bottom-cards-box">
+                <div class="bottom-cards-box" id="bottomCardsBox">
                     <div class="box-title">底牌</div>
                     <div class="bottom-cards-cards" id="bottomCardsContainer">
                         <div class="card poker-back"></div>
@@ -185,6 +185,9 @@
                         <div class="card poker-back"></div>
                     </div>
                 </div>
+
+                <!-- 游戏结束胜负总结横幅 (取代弹窗) -->
+                <div class="victory-banner-box" id="victoryBannerBox" style="display: none;"></div>
             </div>
 
             <!-- 左侧玩家 (Player 2 - 顺时针上家/下家) -->
