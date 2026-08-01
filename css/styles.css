@@ -1507,12 +1507,16 @@ body, html {
     }
 
     .game-stats-badge {
-        padding: 3px 6px;
-        gap: 6px;
+        padding: 2px 5px;
+        gap: 5px;
+    }
+
+    .stat-item .label {
+        font-size: 0.55rem;
     }
 
     .stat-item .value {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
     }
 
     /* 5. 左右玩家头像框：精简缩小并向上移，给中央对局留足视野 */
@@ -1541,14 +1545,19 @@ body, html {
         font-size: 0.72rem;
     }
 
+    .role-identity-badge {
+        font-size: 0.58rem;
+        padding: 1px 4px;
+    }
+
     .player-name {
-        font-size: 0.68rem;
+        font-size: 0.6rem;
         width: 100%;
     }
 
     .card-count-badge {
-        font-size: 0.6rem;
-        padding: 1px 4px;
+        font-size: 0.54rem;
+        padding: 1px 3px;
     }
 
     #playedLeft {
@@ -1652,19 +1661,24 @@ body, html {
     }
 
     .self-profile-mini {
-        gap: 6px;
-        margin-bottom: 12px;
+        gap: 5px;
+        margin-bottom: 10px;
+        padding: 4px 10px;
     }
 
     .self-profile-mini .avatar-box {
-        width: 26px;
-        height: 26px;
-        font-size: 0.75rem;
+        width: 22px;
+        height: 22px;
+        font-size: 0.65rem;
+    }
+
+    .self-name {
+        font-size: 0.68rem;
     }
 
     .btn-sort {
-        padding: 2px 6px;
-        font-size: 0.7rem;
+        padding: 1px 5px;
+        font-size: 0.65rem;
     }
 
     .hand-cards-container {
