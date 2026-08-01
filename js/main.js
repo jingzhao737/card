@@ -309,9 +309,35 @@ class GameEngineController {
         this.gameState.players[0].name = NetworkManager.nickname;
         this.gameState.players[0].isAi = false;
         document.getElementById('slotName0').textContent = `${NetworkManager.nickname} (房主)`;
-        document.getElementById('btnStartWithAi').style.display = 'block';
+
+        // 立即展示空位为 AI 机器人（真人加入时再替换）
+        this._fillSlotWithAi(1);
+        this._fillSlotWithAi(2);
+
+        // 房主始终可以直接开始（空位已预填 AI）
+        document.getElementById('btnStartGame').style.display = 'block';
+        document.getElementById('btnStartWithAi').style.display = 'none';
 
         this.broadcastLobbyState();
+    }
+
+    /**
+     * 将指定 slot 标记为 AI 机器人，并更新 UI
+     */
+    _fillSlotWithAi(slotIndex) {
+        const aiName = `机器人 AI_${slotIndex}`;
+        this.gameState.players[slotIndex].name = aiName;
+        this.gameState.players[slotIndex].isAi = true;
+
+        const nameEl = document.getElementById(`slotName${slotIndex}`);
+        const slotEl = document.getElementById(`slot${slotIndex}`);
+        if (nameEl) nameEl.textContent = `🤖 ${aiName}`;
+        if (slotEl) {
+            const statusEl = slotEl.querySelector('.slot-status');
+            const avatarEl = slotEl.querySelector('.avatar i');
+            if (statusEl) { statusEl.textContent = 'AI 候补'; statusEl.classList.add('ready'); }
+            if (avatarEl) { avatarEl.className = 'fa-solid fa-robot'; }
+        }
     }
 
     /**
@@ -340,7 +366,7 @@ class GameEngineController {
     }
 
     /**
-     * 当有新玩家加入 (Host处理)
+     * 当有新玩家加入 (Host处理) — 替换最早的一个 AI 占位符
      */
     onPlayerJoined(slotIndex, nickname) {
         if (!NetworkManager.isHost) return;
@@ -349,23 +375,23 @@ class GameEngineController {
         this.gameState.players[slotIndex].name = name;
         this.gameState.players[slotIndex].isAi = false;
 
-        document.getElementById(`slotName${slotIndex}`).textContent = name;
-        document.getElementById(`slot${slotIndex}`).querySelector('.slot-status').textContent = '已就绪';
-        document.getElementById(`slot${slotIndex}`).querySelector('.slot-status').classList.add('ready');
-
-        const readyCount = this.gameState.players.filter(p => !p.isAi && p.name).length;
-        document.getElementById('connectedCount').textContent = readyCount;
-
-        // 有人加入就显示【开始游戏】按钮，房主随时可以开局（空位自动补 AI）
-        if (readyCount >= 2) {
-            document.getElementById('btnStartGame').style.display = 'block';
+        const nameEl = document.getElementById(`slotName${slotIndex}`);
+        const slotEl = document.getElementById(`slot${slotIndex}`);
+        if (nameEl) nameEl.textContent = name;
+        if (slotEl) {
+            const statusEl = slotEl.querySelector('.slot-status');
+            const avatarEl = slotEl.querySelector('.avatar i');
+            if (statusEl) { statusEl.textContent = '已就绪'; statusEl.classList.add('ready'); }
+            if (avatarEl) { avatarEl.className = 'fa-solid fa-user'; }
         }
-        if (readyCount === 3) {
-            document.getElementById('btnStartWithAi').style.display = 'none';
+
+        const humanCount = this.gameState.players.filter(p => !p.isAi).length;
+        document.getElementById('connectedCount').textContent = humanCount;
+
+        if (humanCount === 3) {
             UIRenderer.showToast('全员就位，可以开始游戏了！');
         }
 
-        // 广播更新大厅所有玩家卡槽
         this.broadcastLobbyState();
     }
 
@@ -391,34 +417,31 @@ class GameEngineController {
         if (!lobbyData || !lobbyData.players) return;
         const myIndex = NetworkManager.myPlayerIndex;
 
-        let readyCount = 0;
+        let humanCount = 0;
         lobbyData.players.forEach((p, i) => {
             const slotEl = document.getElementById(`slot${i}`);
             const nameEl = document.getElementById(`slotName${i}`);
             if (!slotEl || !nameEl) return;
 
             const statusEl = slotEl.querySelector('.slot-status');
+            const avatarEl = slotEl.querySelector('.avatar i');
 
-            if (p.name && !p.name.includes('等待')) {
-                readyCount++;
+            if (p.isAi) {
+                nameEl.textContent = `🤖 ${p.name}`;
+                if (statusEl) { statusEl.textContent = 'AI 候补'; statusEl.classList.add('ready'); }
+                if (avatarEl) avatarEl.className = 'fa-solid fa-robot';
+            } else if (p.name) {
+                humanCount++;
                 let displayName = p.name;
                 if (i === 0) displayName += ' (房主)';
                 if (i === myIndex) displayName += ' (你)';
                 nameEl.textContent = displayName;
-                if (statusEl) {
-                    statusEl.textContent = '已就绪';
-                    statusEl.classList.add('ready');
-                }
-            } else {
-                nameEl.textContent = `等待好友 ${i + 1}...`;
-                if (statusEl) {
-                    statusEl.textContent = '连接中';
-                    statusEl.classList.remove('ready');
-                }
+                if (statusEl) { statusEl.textContent = '已就绪'; statusEl.classList.add('ready'); }
+                if (avatarEl) avatarEl.className = 'fa-solid fa-user';
             }
         });
 
-        document.getElementById('connectedCount').textContent = readyCount;
+        document.getElementById('connectedCount').textContent = humanCount;
     }
 
     /**
