@@ -194,6 +194,35 @@ class GameEngineController {
             });
         }
 
+        // 绑定点击头像弹出经典快捷用语菜单与短语发送
+        document.addEventListener('click', (e) => {
+            const avatarTarget = e.target.closest('.self-profile-mini, #avatarSelf, #avatarBoxSelf');
+            const menu = document.getElementById('quickPhraseMenu');
+            if (avatarTarget && menu) {
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+                return;
+            }
+
+            const closeBtn = e.target.closest('#btnClosePhrase');
+            if (closeBtn && menu) {
+                menu.style.display = 'none';
+                return;
+            }
+
+            const phraseItem = e.target.closest('.phrase-item');
+            if (phraseItem && menu) {
+                const text = phraseItem.textContent.trim();
+                menu.style.display = 'none';
+                this.sendChatPhrase(text);
+                return;
+            }
+
+            // 点击外部自动关闭短语弹窗
+            if (menu && menu.style.display !== 'none' && !e.target.closest('#quickPhraseMenu')) {
+                menu.style.display = 'none';
+            }
+        });
+
         // 房主手动点击开始游戏（自动补齐空位为 AI）
         document.getElementById('btnStartGame').addEventListener('click', () => {
             this.fillAiAndStart();
@@ -813,6 +842,9 @@ class GameEngineController {
             this.processBid(playerIndex, payload);
         } else if (actionType === 'PLAY') {
             this.processPlay(playerIndex, payload);
+        } else if (actionType === 'CHAT_PHRASE') {
+            this.processChatPhrase(playerIndex, payload.text);
+            NetworkManager.broadcastChatPhrase(playerIndex, payload.text);
         }
     }
 
@@ -1051,6 +1083,35 @@ class GameEngineController {
             const btnSort = document.getElementById('btnSortCards');
             if (btnSort) btnSort.style.display = 'none';
         }
+    }
+
+    /**
+     * 主动发送经典快捷短语 (全网 P2P 气泡同步)
+     */
+    sendChatPhrase(text) {
+        const myIndex = NetworkManager.myPlayerIndex;
+        // 本地立即展示气泡
+        this.processChatPhrase(myIndex, text);
+
+        // 网络同步给其他所有联机玩家
+        if (NetworkManager.isHost) {
+            NetworkManager.broadcastChatPhrase(myIndex, text);
+        } else {
+            NetworkManager.sendActionToHost('CHAT_PHRASE', { text: text });
+        }
+    }
+
+    /**
+     * 在指定玩家头像上方展示对话气泡
+     */
+    processChatPhrase(senderIndex, text) {
+        const rel = UIRenderer.getRelativePlayerIndices(NetworkManager.myPlayerIndex);
+        let bubbleTarget = 'bubbleSelf';
+        if (senderIndex === rel.left) bubbleTarget = 'bubbleLeft';
+        if (senderIndex === rel.right) bubbleTarget = 'bubbleRight';
+
+        UIRenderer.showBubble(bubbleTarget, text, 3800);
+        SoundEngine.playCardSelect();
     }
 
     /**

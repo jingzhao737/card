@@ -1498,6 +1498,74 @@ body, html {
     padding: 2px 4px;
 }
 
+/* 快捷用语选择弹出层 */
+.quick-phrase-popover {
+    position: fixed;
+    bottom: 95px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(17, 17, 19, 0.96);
+    border: 1px solid var(--accent-gold);
+    border-radius: 8px;
+    width: 250px;
+    max-width: 88vw;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    padding: 8px 10px;
+    animation: popIn 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.phrase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 6px;
+}
+
+.btn-close-phrase {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 6px;
+}
+
+.phrase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.phrase-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    color: #e4e4e7;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.phrase-item:hover, .phrase-item:active {
+    background: rgba(255, 215, 0, 0.18);
+    border-color: var(--accent-gold);
+    color: #fff;
+}
+
+.self-profile-mini {
+    cursor: pointer;
+}
+
 /* ==========================================================================
    📱 移动端/手机界面重磅专项优化 (Mobile Viewport Optimization)
    ========================================================================== */

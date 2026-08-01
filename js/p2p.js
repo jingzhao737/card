@@ -219,6 +219,10 @@ class P2PManager {
             }
         } else if (data.type === 'TOAST') {
             if (this.onToast) this.onToast(data.message);
+        } else if (data.type === 'CHAT_PHRASE') {
+            if (window.GameEngine) {
+                window.GameEngine.processChatPhrase(data.senderIndex, data.text);
+            }
         }
     }
 
@@ -239,6 +243,22 @@ class P2PManager {
                 window.GameEngine.handlePlayerAction(data.playerIndex, data.action, data.payload);
             }
         }
+    }
+
+    /**
+     * 广播快捷聊天短语给所有人
+     */
+    broadcastChatPhrase(senderIndex, text) {
+        const packet = {
+            type: 'CHAT_PHRASE',
+            senderIndex: senderIndex,
+            text: text
+        };
+        this.connections.forEach(conn => {
+            if (conn && conn.open) {
+                conn.send(packet);
+            }
+        });
     }
 
     /**
