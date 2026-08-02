@@ -1383,19 +1383,36 @@ class GameEngineController {
         const currentPlayer = this.gameState.players[turnIdx];
         if (!currentPlayer || !currentPlayer.isAi) return;
 
+        // ====== 防重复调度守卫 ======
+        // onReceiveStateUpdate 每次收到广播都会调用 checkAiTurn，但同一个回合
+        // 只能调度一次 AI 定时器，否则 AI 会出两次牌。
+        // 用 "turn索引_阶段" 作为 key，同一 key 已挂起时直接返回。
+        const scheduleKey = `${turnIdx}_${this.gameState.phase}`;
+        if (this._aiScheduleKey === scheduleKey) return;
+        this._aiScheduleKey = scheduleKey;
+
         // 模拟真实思考延迟：1.0~2.4秒
         const thinkMs = 1000 + Math.random() * 1400;
         setTimeout(() => {
+            // 清除守卫，允许下一个回合正常调度
+            this._aiScheduleKey = null;
+
+            // 验证：如果回合或阶段已经变更（例如其他玩家已出牌），直接丢弃
+            if (this.gameState.currentTurn !== turnIdx) return;
+            if (this.gameState.phase === 'GAMEOVER' || this.gameState.phase === 'WAITING') return;
+
             if (this.gameState.phase === 'BIDDING') {
                 // 叫牌阶段：根据手牌强度决定是否抢地主
                 const handStrength = this._evaluateHandStrength(currentPlayer.hand);
                 const willClaim = handStrength > 55 || (handStrength > 40 && Math.random() < 0.45);
                 this.processBid(turnIdx, willClaim ? 'CLAIM' : 'PASS');
+                // BIDDING 阶段没有 startTurnTimer，需要手动广播
+                NetworkManager.broadcastState(this.gameState);
             } else if (this.gameState.phase === 'PLAYING') {
                 const aiCards = this._getAiPlayDecision(turnIdx);
                 this.processPlay(turnIdx, aiCards);
+                // processPlay → startTurnTimer → broadcastState，已自动广播，不再重复广播
             }
-            NetworkManager.broadcastState(this.gameState);
         }, thinkMs);
     }
 
