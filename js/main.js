@@ -560,6 +560,12 @@ class GameEngineController {
      * 重新回到初始大厅
      */
     resetToLobby() {
+        // 先销毁 P2P 连接，避免对方看到悬空连接且避免 Peer ID 冲突
+        try {
+            if (NetworkManager.peer && !NetworkManager.peer.destroyed) {
+                NetworkManager.peer.destroy();
+            }
+        } catch (e) {}
         window.location.href = window.location.pathname;
     }
 
@@ -571,6 +577,15 @@ class GameEngineController {
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('gameTable').style.display = 'grid';
         document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+
+        // Bug 修复：清除上一局残留的回合倒计时 interval，防止上局 timer 继续触发 handleTurnTimeout
+        if (this.turnTimerInterval) {
+            clearInterval(this.turnTimerInterval);
+            this.turnTimerInterval = null;
+        }
+
+        // Bug 修复：清除 AI 调度守卫 key，防止新局 AI 无法调度
+        this._aiScheduleKey = null;
 
         // 彻底重置界面 DOM & 选牌状态 & 气泡 & 残余展示牌
         UIRenderer.resetGameTableUI();
@@ -1401,14 +1416,11 @@ class GameEngineController {
             if (this.gameState.currentTurn !== turnIdx) return;
             if (this.gameState.phase === 'GAMEOVER' || this.gameState.phase === 'WAITING') return;
 
-            if (this.gameState.phase === 'BIDDING') {
-                // 叫牌阶段：根据手牌强度决定是否抢地主
-                const handStrength = this._evaluateHandStrength(currentPlayer.hand);
-                const willClaim = handStrength > 55 || (handStrength > 40 && Math.random() < 0.45);
-                this.processBid(turnIdx, willClaim ? 'CLAIM' : 'PASS');
-                // BIDDING 阶段没有 startTurnTimer，需要手动广播
-                NetworkManager.broadcastState(this.gameState);
-            } else if (this.gameState.phase === 'PLAYING') {
+            // Bug 修复：BIDDING 阶段由 scheduleAiBids() 专属处理（速度叫牌），
+            // checkAiTurn 不应重复处理，否则 AI 会在叫牌阶段出两次
+            if (this.gameState.phase === 'BIDDING') return;
+
+            if (this.gameState.phase === 'PLAYING') {
                 const aiCards = this._getAiPlayDecision(turnIdx);
                 this.processPlay(turnIdx, aiCards);
                 // processPlay → startTurnTimer → broadcastState，已自动广播，不再重复广播
