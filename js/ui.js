@@ -474,6 +474,12 @@ const UIRenderer = {
             }
             container.appendChild(el);
         });
+
+        // ===== 牌型标注标签（仅最新出牌时显示）=====
+        if (isLatest && cards.length > 0) {
+            const label = this._buildCardTypeLabel(cards);
+            if (label) container.appendChild(label);
+        }
     },
 
     /**
@@ -643,6 +649,48 @@ const UIRenderer = {
             clearInterval(this._localTimerInterval);
             this._localTimerInterval = null;
         }
+    },
+
+    /**
+     * 根据牌型生成标注标签 DOM 节点
+     */
+    _buildCardTypeLabel(cards) {
+        if (!cards || cards.length === 0) return null;
+        if (typeof DouDizhuRules === 'undefined') return null;
+
+        const analysis = DouDizhuRules.analyzeCards(cards);
+        const type = analysis.type;
+
+        // 牌型 → { 文字, emoji, CSS class }
+        const typeMap = {
+            [CardType.SINGLE]:              { text: '单张',   icon: '',   cls: 'label-normal' },
+            [CardType.PAIR]:                { text: '对子',   icon: '✌️', cls: 'label-pair'   },
+            [CardType.TRIPLE]:              { text: '三条',   icon: '🔱', cls: 'label-pair'   },
+            [CardType.TRIPLE_ONE]:          { text: '三带一', icon: '🔱', cls: 'label-pair'   },
+            [CardType.TRIPLE_TWO]:          { text: '三带二', icon: '🔱', cls: 'label-pair'   },
+            [CardType.STRAIGHT]:            { text: '顺子',   icon: '📈', cls: 'label-combo'  },
+            [CardType.CONSECUTIVE_PAIRS]:   { text: '连对',   icon: '💫', cls: 'label-combo'  },
+            [CardType.CONSECUTIVE_TRIPLES]: { text: '飞机',   icon: '✈️', cls: 'label-combo'  },
+            [CardType.PLANE_WITH_SINGLES]:  { text: '飞机带单', icon: '✈️', cls: 'label-combo' },
+            [CardType.PLANE_WITH_PAIRS]:    { text: '飞机带对', icon: '✈️', cls: 'label-combo' },
+            [CardType.QUAD_TWO_SINGLES]:    { text: '四带二', icon: '💥', cls: 'label-bomb'   },
+            [CardType.QUAD_TWO_PAIRS]:      { text: '四带两对', icon: '💥', cls: 'label-bomb' },
+            [CardType.BOMB]:                { text: '炸弹',   icon: '💣', cls: 'label-bomb'   },
+            [CardType.ROCKET]:              { text: '王炸',   icon: '🚀', cls: 'label-rocket'  },
+        };
+
+        // 单张不显示标签（太频繁，干扰视线）
+        if (type === CardType.SINGLE || type === CardType.INVALID) return null;
+
+        const info = typeMap[type];
+        if (!info) return null;
+
+        const el = document.createElement('div');
+        el.className = `card-type-label ${info.cls}`;
+        el.innerHTML = info.icon
+            ? `<span>${info.icon}</span><span>${info.text}</span>`
+            : `<span>${info.text}</span>`;
+        return el;
     },
 
     /**

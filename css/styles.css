@@ -1455,52 +1455,125 @@ body, html {
     box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
-/* 极度丝滑柔和的出牌滑跃动画 (iOS 级别 Ease-Out 贝塞尔曲线) */
+/* 自家出牌：从底部手牌区飞出，带弹性回弹 */
 @keyframes flyPlaySelf {
-    0% {
-        transform: translateY(28px) scale(0.92);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
+    0%   { transform: translateY(52px) scale(0.82) rotate(-2deg); opacity: 0; }
+    55%  { transform: translateY(-6px) scale(1.06) rotate(0.5deg); opacity: 1; }
+    80%  { transform: translateY(3px) scale(0.98) rotate(0deg); }
+    100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* 左家出牌：从左上头像框向右下方划出，飞入牌桌中央 */
+/* 左家出牌：从左上角飞入，带弹性回弹 */
 @keyframes flyPlayLeft {
-    0% {
-        transform: translate(-40px, -25px) scale(0.88);
-        opacity: 0;
-    }
-    100% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
+    0%   { transform: translate(-70px, -40px) scale(0.82) rotate(-4deg); opacity: 0; }
+    55%  { transform: translate(5px, 3px) scale(1.05) rotate(1deg); opacity: 1; }
+    80%  { transform: translate(-2px, -1px) scale(0.98) rotate(0deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* 右家出牌：从右上头像框向左下方划出，飞入牌桌中央 */
+/* 右家出牌：从右上角飞入，带弹性回弹 */
 @keyframes flyPlayRight {
-    0% {
-        transform: translate(40px, -25px) scale(0.88);
-        opacity: 0;
-    }
-    100% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
+    0%   { transform: translate(70px, -40px) scale(0.82) rotate(4deg); opacity: 0; }
+    55%  { transform: translate(-5px, 3px) scale(1.05) rotate(-1deg); opacity: 1; }
+    80%  { transform: translate(2px, -1px) scale(0.98) rotate(0deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
 }
 
 .anim-fly-self {
-    animation: flyPlaySelf 0.24s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: flyPlaySelf 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .anim-fly-left {
-    animation: flyPlayLeft 0.24s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: flyPlayLeft 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .anim-fly-right {
-    animation: flyPlayRight 0.24s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: flyPlayRight 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ============================================================
+   牌型标注标签 (card-type-label)
+   ============================================================ */
+@keyframes labelPopIn {
+    0%   { transform: translateY(6px) scale(0.7); opacity: 0; }
+    60%  { transform: translateY(-3px) scale(1.08); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes labelPopInBomb {
+    0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; filter: brightness(3); }
+    50%  { transform: scale(1.25) rotate(2deg); opacity: 1; filter: brightness(1.5); }
+    80%  { transform: scale(0.94) rotate(-1deg); filter: brightness(1); }
+    100% { transform: scale(1) rotate(0); opacity: 1; filter: brightness(1); }
+}
+
+.card-type-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px 2px 8px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    animation: labelPopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    white-space: nowrap;
+    /* 位置：浮于出牌区上方 */
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+}
+
+/* 普通牌型：白色标注 */
+.card-type-label.label-normal {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #e8e8e8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* 炸弹：橙红色爆炸感 */
+.card-type-label.label-bomb {
+    background: linear-gradient(135deg, #ff4c1a, #ff8c00);
+    border: 1px solid rgba(255,180,50,0.6);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(255,100,0,0.55), 0 2px 8px rgba(0,0,0,0.4);
+    animation: labelPopInBomb 0.40s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    font-size: 0.88rem;
+}
+
+/* 火箭：紫金色 */
+.card-type-label.label-rocket {
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    border: 1px solid rgba(200,160,255,0.6);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(150,80,255,0.6), 0 2px 8px rgba(0,0,0,0.4);
+    animation: labelPopInBomb 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    font-size: 0.88rem;
+}
+
+/* 顺子/飞机：绿色 */
+.card-type-label.label-combo {
+    background: linear-gradient(135deg, #059669, #34d399);
+    border: 1px solid rgba(100,220,160,0.5);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(50,200,120,0.4), 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* 对子/三条：蓝色 */
+.card-type-label.label-pair {
+    background: linear-gradient(135deg, #1d4ed8, #60a5fa);
+    border: 1px solid rgba(120,180,255,0.5);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(80,150,255,0.4), 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* 自家出牌标签：位置更低 */
+#playedSelf .card-type-label {
+    top: -32px;
 }
 
 .played-cards-area {
@@ -1512,6 +1585,7 @@ body, html {
     border-radius: 4px;
     border: 1px solid transparent;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative; /* 为 card-type-label 绝对定位提供锚点 */
 }
 
 /* 最新打出的整手牌外围包裹一圈金色高亮线 */
