@@ -1376,27 +1376,313 @@ class GameEngineController {
     }
 
     /**
-     * 检查当前回合是否为机器人，是则自动出牌
+     * 检查当前回合是否为机器人，是则自动出牌（完整策略 AI）
      */
     checkAiTurn() {
         const turnIdx = this.gameState.currentTurn;
         const currentPlayer = this.gameState.players[turnIdx];
         if (!currentPlayer || !currentPlayer.isAi) return;
 
-        // 延迟 1.2 秒模拟思考
+        // 模拟真实思考延迟：1.0~2.4秒
+        const thinkMs = 1000 + Math.random() * 1400;
         setTimeout(() => {
             if (this.gameState.phase === 'BIDDING') {
-                // 机器人自动叫牌逻辑
-                const bid = Math.floor(Math.random() * 2) === 1 ? 3 : 0;
-                this.processBid(turnIdx, bid);
+                // 叫牌阶段：根据手牌强度决定是否抢地主
+                const handStrength = this._evaluateHandStrength(currentPlayer.hand);
+                const willClaim = handStrength > 55 || (handStrength > 40 && Math.random() < 0.45);
+                this.processBid(turnIdx, willClaim ? 'CLAIM' : 'PASS');
             } else if (this.gameState.phase === 'PLAYING') {
-                // 机器人出牌逻辑
-                const lastPlay = (this.gameState.lastPlay && this.gameState.lastPlay.playerIndex !== turnIdx) ? this.gameState.lastPlay : null;
-                const hintCards = DouDizhuRules.findSmartHint(currentPlayer.hand, lastPlay);
-
-                this.processPlay(turnIdx, hintCards);
+                const aiCards = this._getAiPlayDecision(turnIdx);
+                this.processPlay(turnIdx, aiCards);
             }
-        }, 1200);
+            NetworkManager.broadcastState(this.gameState);
+        }, thinkMs);
+    }
+
+    /**
+     * 评估手牌强度 (0~100分)：用于 AI 决策是否抢地主
+     */
+    _evaluateHandStrength(hand) {
+        if (!hand || hand.length === 0) return 0;
+        let score = 0;
+
+        // 大王/小王
+        hand.forEach(c => {
+            if (c.rank === 17) score += 18;      // 大王
+            else if (c.rank === 16) score += 14; // 小王
+            else if (c.rank === 15) score += 8;  // 2
+            else if (c.rank === 14) score += 5;  // A
+            else if (c.rank === 13) score += 3;  // K
+        });
+
+        // 炸弹
+        const groups = DouDizhuRules.groupCardsByRank(hand);
+        for (const [rank, cards] of groups.entries()) {
+            if (cards.length === 4) score += 22;     // 炸弹大加分
+            else if (cards.length === 3) score += 5; // 三条
+            else if (cards.length === 2) score += 2; // 对子
+        }
+
+        // 双王炸
+        const jokers = hand.filter(c => c.rank >= 16);
+        if (jokers.length === 2) score += 10; // 已经在单王算了，补偿连王额外加成
+
+        return Math.min(100, score);
+    }
+
+    /**
+     * AI 出牌决策核心（带角色策略）
+     * @returns {Array} 要出的牌，空数组=过/要不起
+     */
+    _getAiPlayDecision(aiIdx) {
+        const player = this.gameState.players[aiIdx];
+        const hand = player.hand;
+        const role = player.role; // 'LANDLORD' or 'FARMER'
+        const lastPlay = this.gameState.lastPlay;
+
+        // 判断是否是自由出牌（无上家牌 / 上家就是自己）
+        const isFreePlay = !lastPlay || !lastPlay.cards || lastPlay.cards.length === 0
+            || lastPlay.playerIndex === aiIdx;
+
+        // 关键逻辑：农民 AI 看队友出的牌，如果上家是同队农民，直接过（配合队友）
+        if (!isFreePlay && role === 'FARMER') {
+            const lastPlayer = this.gameState.players[lastPlay.playerIndex];
+            if (lastPlayer && lastPlayer.role === 'FARMER') {
+                // 队友出的牌 -> 农民 AI 配合不出，除非队友快出完了且 AI 能压住（防地主接牌）
+                const lastPlayerCards = lastPlayer.hand.length;
+                const landlordIdx = this.gameState.landlordIndex;
+                const landlord = this.gameState.players[landlordIdx];
+
+                // 队友只剩1~2张 -> 尝试拦截地主（此时地主必须也能接上才轮到地主）
+                // 实际：既然是农民出的，地主不能接，所以农民直接过就好
+                return []; // 配合队友，直接过
+            }
+        }
+
+        // ===================== 自由出牌策略 =====================
+        if (isFreePlay) {
+            return this._aiFreePlaStrategy(aiIdx, hand, role);
+        }
+
+        // ===================== 跟牌/压牌策略 =====================
+        return this._aiFollowStrategy(aiIdx, hand, role, lastPlay);
+    }
+
+    /**
+     * AI 自由出牌策略
+     */
+    _aiFreePlaStrategy(aiIdx, hand, role) {
+        const groups = DouDizhuRules.groupCardsByRank(hand);
+        const sortedHand = DouDizhuRules.sortCards(hand, true); // 从小到大
+
+        // 统计牌型分布
+        const singles = [];
+        const pairs = [];
+        const triples = [];
+        const bombs = [];
+        for (const [rank, cards] of groups.entries()) {
+            if (cards.length === 1) singles.push({ rank, cards });
+            else if (cards.length === 2) pairs.push({ rank, cards });
+            else if (cards.length === 3) triples.push({ rank, cards });
+            else if (cards.length === 4) bombs.push({ rank, cards });
+        }
+        singles.sort((a, b) => a.rank - b.rank);
+        pairs.sort((a, b) => a.rank - b.rank);
+        triples.sort((a, b) => a.rank - b.rank);
+        bombs.sort((a, b) => a.rank - b.rank);
+
+        const landlordIdx = this.gameState.landlordIndex;
+        const landlord = this.gameState.players[landlordIdx];
+        const landlordCardCount = landlord ? landlord.hand.length : 20;
+
+        // 判断是否需要紧急追牌（对方剩余牌很少）
+        const isEmergency = landlordCardCount <= 3;
+
+        // 1. 地主策略：优先出顺子/组合拆散，快速清牌
+        if (role === 'LANDLORD') {
+            // 优先出三带类
+            if (triples.length > 0) {
+                const t = triples[0];
+                // 三带一
+                if (singles.length > 0) {
+                    const kicker = singles[0].cards[0];
+                    if (kicker.rank !== t.rank) return [...t.cards, kicker];
+                }
+                // 三带二
+                if (pairs.length > 0) {
+                    const kicker = pairs[0];
+                    if (kicker.rank !== t.rank) return [...t.cards, ...kicker.cards];
+                }
+                return t.cards;
+            }
+
+            // 优先出顺子
+            const straight = this._findBestStraight(sortedHand, null, false);
+            if (straight.length > 0) return straight;
+
+            // 出对子（最小对子）
+            if (pairs.length > 0) return pairs[0].cards;
+
+            // 出单张（最小单张）
+            if (singles.length > 0) return [singles[0].cards[0]];
+
+            // 如果只剩炸弹，出炸弹
+            if (bombs.length > 0) return bombs[0].cards;
+
+            // 出手牌最小的一张
+            return sortedHand.length > 0 ? [sortedHand[0]] : [];
+        }
+
+        // 2. 农民策略：帮助队友，阻止地主
+        // 找队友（另一位农民）
+        const teammates = this.gameState.players.filter((p, i) => p.role === 'FARMER' && i !== aiIdx);
+        const teammateCards = teammates.length > 0 ? teammates[0].hand.length : 20;
+
+        // 如果队友快要出完了，尽量出大牌、顺子，为队友铺路
+        if (teammateCards <= 3 || isEmergency) {
+            // 出炸弹拦截地主
+            if (bombs.length > 0 && landlordCardCount <= 5) {
+                return bombs[0].cards;
+            }
+            // 出大对子/单张
+            const bigSingle = [...singles].reverse().find(s => s.rank >= 14);
+            if (bigSingle) return [bigSingle.cards[0]];
+        }
+
+        // 农民正常策略：先出最小的单张/对子消耗手牌，留大牌压地主
+        // 优先出对子（最小）
+        if (pairs.length > 0) return pairs[0].cards;
+
+        // 出单张
+        if (singles.length > 0) return [singles[0].cards[0]];
+
+        // 出三条
+        if (triples.length > 0) return triples[0].cards;
+
+        // 只剩炸弹，出最小炸弹
+        if (bombs.length > 0) return bombs[0].cards;
+
+        return sortedHand.length > 0 ? [sortedHand[0]] : [];
+    }
+
+    /**
+     * AI 跟牌/压牌策略
+     */
+    _aiFollowStrategy(aiIdx, hand, role, lastPlay) {
+        const prev = DouDizhuRules.analyzeCards(lastPlay.cards);
+        const sortedHand = DouDizhuRules.sortCards(hand, true); // 从小到大
+        const groups = DouDizhuRules.groupCardsByRank(hand);
+
+        const landlordIdx = this.gameState.landlordIndex;
+        const landlordCardCount = this.gameState.players[landlordIdx] ? this.gameState.players[landlordIdx].hand.length : 20;
+
+        // 农民判断：是否值得压牌（上家是地主才需要全力压）
+        const lastIsLandlord = this.gameState.players[lastPlay.playerIndex].role === 'LANDLORD';
+
+        // 地主快出完时，农民必须压
+        const mustBeat = lastIsLandlord && landlordCardCount <= 3;
+
+        // 地主跟的是地主自己（不可能），或上家农民 AI 已经配合过了
+        // 这里 lastPlay.playerIndex 必是地主，因为农民AI配合处已过滤
+
+        const bombs = [];
+        const jokers = sortedHand.filter(c => c.rank >= 16);
+        for (const [rank, cards] of groups.entries()) {
+            if (cards.length === 4) bombs.push({ rank, cards });
+        }
+        bombs.sort((a, b) => a.rank - b.rank);
+
+        // 找最小能压过的牌
+        const hintCards = DouDizhuRules.findSmartHint(hand, lastPlay);
+
+        // 如果能找到对应牌型
+        if (hintCards.length > 0 && DouDizhuRules.analyzeCards(hintCards).type !== 0) {
+            const hint = DouDizhuRules.analyzeCards(hintCards);
+
+            // 如果提示的是炸弹/火箭
+            if (hint.type === 14 || hint.type === 13) {
+                // 只在紧急时用炸弹/火箭（地主剩1~4张，或农民队友快出完）
+                const teammates = this.gameState.players.filter((p, i) => p.role === 'FARMER' && i !== aiIdx);
+                const teammateCards = teammates.length > 0 ? teammates[0].hand.length : 20;
+
+                if (mustBeat || landlordCardCount <= 4 || teammateCards <= 2) {
+                    return hintCards; // 关键时刻出炸弹
+                }
+                // 其他情况憋住炸弹，看能否用普通牌压
+                // 重新找普通牌能压的
+                const nonBombHint = this._findNonBombBeat(hand, lastPlay);
+                if (nonBombHint.length > 0) return nonBombHint;
+                // 实在没有，选择过
+                if (!mustBeat) return [];
+                return hintCards; // 必须压，只能出炸弹
+            }
+
+            // 农民且上家不是地主 -> 已在上方过滤，不会到这里
+            // 普通牌型匹配：如果农民有能力压且地主是上家，直接压
+            if (role === 'FARMER' && !lastIsLandlord) return [];
+
+            // 有普通能压的牌，直接压
+            return hintCards;
+        }
+
+        // 找不到匹配牌型，尝试炸弹
+        if (bombs.length > 0 && (mustBeat || landlordCardCount <= 3)) {
+            return bombs[0].cards;
+        }
+        if (jokers.length === 2 && (mustBeat || landlordCardCount <= 2)) {
+            return jokers;
+        }
+
+        // 过/要不起
+        return [];
+    }
+
+    /**
+     * 找能压过上家的非炸弹牌
+     */
+    _findNonBombBeat(hand, lastPlay) {
+        const prev = DouDizhuRules.analyzeCards(lastPlay.cards);
+        const sortedHand = DouDizhuRules.sortCards(hand, true);
+        const groups = DouDizhuRules.groupCardsByRank(hand);
+
+        if (prev.type === 1) { // 单张
+            for (const c of sortedHand) {
+                if (c.rank > prev.mainRank && c.rank < 16) return [c];
+            }
+        } else if (prev.type === 2) { // 对子
+            for (const [rank, cards] of groups.entries()) {
+                if (rank > prev.mainRank && cards.length >= 2 && rank < 16) {
+                    return cards.slice(0, 2);
+                }
+            }
+        } else if (prev.type === 3) { // 三张
+            for (const [rank, cards] of groups.entries()) {
+                if (rank > prev.mainRank && cards.length >= 3) {
+                    return cards.slice(0, 3);
+                }
+            }
+        }
+        return [];
+    }
+
+    /**
+     * 寻找最优顺子（自由出牌时）
+     */
+    _findBestStraight(sortedHand, minRank, mustBeat) {
+        const groups = DouDizhuRules.groupCardsByRank(sortedHand);
+        // 尝试找5张以上顺子
+        for (let len = 8; len >= 5; len--) {
+            for (let startRank = 3; startRank <= 10; startRank++) {
+                const straight = [];
+                for (let r = startRank; r < startRank + len; r++) {
+                    const g = groups.get(r);
+                    if (g && g.length >= 1) straight.push(g[0]);
+                    else break;
+                }
+                if (straight.length === len) return straight;
+            }
+        }
+        return [];
     }
 
     /**
