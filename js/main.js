@@ -1431,7 +1431,7 @@ class GameEngineController {
     }
 
     /**
-     * AI 出牌决策核心（带角色策略）
+     * AI 出牌决策核心（带角色策略 + 回合顺序感知）
      * @returns {Array} 要出的牌，空数组=过/要不起
      */
     _getAiPlayDecision(aiIdx) {
@@ -1444,28 +1444,108 @@ class GameEngineController {
         const isFreePlay = !lastPlay || !lastPlay.cards || lastPlay.cards.length === 0
             || lastPlay.playerIndex === aiIdx;
 
-        // 关键逻辑：农民 AI 看队友出的牌，如果上家是同队农民，直接过（配合队友）
-        if (!isFreePlay && role === 'FARMER') {
-            const lastPlayer = this.gameState.players[lastPlay.playerIndex];
-            if (lastPlayer && lastPlayer.role === 'FARMER') {
-                // 队友出的牌 -> 农民 AI 配合不出，除非队友快出完了且 AI 能压住（防地主接牌）
-                const lastPlayerCards = lastPlayer.hand.length;
-                const landlordIdx = this.gameState.landlordIndex;
-                const landlord = this.gameState.players[landlordIdx];
-
-                // 队友只剩1~2张 -> 尝试拦截地主（此时地主必须也能接上才轮到地主）
-                // 实际：既然是农民出的，地主不能接，所以农民直接过就好
-                return []; // 配合队友，直接过
-            }
-        }
-
-        // ===================== 自由出牌策略 =====================
         if (isFreePlay) {
             return this._aiFreePlaStrategy(aiIdx, hand, role);
         }
 
-        // ===================== 跟牌/压牌策略 =====================
+        // 判断上家是否是队友农民
+        const lastPlayer = this.gameState.players[lastPlay.playerIndex];
+        const lastIsTeammate = (role === 'FARMER' && lastPlayer && lastPlayer.role === 'FARMER');
+
+        if (lastIsTeammate) {
+            // 关键：利用回合顺序判断地主是否已出过牌（已过了）
+            // lastPlay.playerIndex 出牌后：posFirst = 第一个接手的人，posSecond = 第二个
+            // 若 AI 是 posFirst (+1)：地主(+2)还没出，可能压队友 → 需考虑护牌
+            // 若 AI 是 posSecond (+2)：地主(+1)已出过且过了 → 队友本轮稳赢，直接过
+            const posFirst = (lastPlay.playerIndex + 1) % 3;
+            const landlordComesAfterAI = (aiIdx === posFirst);
+            return this._aiFarmerCoverDecision(aiIdx, hand, lastPlay, landlordComesAfterAI);
+        }
+
+        // 上家是地主：跟牌/压牌策略
         return this._aiFollowStrategy(aiIdx, hand, role, lastPlay);
+    }
+
+    /**
+     * 农民 AI 看队友出牌后的接牌决策
+     * landlordComesAfterAI = true 表示地主还没出牌（可能压队友），需要决定是否帮队友护牌
+     * landlordComesAfterAI = false 表示地主已经过了，队友本轮稳赢，直接过
+     */
+    _aiFarmerCoverDecision(aiIdx, hand, lastPlay, landlordComesAfterAI) {
+        const landlordIdx = this.gameState.landlordIndex;
+        const landlordCardCount = (this.gameState.players[landlordIdx] && this.gameState.players[landlordIdx].hand)
+            ? this.gameState.players[landlordIdx].hand.length : 20;
+        const teammates = this.gameState.players.filter((p, i) => p.role === 'FARMER' && i !== aiIdx);
+        const teammateCards = teammates.length > 0 ? teammates[0].hand.length : 20;
+
+        // 地主已经过了，队友本轮稳赢，直接过
+        if (!landlordComesAfterAI) return [];
+
+        // 地主还没出牌，分析队友出的牌强弱
+        const prev = DouDizhuRules.analyzeCards(lastPlay.cards);
+        const teammateTopRank = lastPlay.cards.reduce((max, c) => Math.max(max, c.rank), 0);
+
+        // 队友出的牌已经是强牌（2/王/炸弹/火箭），地主大概率压不住，直接过
+        const isAlreadyStrong = (
+            (prev.type === 1 && teammateTopRank >= 15) || // 单2或王
+            (prev.type === 2 && teammateTopRank >= 15) || // 对2
+            prev.type === 13 || // 炸弹
+            prev.type === 14    // 火箭
+        );
+        if (isAlreadyStrong) return [];
+
+        // 队友出的是弱牌，地主可能压 → 尝试用便宜牌盖住，让地主无牌可压
+        const safeBeat = this._findSafeBeat(hand, lastPlay, prev);
+
+        // 队友只剩1~2张，更积极地接牌护住队友
+        if (teammateCards <= 2 && safeBeat.length > 0) return safeBeat;
+
+        // 正常情况：只用廉价牌接（不用2/王/炸弹），不值得接就过
+        if (safeBeat.length > 0) {
+            const isExpensive = safeBeat.some(c => c.rank >= 15); // 用到了2或王才算贵
+            if (!isExpensive) return safeBeat;
+        }
+
+        // 没有便宜接法，让队友的牌先顶着，过
+        return [];
+    }
+
+    /**
+     * 寻找"便宜"压过上家的牌（不用炸弹、优先不用2/王）
+     */
+    _findSafeBeat(hand, lastPlay, prev) {
+        const sortedHand = DouDizhuRules.sortCards(hand, true); // 从小到大
+        const groups = DouDizhuRules.groupCardsByRank(hand);
+
+        if (prev.type === 1) { // 单张：找最小能压的非大牌
+            for (const c of sortedHand) {
+                if (c.rank > prev.mainRank && c.rank < 15) return [c]; // 优先不用2/王
+            }
+            for (const c of sortedHand) {
+                if (c.rank > prev.mainRank && c.rank < 16) return [c]; // 退而求次用A/K
+            }
+        } else if (prev.type === 2) { // 对子
+            const sorted = Array.from(groups.entries()).sort((a, b) => a[0] - b[0]);
+            for (const [rank, cards] of sorted) {
+                if (rank > prev.mainRank && cards.length >= 2 && rank < 15) return cards.slice(0, 2);
+            }
+            for (const [rank, cards] of sorted) {
+                if (rank > prev.mainRank && cards.length >= 2 && rank < 16) return cards.slice(0, 2);
+            }
+        } else if (prev.type === 3) { // 三张
+            const sorted = Array.from(groups.entries()).sort((a, b) => a[0] - b[0]);
+            for (const [rank, cards] of sorted) {
+                if (rank > prev.mainRank && cards.length >= 3 && rank < 15) return cards.slice(0, 3);
+            }
+        } else {
+            // 顺子/连对/飞机等，用 findSmartHint 找最小压法，排除炸弹
+            const hint = DouDizhuRules.findSmartHint(hand, lastPlay);
+            if (hint.length > 0) {
+                const analysis = DouDizhuRules.analyzeCards(hint);
+                if (analysis.type !== 13 && analysis.type !== 14) return hint;
+            }
+        }
+        return [];
     }
 
     /**
@@ -1576,14 +1656,11 @@ class GameEngineController {
         const landlordIdx = this.gameState.landlordIndex;
         const landlordCardCount = this.gameState.players[landlordIdx] ? this.gameState.players[landlordIdx].hand.length : 20;
 
-        // 农民判断：是否值得压牌（上家是地主才需要全力压）
+        // 此函数只在上家是地主时被调用（农民队友出牌情况已由 _aiFarmerCoverDecision 处理）
         const lastIsLandlord = this.gameState.players[lastPlay.playerIndex].role === 'LANDLORD';
 
-        // 地主快出完时，农民必须压
+        // 地主快出完时，农民必须全力压
         const mustBeat = lastIsLandlord && landlordCardCount <= 3;
-
-        // 地主跟的是地主自己（不可能），或上家农民 AI 已经配合过了
-        // 这里 lastPlay.playerIndex 必是地主，因为农民AI配合处已过滤
 
         const bombs = [];
         const jokers = sortedHand.filter(c => c.rank >= 16);
@@ -1617,11 +1694,7 @@ class GameEngineController {
                 return hintCards; // 必须压，只能出炸弹
             }
 
-            // 农民且上家不是地主 -> 已在上方过滤，不会到这里
-            // 普通牌型匹配：如果农民有能力压且地主是上家，直接压
-            if (role === 'FARMER' && !lastIsLandlord) return [];
-
-            // 有普通能压的牌，直接压
+            // 有普通能压的牌，直接压（此处上家必为地主）
             return hintCards;
         }
 
