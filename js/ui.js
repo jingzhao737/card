@@ -574,9 +574,9 @@ const UIRenderer = {
         timerEl.style.display = 'flex';
 
         // 每次回合轮换或服务端大同步时，启动/重置本地秒级流畅倒计时
-        if (this._currentTurnIndex !== currentTurnIndex || seconds === 20) {
+        if (this._currentTurnIndex !== currentTurnIndex || seconds === 25) {
             this._currentTurnIndex = currentTurnIndex;
-            this.startLocalTimer(seconds !== undefined ? seconds : 20);
+            this.startLocalTimer(seconds !== undefined ? seconds : 25);
         }
 
         // 高亮轮到思考/出牌的玩家头像
@@ -630,11 +630,11 @@ const UIRenderer = {
         if (!timerEl) return;
         timerEl.classList.remove('timer-green', 'timer-yellow', 'timer-red', 'urgent');
 
-        if (secs > 20) {
+        if (secs > 15) {
             timerEl.classList.add('timer-green');
-        } else if (secs > 10) {
+        } else if (secs > 8) {
             timerEl.classList.add('timer-yellow');
-        } else if (secs > 5) {
+        } else if (secs > 4) {
             timerEl.classList.add('timer-red');
         } else {
             timerEl.classList.add('timer-red', 'urgent');

@@ -1265,7 +1265,7 @@ class GameEngineController {
             this.turnTimerInterval = null;
         }
 
-        this.gameState.timerSeconds = 20;
+        this.gameState.timerSeconds = 25;
         NetworkManager.broadcastState(this.gameState);
 
         this.turnTimerInterval = setInterval(() => {
@@ -1300,10 +1300,11 @@ class GameEngineController {
             const isFreePlay = !this.gameState.lastPlay || !this.gameState.lastPlay.cards || this.gameState.lastPlay.cards.length === 0 || this.gameState.lastPlay.playerIndex === turn;
 
             if (isFreePlay) {
-                // 出牌阶段 - 自由首出超时：默认打出手牌中【最小的单张】
+                // 出牌阶段 - 自由首出超时：默认打出手牌中点数最小的单张
+                // Bug修复：不能直接取 hand[hand.length-1]（依赖排序假设），改用遍历找最小 rank
                 const hand = this.gameState.players[turn].hand;
                 if (hand && hand.length > 0) {
-                    const smallestCard = hand[hand.length - 1]; // sortCards 降序，最后一张即最小
+                    const smallestCard = hand.reduce((min, c) => c.rank < min.rank ? c : min, hand[0]);
                     UIRenderer.showToast(`${this.gameState.players[turn].name} 思考超时，自动出最小单牌`);
                     this.processPlay(turn, [smallestCard]);
                 } else {
