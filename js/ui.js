@@ -632,9 +632,13 @@ const UIRenderer = {
             return;
         }
 
-        cards.forEach((card) => {
+        // 像正常手牌一样按点数从大到小降序排列，并带层级叠压
+        const sortedCards = [...cards].sort((a, b) => b.rank - a.rank);
+
+        sortedCards.forEach((card, idx) => {
             const el = this.createCardElement(card, false);
             el.classList.add('open-hand-card');
+            el.style.zIndex = idx + 1;
             container.appendChild(el);
         });
     },
