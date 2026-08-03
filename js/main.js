@@ -1302,6 +1302,12 @@ class GameEngineController {
         const engine = window.gomokuEngine;
         if (!engine) return;
 
+        // 播放真实物理落子音效
+        if (typeof audioSynth !== 'undefined' && audioSynth.playStoneDrop) {
+            audioSynth.playStoneDrop();
+        }
+
+        const winNodes = engine.winLine || [];
         const cells = document.querySelectorAll('.gomoku-cell');
         cells.forEach(cell => {
             const r = parseInt(cell.dataset.r);
@@ -1315,6 +1321,10 @@ class GameEngineController {
                 stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
                 if (engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c) {
                     stone.classList.add('last-move');
+                }
+                const isWinStone = winNodes.some(n => n.r === r && n.c === c);
+                if (isWinStone) {
+                    stone.classList.add('win-stone');
                 }
                 cell.appendChild(stone);
             }

@@ -4435,6 +4435,18 @@ body:has(#lobbyScreen.active) .app-header,
     box-shadow: 0 0 6px #ff2a2a;
 }
 
+/* 获胜 5 连子闪耀光圈效果 */
+.gomoku-stone.win-stone {
+    box-shadow: 0 0 16px #ffd700, 0 0 8px #34d399 !important;
+    border: 2px solid #ffd700 !important;
+    animation: winPulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes winPulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px #ffd700; }
+    100% { transform: scale(1.18); box-shadow: 0 0 24px #ffd700, 0 0 12px #34d399; }
+}
+
 /* 控制按钮栏 */
 .gomoku-actions-bar {
     display: flex;

@@ -26,6 +26,29 @@ class AudioSynth {
     }
 
     /**
+     * 五子棋落子音效：清脆木质/玉石碰撞声 (Crisp Stone Clack)
+     */
+    playStoneDrop() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.05);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+    }
+
+    /**
      * 选牌音效：柔和自然弹纸声 (Soft Organic Card Pop)
      */
     playCardSelect() {
