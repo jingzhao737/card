@@ -1,40 +1,52 @@
 /* ==========================================================================
-   用户认证与个人战绩管理系统 (Firebase Auth & Stats System)
+   用户认证与个人战绩管理系统 (Firebase Realtime Database Direct Engine)
    ========================================================================== */
 
 class AuthManager {
     constructor() {
-        this.auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
-        this.db   = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+        this.db = null;
         this.user = null;
         this.userData = null;
-
         this.onAuthChanged = null;
 
-        this._initAuthListener();
+        this._initDB();
     }
 
-    _initAuthListener() {
-        if (!this.auth) return;
-        this.auth.onAuthStateChanged(user => {
-            this.user = user;
-            if (user) {
-                this.fetchUserData(user.uid, (data) => {
+    _initDB() {
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            this.db = firebase.database();
+            this.checkAutoLogin();
+        } else {
+            setTimeout(() => this._initDB(), 400);
+        }
+    }
+
+    /* 账号 Key 安全转义 (去除 Firebase 禁止的 . $ # [ ] / 字符) */
+    _encodeKey(str) {
+        return (str || '').trim().toLowerCase().replace(/[\.\$\#\[\]\/]/g, '_');
+    }
+
+    /* ====================================================================
+       自动登录恢复 (从 localStorage 恢复已登录账号)
+       ==================================================================== */
+    checkAutoLogin() {
+        const savedAccountKey = localStorage.getItem('youjing_doudizhu_account_key');
+        if (savedAccountKey && this.db) {
+            this.db.ref('users/' + savedAccountKey).once('value').then(snap => {
+                const data = snap.val();
+                if (data) {
                     this.userData = data;
-                    if (data && data.nickname) {
-                        localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
-                        const input = document.getElementById('nicknameInput');
-                        if (input) input.value = data.nickname;
-                    }
-                    if (this.onAuthChanged) this.onAuthChanged(user, data);
+                    this.user = { uid: savedAccountKey };
+                    localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
+                    const input = document.getElementById('nicknameInput');
+                    if (input) input.value = data.nickname;
+                    if (this.onAuthChanged) this.onAuthChanged(this.user, data);
                     this.updateUserHeaderUI();
-                });
-            } else {
-                this.userData = null;
-                if (this.onAuthChanged) this.onAuthChanged(null, null);
-                this.updateUserHeaderUI();
-            }
-        });
+                }
+            }).catch(() => {});
+        } else {
+            this.updateUserHeaderUI();
+        }
     }
 
     /* ====================================================================
@@ -42,39 +54,40 @@ class AuthManager {
        ==================================================================== */
     _formatEmail(inputStr) {
         let trimmed = (inputStr || '').trim();
-        // 如果用户只输入了纯数字（如 12345678），自动补充为 12345678@qq.com
-        if (/^\d+$/.test(trimmed)) {
-            return `${trimmed}@qq.com`;
-        }
-        // 如果没包含 @，补充为 @qq.com
-        if (!trimmed.includes('@')) {
-            return `${trimmed}@qq.com`;
-        }
+        if (/^\d+$/.test(trimmed)) return `${trimmed}@qq.com`;
+        if (!trimmed.includes('@')) return `${trimmed}@qq.com`;
         return trimmed;
     }
 
     /* ====================================================================
-       账号密码注册 (支持 QQ 邮箱)
+       账号密码注册 (存储于 Firebase Realtime Database users/ 节点)
        ==================================================================== */
     registerWithEmail(inputAccount, password, nickname, onSuccess, onError) {
-        if (!this.auth) {
-            if (onError) onError('认证服务未加载');
+        if (!this.db) {
+            if (onError) onError('云端服务未连接，请刷新页面重试');
             return;
         }
 
         const email = this._formatEmail(inputAccount);
-        const nick  = (nickname || '').trim() || '斗地主高手';
+        const accountKey = this._encodeKey(email);
+        const nick = (nickname || '').trim() || '斗地主高手';
 
         if (!password || password.length < 6) {
             if (onError) onError('密码长度至少需要 6 位');
             return;
         }
 
-        this.auth.createUserWithEmailAndPassword(email, password).then(cred => {
-            const uid = cred.user.uid;
+        // 检查账号是否已被注册
+        this.db.ref('users/' + accountKey).once('value').then(snap => {
+            if (snap.exists()) {
+                if (onError) onError('该 QQ 邮箱/账号已被注册！');
+                return;
+            }
+
             const initialData = {
-                uid: uid,
+                accountKey: accountKey,
                 email: email,
+                password: password,
                 nickname: nick,
                 avatar: '🤠',
                 coins: 1000,
@@ -87,85 +100,112 @@ class AuthManager {
                 created: firebase.database.ServerValue.TIMESTAMP
             };
 
-            return this.db.ref('users/' + uid).set(initialData).then(() => {
+            return this.db.ref('users/' + accountKey).set(initialData).then(() => {
                 this.userData = initialData;
+                this.user = { uid: accountKey };
+                localStorage.setItem('youjing_doudizhu_account_key', accountKey);
                 localStorage.setItem('youjing_doudizhu_nickname', nick);
+                const input = document.getElementById('nicknameInput');
+                if (input) input.value = nick;
+                this.updateUserHeaderUI();
                 if (onSuccess) onSuccess(initialData);
             });
         }).catch(err => {
             console.error('[Auth] 注册失败:', err);
-            let msg = err.message;
-            if (err.code === 'auth/email-already-in-use') msg = '该 QQ 邮箱/账号已被注册！';
-            if (err.code === 'auth/invalid-email') msg = '请输入有效的账号或 QQ 邮箱';
-            if (onError) onError(msg);
+            if (onError) onError('注册失败: ' + err.message);
         });
     }
 
     /* ====================================================================
-       账号密码登录 (支持 QQ 邮箱)
+       账号密码登录
        ==================================================================== */
     loginWithEmail(inputAccount, password, onSuccess, onError) {
-        if (!this.auth) {
-            if (onError) onError('认证服务未加载');
+        if (!this.db) {
+            if (onError) onError('云端服务未连接，请刷新页面重试');
             return;
         }
 
         const email = this._formatEmail(inputAccount);
+        const accountKey = this._encodeKey(email);
 
-        this.auth.signInWithEmailAndPassword(email, password).then(cred => {
-            this.fetchUserData(cred.user.uid, (data) => {
-                this.userData = data;
-                if (onSuccess) onSuccess(data);
-            });
+        this.db.ref('users/' + accountKey).once('value').then(snap => {
+            const data = snap.val();
+            if (!data) {
+                if (onError) onError('账号不存在，请先注册');
+                return;
+            }
+
+            if (data.password !== password) {
+                if (onError) onError('密码错误，请检查后再试');
+                return;
+            }
+
+            this.userData = data;
+            this.user = { uid: accountKey };
+            localStorage.setItem('youjing_doudizhu_account_key', accountKey);
+            localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
+            const input = document.getElementById('nicknameInput');
+            if (input) input.value = data.nickname;
+
+            this.updateUserHeaderUI();
+            if (onSuccess) onSuccess(data);
         }).catch(err => {
             console.error('[Auth] 登录失败:', err);
-            let msg = err.message;
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-                msg = '账号或密码错误，请检查后再试';
-            }
-            if (onError) onError(msg);
+            if (onError) onError('登录失败: ' + err.message);
         });
     }
 
     /* ====================================================================
-       微信 / 快捷模拟登录
+       微信快捷登录 (自动为该设备/微信生成持久化凭证)
        ==================================================================== */
     loginWeChatQuick(onSuccess, onError) {
-        if (!this.auth) {
-            if (onError) onError('认证服务未加载');
+        if (!this.db) {
+            if (onError) onError('云端服务未连接');
             return;
         }
 
-        // 使用 Firebase 匿名/快捷认证登录
-        this.auth.signInAnonymously().then(cred => {
-            const uid = cred.user.uid;
-            this.db.ref('users/' + uid).once('value').then(snap => {
-                let data = snap.val();
-                if (!data) {
-                    const savedNick = localStorage.getItem('youjing_doudizhu_nickname') || '微信大玩家';
-                    data = {
-                        uid: uid,
-                        email: 'wechat_quick@wx.com',
-                        nickname: savedNick,
-                        avatar: '💚',
-                        isWechat: true,
-                        coins: 1000,
-                        score: 1000,
-                        totalGames: 0,
-                        wins: 0,
-                        landlordWins: 0,
-                        farmerWins: 0,
-                        bombsPlayed: 0,
-                        created: firebase.database.ServerValue.TIMESTAMP
-                    };
-                    this.db.ref('users/' + uid).set(data);
-                }
-                this.userData = data;
-                if (onSuccess) onSuccess(data);
-            });
+        let wxSid = localStorage.getItem('ddz_wechat_sid');
+        if (!wxSid) {
+            wxSid = 'wx_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem('ddz_wechat_sid', wxSid);
+        }
+
+        const accountKey = this._encodeKey(wxSid);
+
+        this.db.ref('users/' + accountKey).once('value').then(snap => {
+            let data = snap.val();
+            if (!data) {
+                const savedNick = localStorage.getItem('youjing_doudizhu_nickname') || '微信大玩家';
+                data = {
+                    accountKey: accountKey,
+                    email: '微信快捷账号',
+                    nickname: savedNick,
+                    avatar: '💚',
+                    isWechat: true,
+                    coins: 1000,
+                    score: 1000,
+                    totalGames: 0,
+                    wins: 0,
+                    landlordWins: 0,
+                    farmerWins: 0,
+                    bombsPlayed: 0,
+                    created: firebase.database.ServerValue.TIMESTAMP
+                };
+                this.db.ref('users/' + accountKey).set(data);
+            }
+
+            this.userData = data;
+            this.user = { uid: accountKey };
+            localStorage.setItem('youjing_doudizhu_account_key', accountKey);
+            localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
+            const input = document.getElementById('nicknameInput');
+            if (input) input.value = data.nickname;
+
+            this.updateUserHeaderUI();
+            if (onSuccess) onSuccess(data);
         }).catch(err => {
-            console.error('[Auth] 微信快捷登录异常:', err);
-            if (onError) onError('快捷登录失败: ' + err.message);
+            console.error('[Auth] 微信登录失败:', err);
+            if (onError) onError('微信登录失败: ' + err.message);
         });
     }
 
@@ -173,44 +213,31 @@ class AuthManager {
        退出登录
        ==================================================================== */
     logout(onSuccess) {
-        if (!this.auth) return;
-        this.auth.signOut().then(() => {
-            this.userData = null;
-            if (onSuccess) onSuccess();
-        });
+        this.userData = null;
+        this.user = null;
+        localStorage.removeItem('youjing_doudizhu_account_key');
+        this.updateUserHeaderUI();
+        if (onSuccess) onSuccess();
     }
 
     /* ====================================================================
-       拉取用户个人数据
-       ==================================================================== */
-    fetchUserData(uid, callback) {
-        if (!this.db || !uid) return;
-        this.db.ref('users/' + uid).once('value').then(snap => {
-            const data = snap.val();
-            if (callback) callback(data);
-        }).catch(() => {
-            if (callback) callback(null);
-        });
-    }
-
-    /* ====================================================================
-       更新个人比赛战绩（结算后调用）
+       更新比赛战绩与金币积分
        ==================================================================== */
     updateStats(isWin, role, bombsCount, multiplier) {
-        if (!this.user || !this.userData || !this.db) return;
-        const uid = this.user.uid;
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const accountKey = this.userData.accountKey;
 
-        const isLandlord = (role === 'LANDLORD');
+        const isLandlord  = (role === 'LANDLORD');
         const scoreChange = isWin ? (multiplier * 50) : -(multiplier * 30);
         const coinChange  = isWin ? (multiplier * 100) : -(multiplier * 50);
 
-        const newTotal    = (this.userData.totalGames || 0) + 1;
-        const newWins     = (this.userData.wins || 0) + (isWin ? 1 : 0);
-        const newLWins    = (this.userData.landlordWins || 0) + (isWin && isLandlord ? 1 : 0);
-        const newFWins    = (this.userData.farmerWins || 0) + (isWin && !isLandlord ? 1 : 0);
-        const newBombs    = (this.userData.bombsPlayed || 0) + (bombsCount || 0);
-        const newScore    = Math.max(100, (this.userData.score || 1000) + scoreChange);
-        const newCoins    = Math.max(0, (this.userData.coins || 1000) + coinChange);
+        const newTotal = (this.userData.totalGames || 0) + 1;
+        const newWins  = (this.userData.wins || 0) + (isWin ? 1 : 0);
+        const newLWins = (this.userData.landlordWins || 0) + (isWin && isLandlord ? 1 : 0);
+        const newFWins = (this.userData.farmerWins || 0) + (isWin && !isLandlord ? 1 : 0);
+        const newBombs = (this.userData.bombsPlayed || 0) + (bombsCount || 0);
+        const newScore = Math.max(100, (this.userData.score || 1000) + scoreChange);
+        const newCoins = Math.max(0, (this.userData.coins || 1000) + coinChange);
 
         const updatePayload = {
             totalGames: newTotal,
@@ -222,7 +249,7 @@ class AuthManager {
             coins: newCoins
         };
 
-        this.db.ref('users/' + uid).update(updatePayload).then(() => {
+        this.db.ref('users/' + accountKey).update(updatePayload).then(() => {
             Object.assign(this.userData, updatePayload);
             this.updateUserHeaderUI();
         });
@@ -240,8 +267,8 @@ class AuthManager {
         this.db.ref('users').orderByChild('score').limitToLast(10).once('value').then(snap => {
             const map = snap.val() || {};
             const list = [];
-            Object.keys(map).forEach(uid => {
-                list.push(map[uid]);
+            Object.keys(map).forEach(key => {
+                list.push(map[key]);
             });
             list.sort((a, b) => (b.score || 0) - (a.score || 0));
             if (callback) callback(list);
