@@ -32,6 +32,7 @@
     padding: 0;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: manipulation;
 }
 
 input, textarea {
@@ -39,6 +40,7 @@ input, textarea {
     -webkit-user-select: text !important;
     pointer-events: auto !important;
     cursor: text !important;
+    touch-action: auto !important;
 }
 
 body, html {
@@ -48,6 +50,8 @@ body, html {
     background-color: var(--bg-dark);
     font-family: var(--font-main);
     color: var(--text-light);
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
 }
 
 .game-container {

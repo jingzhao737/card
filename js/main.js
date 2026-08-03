@@ -1,6 +1,29 @@
-/* ==========================================================================
-   游戏主逻辑引擎与大厅控制器 (Main Game Controller & Game Engine)
-   ========================================================================== */
+/* 全局禁止移动端双击放大与双指缩放 (Disable double-tap zoom & pinch zoom) */
+(function disablePageZoom() {
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (e) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            const target = e.target;
+            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            if (!isInput) {
+                e.preventDefault();
+            }
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    // 禁止 iOS 捏合手势缩放 (Pinch gesture prevention)
+    document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function (e) {
+        if (e.touches && e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+})();
 
 class GameEngineController {
     constructor() {
