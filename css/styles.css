@@ -662,25 +662,27 @@ body.theme-gomoku .overlay-screen {
     text-align: left !important;
 }
 
-/* 斗地主 Header 顶部右侧悬浮双王 3D 艺术装饰 (大王 & 小王 — 倾斜重叠放大版) */
+/* 斗地主 Header 顶部右侧悬浮双王 2.5D 艺术装饰 (大王 & 小王 — 伪3D视角压感倾斜重叠版) */
 .doudizhu-cards-decoration {
     position: relative;
-    width: 78px;
-    height: 60px;
+    width: 84px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
-    margin-right: 18px;
+    margin-right: 14px;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     z-index: 5;
+    perspective: 600px; /* 开启 2.5D 真实透视视距 */
+    transform-style: preserve-3d;
 }
 
 .mini-poker-card {
-    width: 42px; /* 放大牌面 */
-    height: 58px;
+    width: 44px;
+    height: 60px;
     border-radius: 5px;
     position: absolute;
     background: #ffffff;
@@ -691,78 +693,79 @@ body.theme-gomoku .overlay-screen {
     padding: 4px 5px;
     box-sizing: border-box;
     font-family: var(--font-num);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    backface-visibility: hidden;
 }
 
-/* 大王 (Red Joker - 倾斜重叠左侧) */
+/* 大王 (Red Joker - 2.5D X/Y/Z 轴立体向左侧倾斜) */
 .mini-poker-card.big-joker {
     left: 2px;
     top: -2px;
-    transform: rotate(-10deg);
+    transform: perspective(500px) rotateX(14deg) rotateY(-18deg) rotateZ(-8deg) translateZ(12px);
     background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
     border: 1.5px solid #dc2626;
-    box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.7), 0 0 10px rgba(220, 38, 38, 0.3);
+    box-shadow: 6px 12px 20px rgba(0, 0, 0, 0.65), inset -1px -1px 2px rgba(255, 255, 255, 0.9), 0 0 10px rgba(220, 38, 38, 0.25);
     z-index: 2;
 }
 
 .mini-poker-card.big-joker .poker-corner {
     color: #dc2626;
     font-weight: 900;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1;
     align-self: flex-start;
 }
 
 .mini-poker-card.big-joker .poker-icon {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     line-height: 1;
     margin-bottom: 2px;
 }
 
-/* 小王 (Black Joker - 倾斜重叠右侧底座) */
+/* 小王 (Black Joker - 2.5D X/Y/Z 轴立体向右侧压感倾斜) */
 .mini-poker-card.small-joker {
     right: 4px;
     bottom: -2px;
-    transform: rotate(12deg);
+    transform: perspective(500px) rotateX(16deg) rotateY(16deg) rotateZ(10deg) translateZ(0px);
     background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
     border: 1.5px solid #1e293b;
-    box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.55);
+    box-shadow: 5px 10px 18px rgba(0, 0, 0, 0.55), inset -1px -1px 2px rgba(255, 255, 255, 0.9);
     z-index: 1;
 }
 
 .mini-poker-card.small-joker .poker-corner {
     color: #0f172a;
     font-weight: 900;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1;
     align-self: flex-start;
 }
 
 .mini-poker-card.small-joker .poker-icon {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     line-height: 1;
     margin-bottom: 2px;
 }
 
-/* 点击促发大小王重叠飞跃动画 */
+/* 点击促发 2.5D 视角动态弹跳 */
 .doudizhu-cards-decoration.animate .big-joker {
-    animation: jokerBounceBig 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: jokerBounceBig 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .doudizhu-cards-decoration.animate .small-joker {
-    animation: jokerBounceSmall 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: jokerBounceSmall 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes jokerBounceBig {
-    0% { transform: rotate(-10deg) scale(1); }
-    40% { transform: translate(-8px, -6px) scale(1.22) rotate(-22deg); box-shadow: 8px 14px 24px rgba(220, 38, 38, 0.55); }
-    100% { transform: rotate(-10deg) scale(1); }
+    0% { transform: perspective(500px) rotateX(14deg) rotateY(-18deg) rotateZ(-8deg) translateZ(12px); }
+    45% { transform: perspective(500px) rotateX(24deg) rotateY(-32deg) rotateZ(-16deg) translateZ(28px) translateY(-6px); box-shadow: 12px 20px 28px rgba(220, 38, 38, 0.55); }
+    100% { transform: perspective(500px) rotateX(14deg) rotateY(-18deg) rotateZ(-8deg) translateZ(12px); }
 }
 
 @keyframes jokerBounceSmall {
-    0% { transform: rotate(12deg) scale(1); }
-    40% { transform: translate(8px, 6px) scale(1.22) rotate(24deg); box-shadow: 8px 14px 24px rgba(0, 0, 0, 0.65); }
-    100% { transform: rotate(12deg) scale(1); }
+    0% { transform: perspective(500px) rotateX(16deg) rotateY(16deg) rotateZ(10deg) translateZ(0px); }
+    45% { transform: perspective(500px) rotateX(26deg) rotateY(30deg) rotateZ(18deg) translateZ(18px) translateY(6px); box-shadow: 10px 18px 26px rgba(0, 0, 0, 0.65); }
+    100% { transform: perspective(500px) rotateX(16deg) rotateY(16deg) rotateZ(10deg) translateZ(0px); }
 }
 
 /* 横幅内隐约的横纹绒布纹 */
