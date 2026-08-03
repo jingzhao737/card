@@ -374,11 +374,13 @@ class GameEngineController {
             });
         }
 
-        // 复制邀请链接 (null-safe)
-        const _copyInvite1 = document.getElementById('btnCopyInviteUrl');
-        const _copyLink    = document.getElementById('btnCopyLink');
-        if (_copyInvite1) _copyInvite1.addEventListener('click', () => this.copyInviteUrl());
-        if (_copyLink)    _copyLink.addEventListener('click', () => this.copyInviteUrl());
+        // 复制邀请链接 & 复制房间号 (null-safe)
+        const _copyInvite1  = document.getElementById('btnCopyInviteUrl');
+        const _copyLink     = document.getElementById('btnCopyLink');
+        const _btnCopyRoomId= document.getElementById('btnCopyRoomId');
+        if (_copyInvite1)  _copyInvite1.addEventListener('click', () => this.copyInviteUrl());
+        if (_copyLink)     _copyLink.addEventListener('click', () => this.copyInviteUrl());
+        if (_btnCopyRoomId)_btnCopyRoomId.addEventListener('click', () => this.copyRoomId());
 
         // ====== 账号认证 & 全网排行榜事件绑定 ======
         const userHeaderBadge  = document.getElementById('userHeaderBadge');
@@ -1028,6 +1030,27 @@ class GameEngineController {
     }
 
     /**
+     * 点击一键复制房间号
+     */
+    copyRoomId() {
+        const roomDisp = document.getElementById('waitingRoomIdDisplay');
+        const roomId = roomDisp ? roomDisp.textContent.trim() : '';
+        if (roomId && roomId !== '------') {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(roomId);
+            } else {
+                const t = document.createElement('textarea');
+                t.value = roomId;
+                document.body.appendChild(t);
+                t.select();
+                document.execCommand('copy');
+                document.body.removeChild(t);
+            }
+            UIRenderer.showToast(`✅ 已复制房间号：${roomId}`);
+        }
+    }
+
+    /**
      * 根据当前界面 (大厅 / 游戏房) 动态切换顶部 app-header 可见性
      * 主页大厅时彻底隐藏 app-header 导航条，进入房间或打牌时恢复显示
      */
@@ -1073,7 +1096,7 @@ class GameEngineController {
         if (waitingRoomDisp) waitingRoomDisp.textContent = roomId;
 
         const roomInfoBar = document.getElementById('roomInfoBar');
-        if (roomInfoBar) roomInfoBar.style.display = 'flex';
+        if (roomInfoBar) roomInfoBar.style.display = 'none'; // 房间等待界面隐去顶部 NAV 栏重复的房间号
 
         const menuLeaveBtn = document.getElementById('menuBtnLeaveRoom');
         if (menuLeaveBtn) menuLeaveBtn.style.display = 'flex';
@@ -1218,7 +1241,7 @@ class GameEngineController {
         if (dispRoom) dispRoom.textContent = roomId;
         const waitingRoomDisp2 = document.getElementById('waitingRoomIdDisplay');
         if (waitingRoomDisp2) waitingRoomDisp2.textContent = roomId;
-        if (roomBar)  roomBar.style.display = 'flex';
+        if (roomBar)  roomBar.style.display = 'none'; // 房间等待界面隐去顶部 NAV 栏重复的房间号
         if (btnStart) btnStart.style.display = 'none';
         if (btnAiBtn) btnAiBtn.style.display = 'none';
         if (btnGoHome) btnGoHome.style.display = 'inline-flex';

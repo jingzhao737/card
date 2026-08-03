@@ -216,9 +216,10 @@
             <div class="lobby-card waiting-card-hero">
                 <!-- 顶部房间信息头 -->
                 <div class="waiting-header-bar">
-                    <div class="room-id-pill">
+                    <div class="room-id-pill" id="btnCopyRoomId" style="cursor:pointer;" title="点击复制房间号">
                         <i class="fa-solid fa-house-user"></i>
                         <span>房间号: <b id="waitingRoomIdDisplay" style="color:#ffd700;font-size:1.1rem;letter-spacing:1px;">------</b></span>
+                        <i class="fa-solid fa-copy" style="font-size:0.75rem;color:#94a3b8;margin-left:2px;"></i>
                     </div>
                     <div class="connected-badge">
                         <span class="status-dot green"></span>
@@ -235,7 +236,7 @@
                     <div class="share-box-redesign">
                         <input type="text" id="inviteUrlInput" readonly placeholder="生成专属房间链接中...">
                         <button class="btn-copy-gold" id="btnCopyInviteUrl">
-                            <i class="fa-solid fa-link"></i> 复制组局链接
+                            <i class="fa-solid fa-copy"></i> COPY
                         </button>
                     </div>
 
@@ -270,13 +271,13 @@
                 <!-- 底部开局与退出控制栏 -->
                 <div class="waiting-actions-bar">
                     <button class="btn-start-game-gold" id="btnStartGame">
-                        <i class="fa-solid fa-gamepad"></i> 立即开始斗地主
+                        <i class="fa-solid fa-play"></i> START
                     </button>
                     <button class="btn-start-ai-sub" id="btnStartWithAi" style="display: none;">
                         <i class="fa-solid fa-robot"></i> 补齐机器人并立即开局
                     </button>
                     <button class="btn-cancel-lobby" id="btnCancelWaiting">
-                        <i class="fa-solid fa-arrow-left"></i> 返回大厅
+                        <i class="fa-solid fa-arrow-left"></i> BACK
                     </button>
                 </div>
             </div>
