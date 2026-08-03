@@ -83,22 +83,22 @@
         </header>
 
         <!-- 主大厅/大厅模式选择 (Hero Aesthetic Lobby) -->
-        <div id="lobbyScreen" class="overlay-screen active">
-            <div class="lobby-card hero-lobby-card">
-                <!-- 简略排行榜区域 (位于整个核心卡片正上方、游鲸斗地主区块之上) -->
-                <div class="mini-leaderboard-bar" id="lobbyMiniLeaderboard" title="点击查看全网详细高手榜">
-                    <div class="mini-lb-left">
-                        <i class="fa-solid fa-trophy mini-lb-icon"></i>
-                        <span class="mini-lb-title">全网高手榜</span>
-                    </div>
-                    <div class="mini-lb-ticker" id="miniLeaderboardTicker">
-                        <span><i class="fa-solid fa-spinner fa-spin"></i> 排行榜加载中...</span>
-                    </div>
-                    <div class="mini-lb-more">
-                        <span>榜单 <i class="fa-solid fa-chevron-right"></i></span>
-                    </div>
+        <div id="lobbyScreen" class="overlay-screen active" style="flex-direction: column; gap: 12px;">
+            <!-- 独立的简略排行榜卡片 (完全独立解耦置于游鲸斗地主主卡片之上) -->
+            <div class="mini-leaderboard-bar" id="lobbyMiniLeaderboard" title="点击查看全网详细高手榜">
+                <div class="mini-lb-left">
+                    <i class="fa-solid fa-trophy mini-lb-icon"></i>
+                    <span class="mini-lb-title">全网高手榜</span>
                 </div>
+                <div class="mini-lb-ticker" id="miniLeaderboardTicker">
+                    <span><i class="fa-solid fa-spinner fa-spin"></i> 排行榜加载中...</span>
+                </div>
+                <div class="mini-lb-more">
+                    <span>榜单 <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </div>
 
+            <div class="lobby-card hero-lobby-card">
                 <div class="lobby-header">
                     <div class="brand-hero">
                         <div class="brand-text">
@@ -132,7 +132,7 @@
                         </div>
                         <div class="auth-banner-actions">
                             <button class="btn-auth-action" id="btnLobbyAuth" type="button">登录 / 注册</button>
-                            <button class="btn-auth-action btn-appearance" id="btnLobbyAppearance" type="button"><i class="fa-solid fa-palette"></i> 更换外观</button>
+                            <button class="btn-auth-action btn-appearance" id="btnLobbyAppearance" type="button">外观更换</button>
                         </div>
                     </div>
 
@@ -718,7 +718,7 @@
                         <!-- 动态填充名片 -->
                     </div>
                     <button class="btn-mode primary" id="btnStatsAppearance" style="margin-top:4px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;">
-                        <i class="fa-solid fa-palette"></i> 更换外观 / 皮肤商城
+                        外观更换 / 皮肤商城
                     </button>
                     <button class="btn-secondary" id="btnLogout" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#f87171;font-weight:700;margin-top:4px;">
                         <i class="fa-solid fa-power-off"></i> 退出登录
