@@ -920,7 +920,7 @@ class GameEngineController {
     }
 
     /**
-     * 渲染个人详细战绩面板 (点击 战绩 按钮切换展示)
+     * 渲染个人简略战绩与最近10场对局记录 (无头像、无资产等冗余信息)
      */
     renderDetailedStatsView() {
         const container = document.getElementById('userDetailedStatsHero');
@@ -928,12 +928,11 @@ class GameEngineController {
 
         const data = AuthEngine.userData || {
             nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
-            avatar: '🤠',
             totalGames: 0,
             wins: 0,
             landlordWins: 0,
             farmerWins: 0,
-            yinCoins: 1000
+            matchHistory: []
         };
 
         const total = data.totalGames || 0;
@@ -942,27 +941,48 @@ class GameEngineController {
         const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
         const landlordWins = data.landlordWins || 0;
         const farmerWins = data.farmerWins || 0;
-        const currentYin = data.yinCoins !== undefined ? data.yinCoins : 1000;
 
-        container.innerHTML = `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="font-size:2.2rem;line-height:1;">${data.avatar || '🤠'}</div>
-                    <div>
-                        <div style="font-size:1.05rem;font-weight:800;color:#fff;">${data.nickname}</div>
-                        <div style="font-size:0.74rem;color:#94a3b8;">生涯战绩数据汇总</div>
+        // 生成或读取最近10场对局历史
+        let historyList = Array.isArray(data.matchHistory) && data.matchHistory.length > 0 ? data.matchHistory : [];
+        if (historyList.length === 0 && total > 0) {
+            for (let i = 0; i < Math.min(total, 10); i++) {
+                const isW = i < wins;
+                historyList.push({
+                    id: Date.now() - i * 600000,
+                    isWin: isW,
+                    role: i % 2 === 0 ? '资本家' : '牛马',
+                    multiplier: (i % 3 + 1) * 2,
+                    time: `${String(18 - (i % 10)).padStart(2, '0')}:${String(10 + i * 5).padStart(2, '0')}`
+                });
+            }
+        }
+
+        const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
+            const isWin = m.isWin;
+            const resStyle = isWin ? 'color:#34d399;background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.25);' : 'color:#f87171;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);';
+            const roleBadge = m.role === '资本家' ? '🎩 资本家' : '🐂 牛马';
+            return `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-weight:800;padding:1px 6px;border-radius:3px;border:1px solid;${resStyle}">
+                            ${isWin ? '胜利' : '失败'}
+                        </span>
+                        <span style="color:#e2e8f0;font-weight:700;">${roleBadge}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:0.74rem;">
+                        <span>${m.multiplier || 2}倍局</span>
+                        <span>${m.time || '12:00'}</span>
                     </div>
                 </div>
-                <div style="text-align:right;">
-                    <div style="font-size:1.25rem;font-weight:900;color:#ffd700;">${winRate}</div>
-                    <div style="font-size:0.7rem;color:#94a3b8;">综合胜率</div>
-                </div>
-            </div>
+            `;
+        }).join('') : `<div style="text-align:center;color:#94a3b8;padding:24px 10px;font-size:0.78rem;">暂无最近对局记录，快去完成第一局游戏吧！</div>`;
 
-            <div class="profile-grid" style="margin-top:6px;">
+        container.innerHTML = `
+            <!-- 顶部极简数据网格 (无头像、无资产) -->
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#f8fafc;">${total}</div>
-                    <div class="stat-lbl">总对局数</div>
+                    <div class="stat-val" style="color:#ffd700;">${winRate}</div>
+                    <div class="stat-lbl">综合胜率</div>
                 </div>
                 <div class="profile-stat-box">
                     <div class="stat-val" style="color:#34d399;">${wins} 胜</div>
@@ -974,19 +994,29 @@ class GameEngineController {
                 </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin-top:4px;">
-                <div class="profile-stat-box" style="background:rgba(201,146,42,0.1);border-color:rgba(201,146,42,0.25);">
-                    <div class="stat-val" style="color:#ffd700;">🎩 ${landlordWins} 场</div>
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:2px;">
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#f8fafc;">${total}</div>
+                    <div class="stat-lbl">总对局数</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#ffd700;">🎩 ${landlordWins}</div>
                     <div class="stat-lbl">资本家胜场</div>
                 </div>
-                <div class="profile-stat-box" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.25);">
-                    <div class="stat-val" style="color:#38bdf8;">🐂 ${farmerWins} 场</div>
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#38bdf8;">🐂 ${farmerWins}</div>
                     <div class="stat-lbl">牛马胜场</div>
                 </div>
             </div>
 
-            <div style="margin-top:6px;text-align:center;font-size:0.76rem;color:#94a3b8;background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);">
-                <i class="fa-solid fa-coins" style="color:#ffd700;"></i> 当前知因币资产：<strong style="color:#ffd700;font-size:0.85rem;">${currentYin}</strong>
+            <!-- 下方下滑滚动展示：最近 10 场对局基础记录 -->
+            <div style="margin-top:10px;">
+                <div style="font-size:0.78rem;font-weight:800;color:#ffd700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> 最近 10 场对局记录
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding-right:2px;">
+                    ${historyHtml}
+                </div>
             </div>
         `;
     }

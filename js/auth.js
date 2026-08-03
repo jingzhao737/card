@@ -452,12 +452,24 @@ class AuthManager {
         const newFWins = (this.userData.farmerWins || 0) + (isWin && !isLandlord ? 1 : 0);
         const newBombs = (this.userData.bombsPlayed || 0) + (bombsCount || 0);
 
+        const historyItem = {
+            id: Date.now(),
+            isWin: isWin,
+            role: isLandlord ? '资本家' : '牛马',
+            multiplier: multiplier || 1,
+            bombs: bombsCount || 0,
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        };
+        const currentHistory = Array.isArray(this.userData.matchHistory) ? this.userData.matchHistory : [];
+        const newHistory = [historyItem, ...currentHistory].slice(0, 10);
+
         const updatePayload = {
             totalGames: newTotal,
             wins: newWins,
             landlordWins: newLWins,
             farmerWins: newFWins,
-            bombsPlayed: newBombs
+            bombsPlayed: newBombs,
+            matchHistory: newHistory
         };
 
         this.db.ref('users/' + accountKey).update(updatePayload).then(() => {
