@@ -4254,15 +4254,18 @@ body:has(#lobbyScreen.active) .app-header,
    🟢 游鲸五子棋 沉浸式墨绿棋盘 UI Style
    ============================================================ */
 .gomoku-screen-wrap {
-    background: linear-gradient(135deg, #061d15 0%, #03140e 100%) !important;
+    background: linear-gradient(135deg, #061d15 0%, #03140e 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 10px;
+    z-index: 1000;
+}
+
+.gomoku-screen-wrap.active {
     opacity: 1 !important;
     pointer-events: auto !important;
-    z-index: 1000 !important;
 }
 
 .gomoku-container {
