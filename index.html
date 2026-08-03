@@ -24,9 +24,7 @@
 <body>
     <div id="app" class="game-container">
         <header class="app-header">
-            <button class="btn-top-home" id="btnGoHomeTop" style="display: none;" title="返回主页">
-                <i class="fa-solid fa-house"></i> <span>主页</span>
-            </button>
+            <!-- btnGoHomeTop removed: covered by dropdown menu -->
 
             <div class="brand-badge">
                 <span>游鲸斗地主</span>
@@ -78,10 +76,9 @@
                     </div>
                 </div>
 
-                <!-- 兼容备用隐藏节点 -->
+                <!-- 兼容备用隐藏节点 (音效状态 icon 保留) -->
                 <button class="btn-icon" id="btnOpenLeaderboard" style="display:none;"></button>
                 <button class="btn-icon" id="btnToggleSound" style="display:none;"><i class="fa-solid fa-volume-high" id="soundIcon"></i></button>
-                <button class="btn-icon danger" id="btnLeaveRoom" style="display:none;"></button>
             </div>
         </header>
 
