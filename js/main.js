@@ -818,57 +818,50 @@ class GameEngineController {
         const hero = document.getElementById('userProfileHero');
         if (hero) {
             hero.innerHTML = `
-                <div class="profile-top">
-                    <div class="profile-avatar-big" id="btnChangeAvatar" title="点击选择新头像" style="cursor:pointer;position:relative;">
+                <div class="profile-top" style="padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <div class="profile-avatar-big" id="btnChangeAvatar" title="点击更换头像" style="cursor:pointer;position:relative;">
                         <span>${data.avatar || '🤠'}</span>
-                        <div style="position:absolute;bottom:-2px;right:-2px;font-size:0.6rem;background:#ffd700;color:#000;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.4);"><i class="fa-solid fa-pen"></i></div>
+                        <div style="position:absolute;bottom:-2px;right:-2px;font-size:0.6rem;background:#ffd700;color:#000;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-pen"></i></div>
                     </div>
                     <div class="profile-names">
                         <div class="profile-nick" style="display:flex;align-items:center;gap:8px;">
                             <span>${data.nickname}</span>
                             ${canRename ? `
-                                <button id="btnEditNick" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#ffd700;border-radius:4px;padding:2px 8px;font-size:0.75rem;cursor:pointer;font-weight:700;">
+                                <button id="btnEditNick" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);color:#ffd700;border-radius:3px;padding:2px 6px;font-size:0.72rem;cursor:pointer;font-weight:700;">
                                     <i class="fa-solid fa-pen-to-square"></i> 改名
                                 </button>
                             ` : `
-                                <span style="font-size:0.7rem;color:#94a3b8;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">今日已改名</span>
+                                <span style="font-size:0.7rem;color:#94a3b8;">(今日已改名)</span>
                             `}
                         </div>
-                        <div class="profile-email" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px;">
+                        <div style="font-size:0.75rem;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:10px;">
                             <span>${data.email || '游客账号'}</span>
-                            <span style="color:#ffd700;font-weight:800;background:rgba(255,215,0,0.12);padding:1px 6px;border-radius:4px;font-size:0.78rem;">${uidStr}</span>
-                        </div>
-                        <div style="font-size:0.75rem;color:#94a3b8;margin-top:3px;">
-                            <i class="fa-solid fa-calendar-check" style="color:#34d399;"></i> 注册时间: ${regDateStr}
+                            <span style="color:#ffd700;font-weight:700;">${uidStr}</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 头像选择框 (点击头像展开/关闭) -->
-                <div id="avatarPickerBox" style="display:none;background:rgba(0,0,0,0.4);border:1px solid rgba(201,146,42,0.3);border-radius:8px;padding:10px;margin:4px 0 8px;">
-                    <div style="font-size:0.78rem;color:#ffd700;margin-bottom:8px;font-weight:700;">点击切换你的专属游戏头像：</div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-                        ${avatarList.map(a => `<span class="avatar-opt" data-avatar="${a}" style="font-size:1.6rem;cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.08);transition:transform 0.15s ease;">${a}</span>`).join('')}
+                <div id="avatarPickerBox" style="display:none;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:8px;margin:8px 0 4px;">
+                    <div style="font-size:0.75rem;color:#ffd700;margin-bottom:6px;font-weight:700;">点击更换头像：</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                        ${avatarList.map(a => `<span class="avatar-opt" data-avatar="${a}" style="font-size:1.5rem;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.06);">${a}</span>`).join('')}
                     </div>
                 </div>
 
-                <div class="profile-grid">
+                <div class="profile-grid" style="margin-top:10px;">
                     <div class="profile-stat-box">
                         <div class="stat-val" style="color:#ffd700;">🔮 ${currentYin}</div>
-                        <div class="stat-lbl">知因币资产</div>
+                        <div class="stat-lbl">知因币</div>
                     </div>
                     <div class="profile-stat-box">
                         <div class="stat-val">${winRate}</div>
-                        <div class="stat-lbl">总胜率 (${wins}/${total})</div>
+                        <div class="stat-lbl">胜率 (${wins}/${total})</div>
                     </div>
                     <div class="profile-stat-box">
                         <div class="stat-val">${wins} 胜</div>
-                        <div class="stat-lbl">对局胜场</div>
+                        <div class="stat-lbl">胜场</div>
                     </div>
-                </div>
-
-                <div style="margin-top:10px;text-align:center;font-size:0.76rem;color:#94a3b8;background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);">
-                    <i class="fa-solid fa-gift" style="color:#34d399;"></i> 每日打开网页活跃自动发放 100 知因币福利 (0点刷新)
                 </div>
             `;
 
