@@ -15,11 +15,17 @@ const UIRenderer = {
 
     bindEvents() {
         // 理牌按钮
-        document.getElementById('btnSortCards').addEventListener('click', () => {
-            if (window.GameEngine) {
-                window.GameEngine.sortSelfHand();
-            }
-        });
+        const btnSort = document.getElementById('btnSortCards');
+        if (btnSort) {
+            btnSort.addEventListener('click', () => {
+                if (window.GameEngine) {
+                    window.GameEngine.sortSelfHand();
+                }
+            });
+        }
+
+        // 我方 ID 右侧打发时间解闷气球按钮
+        this.bindBoredomToy();
 
         // 窗口尺寸/屏幕翻转时重置手牌缓存，强制以最新分辨率与列堆叠规则渲染手牌
         window.addEventListener('resize', () => {
@@ -114,6 +120,133 @@ const UIRenderer = {
         document.addEventListener('mouseup', onPointerUp);
         document.addEventListener('touchend', onPointerUp);
         document.addEventListener('touchcancel', onPointerUp);
+    },
+
+    /**
+     * 我方 ID 右侧打发时间解闷气球逻辑 (越按越大越红，3D立体质感，啪的爆裂重置)
+     */
+    bindBoredomToy() {
+        const toyBtn = document.getElementById('btnBoredomToy');
+        if (!toyBtn) return;
+
+        this._toyClicks = 0;
+        const maxClicks = 8; // 第 8 次点击触发 POP 爆裂
+
+        toyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._toyClicks++;
+
+            if (this._toyClicks >= maxClicks) {
+                // 💥 触发啪的一声爆炸
+                this.playPopSound();
+
+                toyBtn.textContent = '💥';
+                toyBtn.style.transform = 'scale(2.5)';
+                toyBtn.style.filter = 'brightness(1.8)';
+
+                this.showToast('💥 啪！气球炸掉了！', 1500);
+
+                setTimeout(() => {
+                    this._toyClicks = 0;
+                    toyBtn.textContent = '🎈';
+                    toyBtn.style.transform = 'scale(1)';
+                    toyBtn.style.background = '';
+                    toyBtn.style.boxShadow = '';
+                    toyBtn.style.filter = '';
+                }, 450);
+
+            } else {
+                // 按压挤压音效
+                this.playSqueezeSound(this._toyClicks);
+
+                // 越按越大，越按越红
+                const scale = 1.0 + (this._toyClicks * 0.16); // 1.0 -> 2.12
+                const redG = Math.max(10, 138 - this._toyClicks * 16);
+                const redB = Math.max(10, 138 - this._toyClicks * 16);
+                const glowRadius = this._toyClicks * 3;
+
+                toyBtn.style.transform = `scale(${scale})`;
+                toyBtn.style.background = `radial-gradient(circle at 35% 35%, #ffa0a0 0%, rgb(239, ${redG}, ${redB}) 60%, #7f1d1d 100%)`;
+                toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, 0.9), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
+            }
+        });
+    },
+
+    /**
+     * 气球挤压膨胀音频合成本地播放
+     */
+    playSqueezeSound(stage) {
+        try {
+            const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtxClass) return;
+            const ctx = new AudioCtxClass();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            const startFreq = 240 + stage * 35;
+            osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(startFreq + 70, ctx.currentTime + 0.07);
+
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.07);
+        } catch(e) {}
+    },
+
+    /**
+     * 气球 POP 啪！爆炸音频合成本地播放
+     */
+    playPopSound() {
+        try {
+            const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtxClass) return;
+            const ctx = new AudioCtxClass();
+
+            // 1. 高频噪点炸裂
+            const bufferSize = ctx.sampleRate * 0.09;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.12));
+            }
+
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1400, ctx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.09);
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(1.0, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+            noise.start();
+
+            // 2. 低音沉降冲击
+            const osc = ctx.createOscillator();
+            const oscGain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(340, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.07);
+
+            oscGain.gain.setValueAtTime(0.7, ctx.currentTime);
+            oscGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
+
+            osc.connect(oscGain);
+            oscGain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.07);
+        } catch(e) {}
     },
 
     /**
