@@ -146,8 +146,6 @@ const UIRenderer = {
                 toyBtn.style.transform = 'translateY(-50%) scale(3.2)';
                 toyBtn.style.filter = 'brightness(1.8)';
 
-                this.showToast('💥 啪！气球炸掉了！', 1500);
-
                 setTimeout(() => {
                     this._toyClicks = 0;
                     toyBtn.textContent = '';
