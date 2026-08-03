@@ -45,7 +45,7 @@ class GameEngineController {
 
         // 监听网络层的全量状态同步与大厅同步事件
         NetworkManager.onStateUpdate = (state) => this.onReceiveStateUpdate(state);
-        NetworkManager.onPlayerJoined = (slotIndex, nickname, isRejoin) => this.onPlayerJoined(slotIndex, nickname, isRejoin);
+        NetworkManager.onPlayerJoined = (slotIndex, nickname, avatarEmoji) => this.onPlayerJoined(slotIndex, nickname, avatarEmoji);
         NetworkManager.onLobbySync   = (lobbyData) => this.onReceiveLobbySync(lobbyData);
         NetworkManager.onToast       = (msg) => UIRenderer.showToast(msg);
 
@@ -446,16 +446,7 @@ class GameEngineController {
             });
         }
 
-        // 微信快捷登录
-        const btnWechat = document.getElementById('btnWechatLogin');
-        if (btnWechat) {
-            btnWechat.addEventListener('click', () => {
-                AuthEngine.loginWeChatQuick((data) => {
-                    if (authModal) authModal.style.display = 'none';
-                    UIRenderer.showToast(`💚 微信快捷登录成功！欢迎，${data.nickname}`);
-                }, (err) => UIRenderer.showToast(`❌ ${err}`));
-            });
-        }
+        // 微信登录暂未接入，按鈕保留但不操作 (防止调用不存在的方法)
 
         // 退出登录
         const btnLogout = document.getElementById('btnLogout');
@@ -663,7 +654,6 @@ class GameEngineController {
         const wins     = data.wins || 0;
         const winRate  = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0%';
         const currentYin = data.yinCoins !== undefined ? data.yinCoins : 1000;
-        const canClaim = AuthEngine.canClaimDailyReward();
         const canRename = AuthEngine.canRenameToday();
 
         const avatarList = ['🤠', '👑', '🦁', '🦊', '🐱', '🐶', '🐼', '🐯', '🦄', '🚀', '🤖', '💎', '🔥', '⚡', '🎃', '👽'];
@@ -900,6 +890,9 @@ class GameEngineController {
 
         const displayRoom = document.getElementById('displayRoomId');
         if (displayRoom) displayRoom.textContent = roomId;
+        // 等待屏内的房间号块单独展示 (ID 读取选第一个)
+        const waitingRoomDisp = document.getElementById('waitingRoomIdDisplay');
+        if (waitingRoomDisp) waitingRoomDisp.textContent = roomId;
 
         const roomInfoBar = document.getElementById('roomInfoBar');
         if (roomInfoBar) roomInfoBar.style.display = 'flex';
@@ -986,17 +979,23 @@ class GameEngineController {
      * 客户端加入房间视图更新
      */
     enterRoomAsClient(roomId) {
-        document.getElementById('lobbyScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').style.display = 'none';
-        document.getElementById('waitingScreen').style.display = 'flex';
-        document.getElementById('waitingScreen').classList.add('active');
-        document.getElementById('displayRoomId').textContent = roomId;
-        document.getElementById('roomInfoBar').style.display = 'flex';
-        document.getElementById('btnStartGame').style.display = 'none';
-        document.getElementById('btnStartWithAi').style.display = 'none';
+        const lobbyScr  = document.getElementById('lobbyScreen');
+        const waitScr   = document.getElementById('waitingScreen');
+        const dispRoom  = document.getElementById('displayRoomId');
+        const roomBar   = document.getElementById('roomInfoBar');
+        const btnStart  = document.getElementById('btnStartGame');
+        const btnAiBtn  = document.getElementById('btnStartWithAi');
+        const btnGoHome = document.getElementById('btnGoHomeTop');
 
-        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
-        if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
+        if (lobbyScr) { lobbyScr.classList.remove('active'); lobbyScr.style.display = 'none'; }
+        if (waitScr)  { waitScr.style.display = 'flex'; waitScr.classList.add('active'); }
+        if (dispRoom) dispRoom.textContent = roomId;
+        const waitingRoomDisp2 = document.getElementById('waitingRoomIdDisplay');
+        if (waitingRoomDisp2) waitingRoomDisp2.textContent = roomId;
+        if (roomBar)  roomBar.style.display = 'flex';
+        if (btnStart) btnStart.style.display = 'none';
+        if (btnAiBtn) btnAiBtn.style.display = 'none';
+        if (btnGoHome) btnGoHome.style.display = 'inline-flex';
 
         UIRenderer.showToast('已进入房间，等待房主开始游戏...');
     }
@@ -1027,7 +1026,8 @@ class GameEngineController {
         }
 
         const humanCount = this.gameState.players.filter(p => !p.isAi).length;
-        document.getElementById('connectedCount').textContent = humanCount;
+        const countEl = document.getElementById('connectedCount');
+        if (countEl) countEl.textContent = humanCount;
 
         if (humanCount === 3) {
             UIRenderer.showToast('🎉 全员就位，可以开始游戏了！');
