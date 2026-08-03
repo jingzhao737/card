@@ -140,16 +140,16 @@ const UIRenderer = {
                 // 💥 触发啪的一声爆炸
                 this.playPopSound();
 
-                toyBtn.textContent = '💥';
-                toyBtn.style.transform = 'scale(2.5)';
+                toyBtn.textContent = '💥'; // 炸的时候展示爆裂图标 💥
+                toyBtn.style.transform = 'translateY(-50%) scale(2.4)';
                 toyBtn.style.filter = 'brightness(1.8)';
 
                 this.showToast('💥 啪！气球炸掉了！', 1500);
 
                 setTimeout(() => {
                     this._toyClicks = 0;
-                    toyBtn.textContent = '🎈';
-                    toyBtn.style.transform = 'scale(1)';
+                    toyBtn.textContent = '';
+                    toyBtn.style.transform = 'translateY(-50%) scale(1)';
                     toyBtn.style.background = '';
                     toyBtn.style.boxShadow = '';
                     toyBtn.style.filter = '';
@@ -160,12 +160,13 @@ const UIRenderer = {
                 this.playSqueezeSound(this._toyClicks);
 
                 // 越按越大，越按越红
+                toyBtn.textContent = '';
                 const scale = 1.0 + (this._toyClicks * 0.16); // 1.0 -> 2.12
                 const redG = Math.max(10, 138 - this._toyClicks * 16);
                 const redB = Math.max(10, 138 - this._toyClicks * 16);
                 const glowRadius = this._toyClicks * 3;
 
-                toyBtn.style.transform = `scale(${scale})`;
+                toyBtn.style.transform = `translateY(-50%) scale(${scale})`;
                 toyBtn.style.background = `radial-gradient(circle at 35% 35%, #ffa0a0 0%, rgb(239, ${redG}, ${redB}) 60%, #7f1d1d 100%)`;
                 toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, 0.9), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
             }

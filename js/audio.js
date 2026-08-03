@@ -379,6 +379,61 @@ class AudioSynth {
         osc.start(now);
         osc.stop(now + 0.04);
     }
+
+    /**
+     * 3秒开局倒计时嘀声 (Beep for 3, 2, 1)
+     */
+    playCountdownBeep(sec) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        const freq = sec === 3 ? 440 : sec === 2 ? 554 : 659;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+    }
+
+    /**
+     * 开局倒计时冲刺/抢！提示音 (High pitch chord flourish for GO!)
+     */
+    playCountdownGo() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        [880, 1108, 1320].forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.035);
+
+            gain.gain.setValueAtTime(0.001, now + idx * 0.035);
+            gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.035 + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.035 + 0.25);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now + idx * 0.035);
+            osc.stop(now + idx * 0.035 + 0.25);
+        });
+    }
 }
 
 const SoundEngine = new AudioSynth();

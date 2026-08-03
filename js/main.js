@@ -1421,10 +1421,22 @@ class GameEngineController {
         const totalDuration = 3000; // 3.0 秒
         const step = 50;
 
+        let lastPlayedSec = -1;
         const updateLights = (sec) => {
             if (lightRed) lightRed.classList.toggle('active', sec === 3 || sec === 0);
             if (lightYellow) lightYellow.classList.toggle('active', sec === 2 || sec === 0);
             if (lightGreen) lightGreen.classList.toggle('active', sec === 1 || sec === 0);
+
+            if (sec !== lastPlayedSec) {
+                lastPlayedSec = sec;
+                if (typeof SoundEngine !== 'undefined') {
+                    if (sec === 3 || sec === 2 || sec === 1) {
+                        SoundEngine.playCountdownBeep(sec);
+                    } else if (sec === 0) {
+                        SoundEngine.playCountdownGo();
+                    }
+                }
+            }
 
             if (numEl) {
                 if (sec === 3) {
