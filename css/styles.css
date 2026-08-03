@@ -637,19 +637,13 @@ body.theme-gomoku .overlay-screen {
 .hero-lobby-card {
     /* 深色皮革底面 */
     background: #130508;
-    /* 烫金边框：3层叠加——最外金线 / 中间细隙 / 内衬暗纹 */
-    border: 1px solid #7a5a1e;
-    outline: 3px solid rgba(184, 134, 11, 0.18);
-    outline-offset: 3px;
+    /* 极简精致单描边 */
+    border: 1px solid rgba(201, 146, 42, 0.35);
     border-radius: 6px;
     width: 90%;
     max-width: 430px;
     padding: 0;
-    box-shadow:
-        0 0 0 1px rgba(255, 215, 0, 0.08) inset,
-        0 4px 0 0 #5a3a0a,
-        0 8px 32px rgba(0, 0, 0, 0.85),
-        0 2px 80px rgba(120, 20, 20, 0.4);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
     z-index: 10;
     overflow: hidden;
     text-align: center;
