@@ -600,6 +600,18 @@ class P2PManager {
             window.GameEngine.processChatPhrase(senderIndex, text);
         }
     }
+
+    /* ====================================================================
+       清除所有 Firebase 云端监听器（退出房间时调用）
+       ==================================================================== */
+    _removeAllListeners() {
+        try {
+            if (this.roomRef) {
+                this.roomRef.off();
+                this.roomRef = null;
+            }
+        } catch (e) {}
+    }
 }
 
 const NetworkManager = new P2PManager();
