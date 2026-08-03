@@ -598,6 +598,30 @@ class GameEngineController {
             });
         }
 
+        // 个人信息 与 个人战绩 视图切换绑定
+        const btnToggleStatsView = document.getElementById('btnToggleStatsView');
+        const viewMyStats = document.getElementById('viewMyStats');
+        const viewDetailedStats = document.getElementById('viewDetailedStats');
+        const statsModalTitle = document.getElementById('statsModalTitle');
+
+        if (btnToggleStatsView) {
+            btnToggleStatsView.addEventListener('click', () => {
+                const isViewingInfo = viewMyStats && viewMyStats.style.display !== 'none';
+                if (isViewingInfo) {
+                    if (viewMyStats) viewMyStats.style.display = 'none';
+                    if (viewDetailedStats) viewDetailedStats.style.display = 'flex';
+                    if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-chart-line"></i> 个人战绩';
+                    btnToggleStatsView.innerHTML = '<i class="fa-solid fa-user"></i> 个人信息';
+                    this.renderDetailedStatsView();
+                } else {
+                    if (viewDetailedStats) viewDetailedStats.style.display = 'none';
+                    if (viewMyStats) viewMyStats.style.display = 'flex';
+                    if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-id-card"></i> 个人信息';
+                    btnToggleStatsView.innerHTML = '<i class="fa-solid fa-chart-pie"></i> 战绩';
+                }
+            });
+        }
+
         // 补齐机器人开局 (null-safe)
         const _btnStartWithAi = document.getElementById('btnStartWithAi');
         if (_btnStartWithAi) _btnStartWithAi.addEventListener('click', () => this.fillAiAndStart());
@@ -758,6 +782,17 @@ class GameEngineController {
         if (!statsModal) return;
         statsModal.style.display = 'flex';
 
+        // 默认重置回 个人信息 视图
+        const viewMyStats = document.getElementById('viewMyStats');
+        const viewDetailedStats = document.getElementById('viewDetailedStats');
+        const statsModalTitle = document.getElementById('statsModalTitle');
+        const btnToggleStatsView = document.getElementById('btnToggleStatsView');
+
+        if (viewMyStats) viewMyStats.style.display = 'flex';
+        if (viewDetailedStats) viewDetailedStats.style.display = 'none';
+        if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-id-card"></i> 个人信息';
+        if (btnToggleStatsView) btnToggleStatsView.innerHTML = '<i class="fa-solid fa-chart-pie"></i> 战绩';
+
         const data = AuthEngine.userData || {
             nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
             email: '游客账号（未绑定）',
@@ -882,6 +917,78 @@ class GameEngineController {
         } else if (tabStats) {
             tabStats.click();
         }
+    }
+
+    /**
+     * 渲染个人详细战绩面板 (点击 战绩 按钮切换展示)
+     */
+    renderDetailedStatsView() {
+        const container = document.getElementById('userDetailedStatsHero');
+        if (!container) return;
+
+        const data = AuthEngine.userData || {
+            nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
+            avatar: '🤠',
+            totalGames: 0,
+            wins: 0,
+            landlordWins: 0,
+            farmerWins: 0,
+            yinCoins: 1000
+        };
+
+        const total = data.totalGames || 0;
+        const wins = data.wins || 0;
+        const losses = Math.max(0, total - wins);
+        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
+        const landlordWins = data.landlordWins || 0;
+        const farmerWins = data.farmerWins || 0;
+        const currentYin = data.yinCoins !== undefined ? data.yinCoins : 1000;
+
+        container.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:2.2rem;line-height:1;">${data.avatar || '🤠'}</div>
+                    <div>
+                        <div style="font-size:1.05rem;font-weight:800;color:#fff;">${data.nickname}</div>
+                        <div style="font-size:0.74rem;color:#94a3b8;">生涯战绩数据汇总</div>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.25rem;font-weight:900;color:#ffd700;">${winRate}</div>
+                    <div style="font-size:0.7rem;color:#94a3b8;">综合胜率</div>
+                </div>
+            </div>
+
+            <div class="profile-grid" style="margin-top:6px;">
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#f8fafc;">${total}</div>
+                    <div class="stat-lbl">总对局数</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#34d399;">${wins} 胜</div>
+                    <div class="stat-lbl">胜场次数</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div class="stat-val" style="color:#f87171;">${losses} 败</div>
+                    <div class="stat-lbl">败场次数</div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin-top:4px;">
+                <div class="profile-stat-box" style="background:rgba(201,146,42,0.1);border-color:rgba(201,146,42,0.25);">
+                    <div class="stat-val" style="color:#ffd700;">🎩 ${landlordWins} 场</div>
+                    <div class="stat-lbl">资本家胜场</div>
+                </div>
+                <div class="profile-stat-box" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.25);">
+                    <div class="stat-val" style="color:#38bdf8;">🐂 ${farmerWins} 场</div>
+                    <div class="stat-lbl">牛马胜场</div>
+                </div>
+            </div>
+
+            <div style="margin-top:6px;text-align:center;font-size:0.76rem;color:#94a3b8;background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);">
+                <i class="fa-solid fa-coins" style="color:#ffd700;"></i> 当前知因币资产：<strong style="color:#ffd700;font-size:0.85rem;">${currentYin}</strong>
+            </div>
+        `;
     }
 
     /**
