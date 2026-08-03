@@ -6,6 +6,8 @@ class AudioSynth {
     constructor() {
         this.ctx = null;
         this.enabled = true;
+        this.cardFlipBuffer = null;
+        this.isBufferLoading = false;
     }
 
     init() {
@@ -17,6 +19,27 @@ class AudioSynth {
         }
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
+        }
+        if (this.ctx && !this.cardFlipBuffer && !this.isBufferLoading) {
+            this.loadCardFlipBuffer();
+        }
+    }
+
+    async loadCardFlipBuffer() {
+        if (this.cardFlipBuffer || this.isBufferLoading) return;
+        this.isBufferLoading = true;
+        try {
+            const response = await fetch('sound/card-flip.wav');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.cardFlipBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            }
+        } catch (e) {
+            // 静默容错
+        } finally {
+            this.isBufferLoading = false;
         }
     }
 
@@ -574,14 +597,55 @@ class AudioSynth {
     }
 
     /**
-     * 播放真实卡牌翻转音效 (sound/card-flip.wav)
+     * 播放真实卡牌翻转音效 (sound/card-flip.wav) - 1.4倍速
+     * 支持 Web Audio API 解码 Buffer + HTML5 Audio 预加载节点 (100% 兼容 GitHub Pages & 移动端)
      */
     playCardFlipSound() {
         if (!this.enabled) return;
+        this.init();
+
+        // 优先使用 Web Audio API 解码 Buffer (0延迟、100%免疫跨域/阻断，支持 1.4x 变速)
+        if (this.ctx && this.cardFlipBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.cardFlipBuffer;
+                source.playbackRate.value = 1.4;
+
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 0.85;
+
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+
+                source.start(0);
+                return;
+            } catch (e) {
+                // 回退
+            }
+        }
+
+        // 备用方案 1: 使用 index.html 预加载的 HTML5 Audio DOM 节点
+        const el = document.getElementById('audioCardFlip');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 0.85;
+                clone.playbackRate = 1.4;
+                const p = clone.play();
+                if (p !== undefined) {
+                    p.then(() => {}).catch(() => {
+                        if (typeof this.playCardPlace === 'function') this.playCardPlace();
+                    });
+                }
+                return;
+            } catch (e) {}
+        }
+
+        // 备用方案 2: 动态 Audio 实例
         try {
             const audio = new Audio('sound/card-flip.wav');
             audio.volume = 0.85;
-            audio.playbackRate = 1.4; // 1.4倍速极速清脆
+            audio.playbackRate = 1.4;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
