@@ -354,9 +354,11 @@ class GameEngineController {
             });
         }
 
-        // 复制邀请链接
-        document.getElementById('btnCopyInviteUrl').addEventListener('click', () => this.copyInviteUrl());
-        document.getElementById('btnCopyLink').addEventListener('click', () => this.copyInviteUrl());
+        // 复制邀请链接 (null-safe)
+        const _copyInvite1 = document.getElementById('btnCopyInviteUrl');
+        const _copyLink    = document.getElementById('btnCopyLink');
+        if (_copyInvite1) _copyInvite1.addEventListener('click', () => this.copyInviteUrl());
+        if (_copyLink)    _copyLink.addEventListener('click', () => this.copyInviteUrl());
 
         // ====== 账号认证 & 全网排行榜事件绑定 ======
         const userHeaderBadge  = document.getElementById('userHeaderBadge');
@@ -488,10 +490,9 @@ class GameEngineController {
             });
         }
 
-        // 补齐机器人开局
-        document.getElementById('btnStartWithAi').addEventListener('click', () => {
-            this.fillAiAndStart();
-        });
+        // 补齐机器人开局 (null-safe)
+        const _btnStartWithAi = document.getElementById('btnStartWithAi');
+        if (_btnStartWithAi) _btnStartWithAi.addEventListener('click', () => this.fillAiAndStart());
 
         // 绑定胜负横幅【再来一局】、【收起/关闭】与【展开】事件
         document.addEventListener('click', (e) => {
@@ -568,25 +569,24 @@ class GameEngineController {
         const btnGoHomeTop = document.getElementById('btnGoHomeTop');
         if (btnGoHomeTop) btnGoHomeTop.addEventListener('click', () => this.resetToLobby());
 
-        // 房主手动点击开始游戏（自动补齐空位为 AI）
-        document.getElementById('btnStartGame').addEventListener('click', () => {
-            this.fillAiAndStart();
-        });
+        // 房主手动点击开始游戏（自动补齐空位为 AI）(null-safe)
+        const _btnStartGame = document.getElementById('btnStartGame');
+        if (_btnStartGame) _btnStartGame.addEventListener('click', () => this.fillAiAndStart());
 
-        // 离开/取消等待/返回大厅/复制邀请链接
+        // 离开/取消等待/返回大厅 (null-safe, 无重复绑定)
         const btnCancelWaiting = document.getElementById('btnCancelWaiting');
         const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
         const btnBackToLobby   = document.getElementById('btnBackToLobby');
-        const btnCopyInviteUrl = document.getElementById('btnCopyInviteUrl');
         if (btnCancelWaiting) btnCancelWaiting.addEventListener('click', () => this.resetToLobby());
         if (btnLeaveRoom)     btnLeaveRoom.addEventListener('click', () => this.resetToLobby());
         if (btnBackToLobby)   btnBackToLobby.addEventListener('click', () => this.resetToLobby());
-        if (btnCopyInviteUrl) btnCopyInviteUrl.addEventListener('click', () => this.copyInviteUrl());
 
-        // 音效开关
-        document.getElementById('btnToggleSound').addEventListener('click', () => {
+        // 音效开关 (null-safe)
+        const _btnSound = document.getElementById('btnToggleSound');
+        if (_btnSound) _btnSound.addEventListener('click', () => {
             const isEnabled = SoundEngine.toggleSound();
-            document.getElementById('soundIcon').className = isEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            const soundIcon = document.getElementById('soundIcon');
+            if (soundIcon) soundIcon.className = isEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
             UIRenderer.showToast(isEnabled ? '音效已开启' : '音效已静音');
         });
 
@@ -622,19 +622,24 @@ class GameEngineController {
         const reBidPassBtn = document.getElementById('btnReBidPass');
         if (reBidPassBtn) reBidPassBtn.addEventListener('click', () => this.handleSelfAction('BID', 'PASS'));
 
-        document.getElementById('btnPass').addEventListener('click', () => this.handleSelfAction('PLAY', []));
-        document.getElementById('btnHint').addEventListener('click', () => this.triggerSmartHint());
-        document.getElementById('btnPlayCard').addEventListener('click', () => this.triggerPlayCard());
+        const _btnPass        = document.getElementById('btnPass');
+        const _btnHint        = document.getElementById('btnHint');
+        const _btnPlayCard    = document.getElementById('btnPlayCard');
+        const _btnPlayAgain   = document.getElementById('btnPlayAgain');
+        const _btnBackToLobby2= document.getElementById('btnBackToLobby');
+        if (_btnPass)      _btnPass.addEventListener('click', () => this.handleSelfAction('PLAY', []));
+        if (_btnHint)      _btnHint.addEventListener('click', () => this.triggerSmartHint());
+        if (_btnPlayCard)  _btnPlayCard.addEventListener('click', () => this.triggerPlayCard());
 
-        // 结算屏按钮
-        document.getElementById('btnPlayAgain').addEventListener('click', () => {
+        // 结算屏按钮 (null-safe)
+        if (_btnPlayAgain) _btnPlayAgain.addEventListener('click', () => {
             if (NetworkManager.isHost || NetworkManager.isAiMode) {
                 this.startNewRound();
             } else {
                 UIRenderer.showToast('请等待房主重新开局');
             }
         });
-        document.getElementById('btnBackToLobby').addEventListener('click', () => this.resetToLobby());
+        if (_btnBackToLobby2) _btnBackToLobby2.addEventListener('click', () => this.resetToLobby());
     }
 
     /**
