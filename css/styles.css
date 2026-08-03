@@ -2988,3 +2988,88 @@ body, html {
         justify-content: center;
     }
 }
+
+/* ============================================================
+   大厅公共房间列表 (Public Rooms List Item Styles)
+   ============================================================ */
+.public-room-item {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 146, 42, 0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+.public-room-item:hover {
+    border-color: rgba(201, 146, 42, 0.7);
+    background: rgba(201, 146, 42, 0.08);
+}
+.pr-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.pr-room-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pr-room-id {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #ffd700;
+    font-family: var(--font-num);
+    letter-spacing: 1.5px;
+}
+.pr-phase-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+.pr-phase-tag.waiting { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #34d399; }
+.pr-phase-tag.bidding { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
+.pr-phase-tag.playing { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4); color: #f87171; }
+
+.pr-players {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.pr-player-pill {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.pr-player-pill.ai { color: #94a3b8; border: 1px stroke rgba(255,255,255,0.1); }
+.pr-player-pill.human { color: #fef08a; font-weight: 600; background: rgba(201,146,42,0.18); }
+
+.btn-join-public-room {
+    background: linear-gradient(135deg, #c9921a, #e2a820);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+.btn-join-public-room:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+}
+

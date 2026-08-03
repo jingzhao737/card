@@ -108,6 +108,39 @@ class P2PManager {
         localStorage.removeItem(GAMESTATE_KEY);
     }
 
+    /* ====================================================================
+       拉取云端公共房间列表 (活跃房间/可替代 AI 房间)
+       ==================================================================== */
+    fetchPublicRooms(callback) {
+        if (!this.db) {
+            if (callback) callback([]);
+            return;
+        }
+
+        this.db.ref('rooms').orderByChild('created').limitToLast(20).once('value').then(snapshot => {
+            const roomsMap = snapshot.val() || {};
+            const activeRooms = [];
+            const now = Date.now();
+
+            Object.keys(roomsMap).forEach(roomId => {
+                const room = roomsMap[roomId];
+                if (room && room.lobbyData && room.lobbyData.players) {
+                    const age = now - (room.created || 0);
+                    // 过滤 3 小时内活跃的房间
+                    if (age < 3 * 3600 * 1000) {
+                        activeRooms.push(room);
+                    }
+                }
+            });
+
+            activeRooms.reverse(); // 最新创建在前
+            if (callback) callback(activeRooms);
+        }).catch(err => {
+            console.error('[CloudEngine] 拉取公开房间列表失败:', err);
+            if (callback) callback([]);
+        });
+    }
+
     _bindVisibilityChange() {
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) return;

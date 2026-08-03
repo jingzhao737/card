@@ -309,6 +309,51 @@ class GameEngineController {
             this.startAiGame(nickname);
         });
 
+        // 在线公共房间大厅
+        const btnPublicRooms = document.getElementById('btnPublicRooms');
+        const publicModal    = document.getElementById('publicRoomsModal');
+        const closePublic    = document.getElementById('btnClosePublicRooms');
+        const refreshPublic  = document.getElementById('btnRefreshPublicRooms');
+
+        if (btnPublicRooms && publicModal) {
+            btnPublicRooms.addEventListener('click', () => {
+                publicModal.style.display = 'flex';
+                this.refreshPublicRoomsList();
+            });
+            if (closePublic) {
+                closePublic.addEventListener('click', () => publicModal.style.display = 'none');
+            }
+            if (refreshPublic) {
+                refreshPublic.addEventListener('click', () => this.refreshPublicRoomsList());
+            }
+            publicModal.addEventListener('click', (e) => {
+                if (e.target === publicModal) publicModal.style.display = 'none';
+            });
+        }
+
+        // 代理列表项中的"一键加入/替换AI"按钮点击
+        const listContainer = document.getElementById('publicRoomsListContainer');
+        if (listContainer) {
+            listContainer.addEventListener('click', (e) => {
+                const joinBtn = e.target.closest('[data-join-room-id]');
+                if (!joinBtn) return;
+                const roomId = joinBtn.dataset.joinRoomId;
+                if (!roomId) return;
+
+                publicModal.style.display = 'none';
+                const nickname = getNickname();
+                const joinInput = document.getElementById('joinRoomInput');
+                if (joinInput) joinInput.value = roomId;
+
+                NetworkManager.joinRoom(roomId, nickname, () => {
+                    this.enterRoomAsClient(roomId);
+                    UIRenderer.showToast(`✅ 已进入房间 ${roomId}`);
+                }, (err) => {
+                    UIRenderer.showToast(err);
+                });
+            });
+        }
+
         // 复制邀请链接
         document.getElementById('btnCopyInviteUrl').addEventListener('click', () => this.copyInviteUrl());
         document.getElementById('btnCopyLink').addEventListener('click', () => this.copyInviteUrl());
@@ -508,6 +553,73 @@ class GameEngineController {
         // ====== 房主保活机制 ======
         // 房主浏览器 = 游戏服务器，一旦挂起所有人断线，需要尽力阻止挂起
         this._activateHostKeepAlive();
+    }
+
+    /**
+     * 刷新并渲染云端公共房间大厅列表
+     */
+    refreshPublicRoomsList() {
+        const container = document.getElementById('publicRoomsListContainer');
+        if (!container) return;
+
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取在线房间列表...</div>';
+
+        NetworkManager.fetchPublicRooms((rooms) => {
+            container.innerHTML = '';
+
+            if (!rooms || rooms.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;color:#94a3b8;padding:36px 10px;font-size:0.88rem;">
+                        <i class="fa-solid fa-ghost" style="font-size:2rem;margin-bottom:10px;color:#a07840;display:block;"></i>
+                        <div>当前暂无活跃公开房间</div>
+                        <div style="font-size:0.75rem;margin-top:6px;color:#64748b;">快去点击【创建房间】建立第一个对局吧！</div>
+                    </div>
+                `;
+                return;
+            }
+
+            rooms.forEach(room => {
+                const rId = room.roomId;
+                const phase = (room.gameState && room.gameState.phase) ? room.gameState.phase : 'WAITING';
+                const lobby = room.lobbyData || { players: [] };
+                const players = lobby.players || [];
+
+                let phaseText = '🟢 等待开局';
+                let phaseClass = 'waiting';
+                if (phase === 'BIDDING') { phaseText = '🟡 抢地主中'; phaseClass = 'bidding'; }
+                if (phase === 'PLAYING') { phaseText = '🔴 打牌进行中'; phaseClass = 'playing'; }
+                if (phase === 'GAMEOVER') { phaseText = '🎉 对局刚结束'; phaseClass = 'waiting'; }
+
+                // 计算真人数量与 AI 数量
+                const humanPlayers = players.filter(p => p && !p.isAi && p.name);
+                const aiCount = 3 - humanPlayers.length;
+
+                // 渲染玩家列表标签
+                let playersHtml = players.map((p, idx) => {
+                    if (!p) return '<span class="pr-player-pill ai">🤖 机器人</span>';
+                    if (p.isAi) return `<span class="pr-player-pill ai">🤖 AI</span>`;
+                    return `<span class="pr-player-pill human"><i class="fa-solid fa-user"></i> ${p.name}${idx === 0 ? ' (房主)' : ''}</span>`;
+                }).join('');
+
+                const item = document.createElement('div');
+                item.className = 'public-room-item';
+                item.innerHTML = `
+                    <div class="pr-left">
+                        <div class="pr-room-header">
+                            <span class="pr-room-id"># ${rId}</span>
+                            <span class="pr-phase-tag ${phaseClass}">${phaseText}</span>
+                        </div>
+                        <div class="pr-players">
+                            ${playersHtml}
+                        </div>
+                    </div>
+                    <button class="btn-join-public-room" data-join-room-id="${rId}">
+                        ${aiCount > 0 ? `<i class="fa-solid fa-user-plus"></i> 替换 AI 加入` : `<i class="fa-solid fa-right-to-bracket"></i> 进入房间`}
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        });
     }
 
     /**

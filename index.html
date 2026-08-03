@@ -113,6 +113,21 @@
                             </div>
                         </div>
 
+                        <!-- 动态公开房间大厅 -->
+                        <button class="mode-card public-card" id="btnPublicRooms">
+                            <div class="card-icon-wrap cyan">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>在线房间大厅</span>
+                                    <span class="pill-badge cyan">实时列表</span>
+                                </div>
+                                <div class="card-desc">查看正在打牌或等待中的房间，随时替换 AI 机器人加入战局</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
                         <div class="divider"><span>单人切磋</span></div>
 
                         <!-- 单机 AI 模式 -->
@@ -509,6 +524,24 @@
                     <i class="fa-solid fa-lightbulb"></i>
                     <span>牌力大小：火箭 &gt; 炸弹 &gt; 普通牌型（同牌型比主牌点数）<br>点数：3 &lt; 4 &lt; 5 … &lt; K &lt; A &lt; 2 &lt; 小王 &lt; 大王</span>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 在线公共房间大厅弹窗 -->
+    <div id="publicRoomsModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner" style="max-width: 580px;">
+            <div class="ct-header">
+                <span class="ct-title"><i class="fa-solid fa-list-check"></i> 正在进行的在线房间</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button id="btnRefreshPublicRooms" class="btn-random-nick" style="padding:4px 10px;font-size:0.8rem;">
+                        <i class="fa-solid fa-arrows-rotate"></i> 刷新
+                    </button>
+                    <button class="ct-close" id="btnClosePublicRooms"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="ct-body" id="publicRoomsListContainer" style="max-height: 420px; overflow-y: auto; padding: 14px 16px;">
+                <!-- 动态填充房间列表 -->
             </div>
         </div>
     </div>
