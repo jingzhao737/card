@@ -3764,26 +3764,26 @@ body, html {
     transform: translateY(1px);
 }
 
-/* 我方 ID 右侧打发时间解闷气球小按钮 (默认微型小白球 16px，第1次点击变大到标准大小 24px，之后逐级变大变红，啪的爆裂重置) */
+/* 我方 ID 右侧打发时间解闷气球小按钮 (默认10px微型深灰偏黑小点，第1次点击变大到标准24px纯白球，之后逐级变大变红，啪的爆裂重置) */
 .btn-boredom-toy {
     position: absolute;
-    right: -26px;
+    right: -20px;
     top: 50%;
     transform: translateY(-50%);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: 10px;
+    height: 10px;
     padding: 0;
-    font-size: 11px;
+    font-size: 10px;
     line-height: 1;
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%);
+    background: radial-gradient(circle at 35% 35%, #475569 0%, #1e293b 60%, #0f172a 100%);
     border: none;
     outline: none;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.25), inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.25), 0 1px 4px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
     -webkit-tap-highlight-color: transparent;

@@ -163,15 +163,24 @@ const UIRenderer = {
                     SoundEngine.playToySqueeze(this._toyClicks);
                 }
 
-                // 第一次点击直接变大到标准大小 (16px * 1.5 = 24px)，之后逐级变大变红
                 toyBtn.textContent = '';
-                const scale = 1.25 + (this._toyClicks * 0.25); // click 1 = 1.5x (24px) -> click 7 = 3.0x (48px)
-                const gbVal = Math.max(10, 245 - this._toyClicks * 33);
-                const glowRadius = this._toyClicks * 3.5;
 
-                toyBtn.style.transform = `translateY(-50%) scale(${scale})`;
-                toyBtn.style.background = `radial-gradient(circle at 35% 35%, rgb(255, ${Math.min(255, gbVal + 30)}, ${Math.min(255, gbVal + 30)}) 0%, rgb(239, ${gbVal}, ${gbVal}) 55%, rgb(${Math.max(10, gbVal - 40)}, 0, 0) 100%)`;
-                toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, ${0.35 + this._toyClicks * 0.08}), inset -1.5px -1.5px 3px rgba(0,0,0,0.5), inset 1.5px 1.5px 3px rgba(255,255,255,0.7)`;
+                if (this._toyClicks === 1) {
+                    // 第 1 次点击：直接变成 24px (2.4x 10px) 3D 珍珠纯白球
+                    toyBtn.style.transform = 'translateY(-50%) scale(2.4)';
+                    toyBtn.style.background = 'radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%)';
+                    toyBtn.style.boxShadow = 'inset -1.5px -1.5px 3px rgba(0,0,0,0.25), inset 1.5px 1.5px 3px rgba(255,255,255,0.9), 0 2px 8px rgba(255,255,255,0.3)';
+                } else {
+                    // 第 2~7 次点击：逐级变大 (2.4x -> 4.8x) 且逐级从白变深深红
+                    const clickFactor = (this._toyClicks - 1) / 6; // 0.16 ~ 1.0
+                    const scale = 2.4 + (clickFactor * 2.4); // 2.4x (24px) -> 4.8x (48px)
+                    const gbVal = Math.max(10, Math.floor(245 - clickFactor * 235));
+                    const glowRadius = this._toyClicks * 3.5;
+
+                    toyBtn.style.transform = `translateY(-50%) scale(${scale})`;
+                    toyBtn.style.background = `radial-gradient(circle at 35% 35%, rgb(255, ${Math.min(255, gbVal + 30)}, ${Math.min(255, gbVal + 30)}) 0%, rgb(239, ${gbVal}, ${gbVal}) 55%, rgb(${Math.max(10, gbVal - 40)}, 0, 0) 100%)`;
+                    toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, ${0.35 + this._toyClicks * 0.08}), inset -1.5px -1.5px 3px rgba(0,0,0,0.5), inset 1.5px 1.5px 3px rgba(255,255,255,0.7)`;
+                }
             }
         });
     },
