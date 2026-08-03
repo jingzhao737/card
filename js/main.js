@@ -868,10 +868,6 @@ class GameEngineController {
         const btnGoHomeTop = document.getElementById('btnGoHomeTop');
         if (btnGoHomeTop) btnGoHomeTop.addEventListener('click', () => this.resetToLobby());
 
-        // 房主手动点击开始游戏（自动补齐空位为 AI）(null-safe)
-        const _btnStartGame = document.getElementById('btnStartGame');
-        if (_btnStartGame) _btnStartGame.addEventListener('click', () => this.fillAiAndStart());
-
         // 离开/取消等待/返回大厅 (null-safe, 无重复绑定)
         const btnCancelWaiting = document.getElementById('btnCancelWaiting');
         const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
