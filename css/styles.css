@@ -3283,4 +3283,86 @@ body, html {
     transform: scale(1.05);
 }
 
+/* ============================================================
+   弹窗全局遮罩组件 (Global Modal Overlay & Card Type Modal)
+   ============================================================ */
+.card-type-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.78) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.card-type-inner {
+    background: linear-gradient(180deg, #1f1008 0%, #120904 100%);
+    border: 1px solid rgba(201, 146, 42, 0.5);
+    outline: 3px solid rgba(201, 146, 42, 0.15);
+    outline-offset: 2px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(201, 146, 42, 0.2);
+    overflow: hidden;
+    color: #fff;
+    animation: popIn 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ct-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(201, 146, 42, 0.3);
+}
+
+.ct-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ct-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.15s ease;
+}
+.ct-close:hover {
+    color: #f87171;
+}
+
+.auth-form-body .nickname-input-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 146, 42, 0.35);
+    border-radius: 6px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-form-body .nickname-input-wrapper input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 0.9rem;
+    width: 100%;
+    outline: none;
+}
+
+
 
