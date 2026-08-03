@@ -1582,7 +1582,7 @@ class GameEngineController {
                 el.style.display = 'inline-flex';
                 const isLandlord = (playerIdx === landlordIdx);
                 el.className = `role-identity-badge ${isLandlord ? 'landlord' : 'farmer'}`;
-                el.textContent = isLandlord ? '👑 地主' : '🌾 农民';
+                el.textContent = isLandlord ? '资本家' : '牛马';
             } else {
                 el.style.display = 'none';
             }
@@ -1592,7 +1592,7 @@ class GameEngineController {
         updateRoleBadge('roleBadgeLeft', rel.left);
         updateRoleBadge('roleBadgeRight', rel.right);
 
-        // 玩家编号：严格按出牌顺序 1(地主)、2(地主下家)、3(地主上家) 标注
+        // 玩家编号：严格按出牌顺序 1(资本家)、2(资本家下家)、3(资本家上家) 标注
         const updatePlayerNums = () => {
             const badges = {
                 self:  document.getElementById('numBadgeSelf'),
@@ -1600,7 +1600,7 @@ class GameEngineController {
                 right: document.getElementById('numBadgeRight'),
             };
             if (!isBiddingDone || landlordIdx === -1) {
-                // 抢地主叫牌阶段隐藏编号
+                // 叫分叫牌阶段隐藏编号
                 Object.values(badges).forEach(b => { if (b) b.style.display = 'none'; });
                 return;
             }
@@ -1608,7 +1608,7 @@ class GameEngineController {
             const setNum = (badgeId, absIdx) => {
                 const el = document.getElementById(badgeId);
                 if (!el) return;
-                // 出牌顺序：地主固定为 1，顺时针下家为 2，顺时针上家为 3
+                // 出牌顺序：资本家固定为 1，顺时针下家为 2，顺时针上家为 3
                 const turnOrder = ((absIdx - landlordIdx + 3) % 3) + 1;
                 el.textContent = turnOrder;
                 el.style.display = 'inline-flex';
@@ -1620,7 +1620,7 @@ class GameEngineController {
         };
         updatePlayerNums();
 
-        // 4. 叫完地主进入打牌阶段时，自动触发全员理牌与理牌音效
+        // 4. 叫完资本家进入打牌阶段时，自动触发全员理牌与理牌音效
         if (this.gameState.phase === 'PLAYING' && !this._hasPlayedSortSoundThisRound) {
             this._hasPlayedSortSoundThisRound = true;
             SoundEngine.playCardSort();
@@ -1675,13 +1675,13 @@ class GameEngineController {
                 const winner = this.gameState.players[this.gameState.winnerIndex];
                 const isLandlordWin = (winner && winner.role === 'LANDLORD');
 
-                let titleText = isLandlordWin ? '👑 地主胜利！' : '🌾 农民胜利！';
+                let titleText = isLandlordWin ? '资本家胜利！' : '牛马胜利！';
                 let winnerDesc = '';
                 if (isLandlordWin) {
-                    winnerDesc = `地主【${winner.name}】独占鳌头`;
+                    winnerDesc = `资本家【${winner.name}】独占鳌头`;
                 } else {
                     const farmers = this.gameState.players.filter(p => p.role === 'FARMER').map(p => p.name).join(' & ');
-                    winnerDesc = `农民【${farmers}】联手获胜`;
+                    winnerDesc = `牛马【${farmers}】联手翻盘`;
                 }
 
                 const readyPlayers = this.gameState.readyPlayers || [false, false, false];
