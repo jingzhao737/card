@@ -3718,7 +3718,7 @@ body.theme-gomoku .overlay-screen {
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
-    margin-right: 28px; /* 进一步往左边移动 */
+    margin-right: 18px; /* 适度向右微调 */
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
