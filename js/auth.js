@@ -252,25 +252,40 @@ class AuthManager {
     }
 
     /* ====================================================================
-       刷新顶部栏用户信息组件
+       刷新顶部栏与大厅用户信息组件
        ==================================================================== */
     updateUserHeaderUI() {
         const badge = document.getElementById('userHeaderBadge');
-        if (!badge) return;
+        const lUserNick = document.getElementById('lobbyUserNick');
+        const lUserSub  = document.getElementById('lobbyUserSub');
+        const lBtnAuth  = document.getElementById('btnLobbyAuth');
+        const lAuthIcon = document.getElementById('lobbyAuthIcon');
 
         if (this.userData) {
-            badge.innerHTML = `
-                <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
-                <div class="user-header-info">
-                    <span class="user-header-nick">${this.userData.nickname}</span>
-                    <span class="user-header-score">💰 ${this.userData.coins || 1000} | 🏆 ${this.userData.score || 1000}</span>
-                </div>
-            `;
+            if (badge) {
+                badge.innerHTML = `
+                    <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
+                    <div class="user-header-info">
+                        <span class="user-header-nick">${this.userData.nickname}</span>
+                        <span class="user-header-score">💰 ${this.userData.coins || 1000} | 🏆 ${this.userData.score || 1000}</span>
+                    </div>
+                `;
+            }
+            if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
+            if (lUserSub)  lUserSub.textContent  = `💰 资产: ${this.userData.coins || 1000} 金币 | 🏆 积分: ${this.userData.score || 1000}`;
+            if (lBtnAuth)  lBtnAuth.textContent  = '查看名片';
+            if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
         } else {
-            badge.innerHTML = `
-                <i class="fa-solid fa-circle-user" style="font-size:1.2rem;color:#ffd700;"></i>
-                <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
-            `;
+            if (badge) {
+                badge.innerHTML = `
+                    <i class="fa-solid fa-circle-user" style="font-size:1.2rem;color:#ffd700;"></i>
+                    <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
+                `;
+            }
+            if (lUserNick) lUserNick.textContent = '未登录 (当前为游客)';
+            if (lUserSub)  lUserSub.textContent  = '登录保存战绩名片、天梯积分与金币系统';
+            if (lBtnAuth)  lBtnAuth.textContent  = '登录 / 注册';
+            if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-circle-user auth-avatar-icon';
         }
     }
 }

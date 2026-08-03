@@ -367,15 +367,21 @@ class GameEngineController {
         const btnCloseStats    = document.getElementById('btnCloseStatsModal');
 
         // 打开登录/战绩弹窗
-        if (userHeaderBadge) {
-            userHeaderBadge.addEventListener('click', () => {
-                if (AuthEngine.user && AuthEngine.userData) {
-                    this.openStatsModal('MY_STATS');
-                } else {
-                    if (authModal) authModal.style.display = 'flex';
-                }
-            });
-        }
+        const handleOpenAuthOrStats = () => {
+            if (AuthEngine.user && AuthEngine.userData) {
+                this.openStatsModal('MY_STATS');
+            } else {
+                if (authModal) authModal.style.display = 'flex';
+            }
+        };
+
+        if (userHeaderBadge) userHeaderBadge.addEventListener('click', handleOpenAuthOrStats);
+        const btnLobbyAuth = document.getElementById('btnLobbyAuth');
+        const lobbyAuthBanner = document.getElementById('lobbyAuthBanner');
+        if (btnLobbyAuth) btnLobbyAuth.addEventListener('click', handleOpenAuthOrStats);
+        if (lobbyAuthBanner) lobbyAuthBanner.addEventListener('click', (e) => {
+            if (e.target !== btnLobbyAuth) handleOpenAuthOrStats();
+        });
 
         if (btnLeaderboard) {
             btnLeaderboard.addEventListener('click', () => {
