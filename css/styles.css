@@ -3708,7 +3708,7 @@ body.theme-gomoku .overlay-screen {
     margin-top: 2px;
 }
 
-/* 顶部右侧悬浮双子 3D 艺术装饰 (放大、对角交错摆放、向左移动) */
+/* 顶部右侧悬浮双子 3D 艺术装饰 (无描边、进一步左移、点击动画) */
 .gomoku-stones-decoration {
     position: relative;
     width: 72px;
@@ -3718,45 +3718,57 @@ body.theme-gomoku .overlay-screen {
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
-    margin-right: 12px; /* 整体往左边移动一点 */
+    margin-right: 28px; /* 进一步往左边移动 */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .mini-stone {
-    width: 38px;  /* 棋子放大 */
+    width: 38px;
     height: 38px;
     border-radius: 50%;
     position: absolute;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none !important; /* 完全无描边 */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 黑子：对角左上方 */
+/* 黑子：对角左上方 (无描边，纯自然阴影) */
 .mini-stone.black-stone {
     left: -4px;
     top: -2px;
-    background: radial-gradient(circle at 35% 35%, #4b5563 0%, #111827 70%, #000000 100%);
-    border: 1.5px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 3px 5px 14px rgba(0, 0, 0, 0.7), inset -2px -2px 4px rgba(0, 0, 0, 0.9);
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.75), inset -2px -2px 5px rgba(0, 0, 0, 0.9);
     z-index: 2;
 }
 
-/* 白子：对角右下方 */
+/* 白子：对角右下方 (无描边，纯自然阴影) */
 .mini-stone.white-stone {
     right: -4px;
     bottom: -2px;
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
-    border: 1.5px solid rgba(0, 0, 0, 0.28);
-    box-shadow: 3px 5px 14px rgba(0, 0, 0, 0.45), inset -2px -2px 4px rgba(0, 0, 0, 0.15);
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.48), inset -2px -2px 5px rgba(0, 0, 0, 0.18);
     z-index: 1;
 }
 
-.gomoku-stones-decoration:hover .black-stone {
-    transform: translate(-4px, -3px) rotate(-12deg) scale(1.08);
-    box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.8);
+/* 点击促发一次性爽快弹跳动画 */
+.gomoku-stones-decoration.animate .black-stone {
+    animation: stoneBounceBlack 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.gomoku-stones-decoration:hover .white-stone {
-    transform: translate(4px, 3px) rotate(12deg) scale(1.08);
-    box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.6);
+.gomoku-stones-decoration.animate .white-stone {
+    animation: stoneBounceWhite 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes stoneBounceBlack {
+    0% { transform: scale(1); }
+    40% { transform: translate(-6px, -4px) scale(1.22) rotate(-14deg); box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.85); }
+    100% { transform: scale(1); }
+}
+
+@keyframes stoneBounceWhite {
+    0% { transform: scale(1); }
+    40% { transform: translate(6px, 4px) scale(1.22) rotate(14deg); box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.6); }
+    100% { transform: scale(1); }
 }
 
 .auth-banner-card.emerald-auth {

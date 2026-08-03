@@ -868,6 +868,20 @@ class GameEngineController {
         const btnGoHomeTop = document.getElementById('btnGoHomeTop');
         if (btnGoHomeTop) btnGoHomeTop.addEventListener('click', () => this.resetToLobby());
 
+        // 游鲸五子棋 Header 艺术黑白双棋子点击互动弹跳缩放 + 击石双落音效
+        const gomokuStonesDeco = document.querySelector('.gomoku-stones-decoration');
+        if (gomokuStonesDeco) {
+            gomokuStonesDeco.addEventListener('click', () => {
+                gomokuStonesDeco.classList.remove('animate');
+                void gomokuStonesDeco.offsetWidth; // 强制重发 Keyframe
+                gomokuStonesDeco.classList.add('animate');
+                if (window.SoundEngine && window.SoundEngine.playStoneDrop) {
+                    window.SoundEngine.playStoneDrop(false);
+                    setTimeout(() => window.SoundEngine.playStoneDrop(true), 90);
+                }
+            });
+        }
+
         // 离开/取消等待/返回大厅 (null-safe, 无重复绑定)
         const btnCancelWaiting = document.getElementById('btnCancelWaiting');
         const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
