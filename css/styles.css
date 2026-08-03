@@ -3926,7 +3926,7 @@ body:has(#lobbyScreen.active) .app-header,
     letter-spacing: 0.5px;
 }
 
-/* 统一克制奢华 · 哑光香槟金主按钮 */
+/* 统一克制奢华 · 哑光香槟金主按钮 (COPY & START 带有光束斜切流光) */
 .btn-copy-gold, .btn-start-game-gold {
     background: linear-gradient(135deg, #c9921a 0%, #a07418 100%);
     border: 1px solid rgba(255, 215, 0, 0.35);
@@ -3939,6 +3939,35 @@ body:has(#lobbyScreen.active) .app-header,
     white-space: nowrap;
     box-shadow: 0 4px 14px rgba(201, 146, 42, 0.2);
     transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-copy-gold::after, .btn-start-game-gold::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -120%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg);
+    animation: goldLightSweep 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+}
+
+@keyframes goldLightSweep {
+    0% {
+        left: -120%;
+    }
+    28%, 100% {
+        left: 180%;
+    }
 }
 
 .btn-copy-gold:hover, .btn-start-game-gold:hover {
