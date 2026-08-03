@@ -180,6 +180,9 @@ class P2PManager {
        ==================================================================== */
     _ensureUniqueNickname(requestedNick, existingPlayers, ignoreSlotIndex) {
         let unique = (requestedNick || '').trim();
+        if (typeof window.sanitizeNickname === 'function') {
+            unique = window.sanitizeNickname(unique);
+        }
         if (!unique) unique = '玩家';
 
         if (ignoreSlotIndex !== undefined && ignoreSlotIndex >= 0 && existingPlayers && existingPlayers[ignoreSlotIndex]) {

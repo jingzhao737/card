@@ -250,11 +250,15 @@ class GameEngineController {
             });
         }
 
-        // 获取或产生最终昵称并记录本地
+        // 获取或产生最终昵称并记录本地 (实时自动清洗 乃, 坚, cnj, nj 敏感词)
         const getNickname = () => {
             const input = document.getElementById('nicknameInput');
             let val = input ? input.value.trim() : '';
+            if (typeof window.sanitizeNickname === 'function') {
+                val = window.sanitizeNickname(val);
+            }
             if (!val) val = this.generateUniqueNickname();
+            if (input) input.value = val;
             localStorage.setItem('youjing_doudizhu_nickname', val);
             return val;
         };
@@ -853,11 +857,12 @@ class GameEngineController {
                 if (rank === 2) rankClass = 'top2';
                 if (rank === 3) rankClass = 'top3';
 
+                const cleanNick = typeof window.sanitizeNickname === 'function' ? window.sanitizeNickname(user.nickname) : user.nickname;
                 const item = document.createElement('div');
                 item.className = 'lb-item';
                 item.innerHTML = `
                     <div class="lb-rank ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
-                    <div class="lb-nick">${user.avatar || '🤠'} ${user.nickname}</div>
+                    <div class="lb-nick">${user.avatar || '🤠'} ${cleanNick}</div>
                     <div class="lb-score">🔮 ${user.yinCoins !== undefined ? user.yinCoins : 1000} 因币</div>
                 `;
                 container.appendChild(item);

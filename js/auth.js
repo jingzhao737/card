@@ -3,6 +3,19 @@
    因币资产 (Yin Coins) + 每日登录活跃自动静默发放 100 因币 (0点刷新)
    ========================================================================== */
 
+/**
+ * 敏感字符过滤与昵称安全化函数
+ * 自动强行剔除：乃、坚、cnj（不区分大小写）、nj（不区分大小写）
+ */
+window.sanitizeNickname = function(nick) {
+    if (!nick) return '';
+    let clean = String(nick).replace(/乃|坚|cnj|nj/gi, '').trim();
+    if (!clean) {
+        clean = '玩家_' + Math.floor(100 + Math.random() * 900);
+    }
+    return clean;
+};
+
 class AuthManager {
     constructor() {
         this.db = null;
@@ -125,6 +138,15 @@ class AuthManager {
                             });
                         });
                     }
+                    // 检查并清洗已存在账号的敏感字符 (乃, 坚, cnj, nj)
+                    if (data.nickname) {
+                        const cleanNick = window.sanitizeNickname(data.nickname);
+                        if (cleanNick !== data.nickname) {
+                            console.log('[Sanitize] 已屏蔽敏感词，自动更新旧昵称:', data.nickname, '->', cleanNick);
+                            data.nickname = cleanNick;
+                            this.db.ref('users/' + savedAccountKey + '/nickname').set(cleanNick);
+                        }
+                    }
                     this.userData = data;
                     this.user = { uid: savedAccountKey };
                     localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
@@ -161,7 +183,7 @@ class AuthManager {
 
         const email = this._formatEmail(inputAccount);
         const accountKey = this._encodeKey(email);
-        const nick = (nickname || '').trim() || '斗地主高手';
+        let nick = window.sanitizeNickname(nickname || '斗地主高手');
 
         if (!password || password.length < 6) {
             if (onError) onError('密码长度至少需要 6 位');
@@ -243,6 +265,16 @@ class AuthManager {
                 data.yinCoins = data.coins || 1000;
             }
 
+            // 检查并清洗已存在账号的敏感字符 (乃, 坚, cnj, nj)
+            if (data.nickname) {
+                const cleanNick = window.sanitizeNickname(data.nickname);
+                if (cleanNick !== data.nickname) {
+                    console.log('[Sanitize] 已屏蔽敏感词，自动更新旧昵称:', data.nickname, '->', cleanNick);
+                    data.nickname = cleanNick;
+                    this.db.ref('users/' + accountKey + '/nickname').set(cleanNick);
+                }
+            }
+
             this.userData = data;
             this.user = { uid: accountKey };
             localStorage.setItem('youjing_doudizhu_account_key', accountKey);
@@ -291,9 +323,9 @@ class AuthManager {
             return;
         }
 
-        const nick = (newNickname || '').trim();
+        let nick = window.sanitizeNickname(newNickname);
         if (!nick || nick.length > 10) {
-            if (onError) onError('昵称不能为空且不能超过 10 个字符');
+            if (onError) onError('改名后有效字符不能为空且不能超过 10 个字符');
             return;
         }
 
