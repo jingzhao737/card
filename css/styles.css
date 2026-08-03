@@ -698,12 +698,20 @@ body.theme-gomoku .overlay-screen {
 }
 
 .joker-vertical-label {
-    font-size: 0.52rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 0.82;
+    font-size: 0.44rem;
     font-weight: 900;
-    letter-spacing: 0.5px;
-    line-height: 1;
     align-self: flex-start;
     font-family: 'Outfit', -apple-system, sans-serif;
+    margin-left: 1px;
+    margin-top: 1px;
+}
+
+.joker-vertical-label span {
+    display: block;
 }
 
 .joker-vertical-label.red {
