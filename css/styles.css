@@ -3926,18 +3926,18 @@ body:has(#lobbyScreen.active) .app-header,
     letter-spacing: 0.5px;
 }
 
-/* 统一克制奢华 · 哑光香槟金主按钮 (COPY & START 带有光束斜切流光) */
+/* 闪耀金光主按钮 (COPY & START 带有光束斜切流光) */
 .btn-copy-gold, .btn-start-game-gold {
-    background: linear-gradient(135deg, #c9921a 0%, #a07418 100%);
-    border: 1px solid rgba(255, 215, 0, 0.35);
-    color: #000;
-    font-weight: 800;
+    background: linear-gradient(135deg, #ffdb4d 0%, #f59e0b 50%, #d97706 100%);
+    border: 1px solid #ffe57f;
+    color: #2b1100;
+    font-weight: 900;
     padding: 0 16px;
     border-radius: 3px;
     font-size: 0.84rem;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(201, 146, 42, 0.2);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
@@ -3953,7 +3953,7 @@ body:has(#lobbyScreen.active) .app-header,
     background: linear-gradient(
         90deg,
         rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0.55) 50%,
         rgba(255, 255, 255, 0) 100%
     );
     transform: rotate(25deg);
@@ -3971,8 +3971,8 @@ body:has(#lobbyScreen.active) .app-header,
 }
 
 .btn-copy-gold:hover, .btn-start-game-gold:hover {
-    background: linear-gradient(135deg, #d8a124 0%, #b3831d 100%);
-    box-shadow: 0 6px 18px rgba(216, 161, 36, 0.3);
+    background: linear-gradient(135deg, #ffe066 0%, #fbbf24 50%, #d97706 100%);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
     transform: translateY(-1px);
 }
 
