@@ -498,10 +498,10 @@ class AuthManager {
        ==================================================================== */
     updateUserHeaderUI() {
         const badge = document.getElementById('userHeaderBadge');
+        const lAuthAvatar = document.getElementById('lobbyAuthAvatar');
         const lUserNick = document.getElementById('lobbyUserNick');
         const lUserSub  = document.getElementById('lobbyUserSub');
         const lBtnAuth  = document.getElementById('btnLobbyAuth');
-        const lAuthIcon = document.getElementById('lobbyAuthIcon');
         const nickSec   = document.querySelector('.nickname-section');
 
         if (this.userData) {
@@ -516,10 +516,10 @@ class AuthManager {
                     </div>
                 `;
             }
-            if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
-            if (lUserSub)  lUserSub.textContent  = `🔮 知因币: ${currentYin}`;
-            if (lBtnAuth)  lBtnAuth.textContent  = '个人信息';
-            if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
+            if (lAuthAvatar) lAuthAvatar.textContent = this.userData.avatar || '🤠';
+            if (lUserNick)   lUserNick.textContent   = this.userData.nickname;
+            if (lUserSub)    lUserSub.textContent    = `🔮 知因币: ${currentYin}`;
+            if (lBtnAuth)    lBtnAuth.textContent    = '个人信息';
 
             // 登录后隐去随机昵称区块，避免误导
             if (nickSec) nickSec.style.display   = 'none';
@@ -534,10 +534,10 @@ class AuthManager {
                     <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
                 `;
             }
-            if (lUserNick) lUserNick.textContent = '未登录 (游客)';
-            if (lUserSub)  lUserSub.textContent  = '🔮 知因币: 0';
-            if (lBtnAuth)  lBtnAuth.textContent  = '登录 / 注册';
-            if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-circle-user auth-avatar-icon';
+            if (lAuthAvatar) lAuthAvatar.textContent = '👤';
+            if (lUserNick)   lUserNick.textContent   = '未登录 (游客)';
+            if (lUserSub)    lUserSub.textContent    = '🔮 知因币: 0';
+            if (lBtnAuth)    lBtnAuth.textContent    = '登录 / 注册';
 
             // 游客模式显示随机昵称区块
             if (nickSec) nickSec.style.display   = 'block';
