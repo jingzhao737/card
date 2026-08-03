@@ -718,16 +718,8 @@ class GameEngineController {
                     </div>
                 </div>
 
-                <div style="margin-top:10px;">
-                    ${canClaim ? `
-                        <button id="btnClaimDaily" class="btn-join-action" style="width:100%;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.9rem;border-radius:8px;font-weight:800;box-shadow:0 0 16px rgba(245,158,11,0.4);">
-                            <i class="fa-solid fa-gift"></i> 领取今日福利 100 因币 (每天0点刷新)
-                        </button>
-                    ` : `
-                        <button class="btn-secondary" style="width:100%;height:40px;opacity:0.75;cursor:default;font-size:0.85rem;" disabled>
-                            <i class="fa-solid fa-circle-check" style="color:#34d399;"></i> 今日 100 因币已领取 (明日0点刷新)
-                        </button>
-                    `}
+                <div style="margin-top:10px;text-align:center;font-size:0.76rem;color:#94a3b8;background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);">
+                    <i class="fa-solid fa-gift" style="color:#34d399;"></i> 每日打开网页活跃自动发放 100 因币福利 (0点刷新)
                 </div>
             `;
 
@@ -765,19 +757,6 @@ class GameEngineController {
                             UIRenderer.showToast(`❌ ${err}`);
                         });
                     }
-                });
-            }
-
-            // 每日签到领取按钮
-            const claimBtn = document.getElementById('btnClaimDaily');
-            if (claimBtn) {
-                claimBtn.addEventListener('click', () => {
-                    AuthEngine.claimDailyReward((newCoins) => {
-                        UIRenderer.showToast(`🎉 成功领取今日福利：100 因币！当前资产：${newCoins} 因币`);
-                        this.openStatsModal('MY_STATS');
-                    }, (err) => {
-                        UIRenderer.showToast(`❌ ${err}`);
-                    });
                 });
             }
         }

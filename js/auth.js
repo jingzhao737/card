@@ -1,6 +1,6 @@
 /* ==========================================================================
    用户认证与个人战绩管理系统 (Firebase Realtime Database Direct Engine)
-   因币资产 (Yin Coins) + 每日100因币领取 (0点刷新)
+   因币资产 (Yin Coins) + 每日登录活跃自动静默发放 100 因币 (0点刷新)
    ========================================================================== */
 
 class AuthManager {
@@ -74,6 +74,35 @@ class AuthManager {
     }
 
     /* ====================================================================
+       自动静默领取每日 100 因币 (像 B站 一样：检测到账号今天活跃直接发放)
+       ==================================================================== */
+    checkAndAutoClaimDailyReward() {
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+
+        const today = this.getTodayDateString();
+
+        // 已经领过今天的福利，无需重复发放
+        if (this.userData.lastClaimDate === today) return;
+
+        const accountKey = this.userData.accountKey;
+        const newYinCoins = (this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000) + 100;
+
+        // 记录发放状态
+        this.userData.lastClaimDate = today;
+        this.userData.yinCoins = newYinCoins;
+
+        this.db.ref('users/' + accountKey).update({
+            yinCoins: newYinCoins,
+            lastClaimDate: today
+        }).then(() => {
+            this.updateUserHeaderUI();
+            if (typeof UIRenderer !== 'undefined') {
+                UIRenderer.showToast(`🎁 检测到今日活跃，已自动发放今日福利：+100 因币！(累计: ${newYinCoins})`, 4000);
+            }
+        }).catch(() => {});
+    }
+
+    /* ====================================================================
        自动登录恢复 (从 localStorage 恢复已登录账号)
        ==================================================================== */
     checkAutoLogin() {
@@ -91,6 +120,7 @@ class AuthManager {
                         this._assignUidsToExistingUsers(() => {
                             this.db.ref('users/' + savedAccountKey).once('value').then(s2 => {
                                 this.userData = s2.val() || data;
+                                this.checkAndAutoClaimDailyReward();
                                 this.updateUserHeaderUI();
                             });
                         });
@@ -101,6 +131,9 @@ class AuthManager {
                     const input = document.getElementById('nicknameInput');
                     if (input) input.value = data.nickname;
                     if (this.onAuthChanged) this.onAuthChanged(this.user, data);
+                    
+                    // 自动发放今日活跃 100 因币
+                    this.checkAndAutoClaimDailyReward();
                     this.updateUserHeaderUI();
                 }
             }).catch(() => {});
@@ -146,6 +179,7 @@ class AuthManager {
             this._assignUidsToExistingUsers((totalUsersCount) => {
                 const assignedUid = 10001 + totalUsersCount;
                 const nowTs = Date.now();
+                const today = this.getTodayDateString();
 
                 const initialData = {
                     uid: assignedUid,        // 专属递增数字 UID
@@ -155,7 +189,7 @@ class AuthManager {
                     nickname: nick,
                     avatar: '🤠',
                     yinCoins: 1000,          // 默认新注册就赠送 1000 因币
-                    lastClaimDate: '',       // 上次领取每日因币的日期
+                    lastClaimDate: today,    // 注册当天标记为已自动获得今日因币
                     totalGames: 0,
                     wins: 0,
                     landlordWins: 0,
@@ -216,6 +250,9 @@ class AuthManager {
             const input = document.getElementById('nicknameInput');
             if (input) input.value = data.nickname;
 
+            // 登录成功，自动检查发放今日 100 因币
+            this.checkAndAutoClaimDailyReward();
+
             this.updateUserHeaderUI();
             if (onSuccess) onSuccess(data);
         }).catch(err => {
@@ -233,46 +270,6 @@ class AuthManager {
         localStorage.removeItem('youjing_doudizhu_account_key');
         this.updateUserHeaderUI();
         if (onSuccess) onSuccess();
-    }
-
-    /* ====================================================================
-       检查今天是否可以领取 100 因币 (每天0点刷新)
-       ==================================================================== */
-    canClaimDailyReward() {
-        if (!this.userData) return false;
-        const today = this.getTodayDateString();
-        return this.userData.lastClaimDate !== today;
-    }
-
-    /* ====================================================================
-       领取每日 100 因币福利
-       ==================================================================== */
-    claimDailyReward(onSuccess, onError) {
-        if (!this.userData || !this.db || !this.userData.accountKey) {
-            if (onError) onError('请先登录账号后再领取福利');
-            return;
-        }
-
-        if (!this.canClaimDailyReward()) {
-            if (onError) onError('今日 100 因币已领取过，明天0点刷新！');
-            return;
-        }
-
-        const today = this.getTodayDateString();
-        const newYinCoins = (this.userData.yinCoins || 1000) + 100;
-        const accountKey = this.userData.accountKey;
-
-        this.db.ref('users/' + accountKey).update({
-            yinCoins: newYinCoins,
-            lastClaimDate: today
-        }).then(() => {
-            this.userData.yinCoins = newYinCoins;
-            this.userData.lastClaimDate = today;
-            this.updateUserHeaderUI();
-            if (onSuccess) onSuccess(newYinCoins);
-        }).catch(err => {
-            if (onError) onError('领取失败：' + err.message);
-        });
     }
 
     /* 检查今天是否可以修改昵称 (每天限改1次) */
@@ -404,20 +401,19 @@ class AuthManager {
 
         if (this.userData) {
             const currentYin = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
-            const canClaim = this.canClaimDailyReward();
 
             if (badge) {
                 badge.innerHTML = `
                     <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
                     <div class="user-header-info">
                         <span class="user-header-nick">${this.userData.nickname}</span>
-                        <span class="user-header-score">🔮 ${currentYin} 因币${canClaim ? ' <span style="color:#34d399;font-size:0.6rem;">(可领)</span>' : ''}</span>
+                        <span class="user-header-score">🔮 ${currentYin} 因币</span>
                     </div>
                 `;
             }
             if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
             if (lUserSub)  lUserSub.textContent  = `账号: ${this.userData.email || '已绑定'} | 🔮 资产: ${currentYin} 因币`;
-            if (lBtnAuth)  lBtnAuth.textContent  = canClaim ? '🎁 领因币' : '个人信息';
+            if (lBtnAuth)  lBtnAuth.textContent  = '个人信息';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
 
             // 登录后隐去随机昵称区块，避免误导
@@ -434,7 +430,7 @@ class AuthManager {
                 `;
             }
             if (lUserNick) lUserNick.textContent = '未登录 (当前为游客)';
-            if (lUserSub)  lUserSub.textContent  = '注册立领 1000 因币，每天登录再发 100 因币！';
+            if (lUserSub)  lUserSub.textContent  = '注册立领 1000 因币，每天登录自动发 100 因币！';
             if (lBtnAuth)  lBtnAuth.textContent  = '登录 / 注册';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-circle-user auth-avatar-icon';
 
