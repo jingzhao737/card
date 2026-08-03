@@ -299,6 +299,55 @@
             </div>
         </div>
 
+        <!-- 游鲸五子棋 专属墨绿棋盘对局室 (Gomoku Game Screen) -->
+        <div id="gomokuGameScreen" class="overlay-screen gomoku-screen-wrap" style="display: none;">
+            <div class="gomoku-container">
+                <!-- 顶部对局玩家与回合信息 Bar -->
+                <div class="gomoku-header-bar">
+                    <div class="gomoku-player-pill black" id="gomokuPlayerBlack">
+                        <span class="stone-icon black">⚫</span>
+                        <div class="player-info-text">
+                            <span class="p-name" id="gNameBlack">黑方 (玩家)</span>
+                            <span class="p-role">先手黑棋</span>
+                        </div>
+                    </div>
+
+                    <div class="gomoku-turn-status" id="gomokuTurnStatus">
+                        <span class="status-dot green"></span>
+                        <span id="gomokuTurnText">黑方落子中</span>
+                    </div>
+
+                    <div class="gomoku-player-pill white" id="gomokuPlayerWhite">
+                        <span class="stone-icon white">⚪</span>
+                        <div class="player-info-text">
+                            <span class="p-name" id="gNameWhite">白方 (AI棋圣)</span>
+                            <span class="p-role">后手白棋</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 15x15 墨绿木纹/玉石高质感棋盘容器 -->
+                <div class="gomoku-board-wrapper">
+                    <div class="gomoku-board" id="gomokuBoardContainer">
+                        <!-- 动态生成 15x15 交叉落子点网格 -->
+                    </div>
+                </div>
+
+                <!-- 底部操作控制栏 (悔棋 / 认输 / 返回大厅) -->
+                <div class="gomoku-actions-bar">
+                    <button class="btn-gomoku-action undo" id="btnGomokuUndo">
+                        <i class="fa-solid fa-rotate-left"></i> 悔棋
+                    </button>
+                    <button class="btn-gomoku-action restart" id="btnGomokuRestart">
+                        <i class="fa-solid fa-arrow-rotate-right"></i> 重新开始
+                    </button>
+                    <button class="btn-gomoku-action exit" id="btnGomokuExit">
+                        <i class="fa-solid fa-house"></i> 返回大厅
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- 房间等待大厅 (Waiting Room Redesign) -->
         <div id="waitingScreen" class="overlay-screen" style="display: none;">
             <div class="lobby-card waiting-card-hero">
@@ -577,6 +626,7 @@
     <script src="js/p2p.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/gomoku.js"></script>
     <script src="js/main.js"></script>
 
     <!-- 牌型说明弹窗 -->

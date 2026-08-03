@@ -412,6 +412,44 @@ class GameEngineController {
             }, { passive: true });
         }
 
+        // 五子棋单机 AI 按钮绑定
+        const btnPlayGomokuAi = document.getElementById('btnPlayGomokuAi');
+        if (btnPlayGomokuAi) {
+            btnPlayGomokuAi.addEventListener('click', () => this.startGomokuAiMode());
+        }
+
+        // 五子棋对局控制按钮 (悔棋 / 重开 / 退出)
+        const btnGomokuUndo = document.getElementById('btnGomokuUndo');
+        const btnGomokuRestart = document.getElementById('btnGomokuRestart');
+        const btnGomokuExit = document.getElementById('btnGomokuExit');
+
+        if (btnGomokuUndo) {
+            btnGomokuUndo.addEventListener('click', () => {
+                if (window.gomokuEngine) {
+                    window.gomokuEngine.undo();
+                    this.renderGomokuBoard();
+                    this.updateGomokuStatusUI('已撤回，黑方落子中');
+                }
+            });
+        }
+
+        if (btnGomokuRestart) {
+            btnGomokuRestart.addEventListener('click', () => {
+                if (window.gomokuEngine) {
+                    window.gomokuEngine.reset(true, 1);
+                    this.initGomokuUI();
+                    this.updateGomokuStatusUI('重新开始，黑方落子中');
+                }
+            });
+        }
+
+        if (btnGomokuExit) {
+            btnGomokuExit.addEventListener('click', () => {
+                document.getElementById('gomokuGameScreen').style.display = 'none';
+                this.resetToLobby();
+            });
+        }
+
         // 代理列表项中的"一键加入/替换AI"按钮点击
         const listContainer = document.getElementById('publicRoomsListContainer');
         if (listContainer) {
@@ -1151,6 +1189,142 @@ class GameEngineController {
                 container.appendChild(item);
             });
         });
+    }
+
+    /* ============================================================
+       🟢 游鲸五子棋 UI 控制组件 (Gomoku UI Methods)
+       ============================================================ */
+
+    /**
+     * 初始化五子棋棋盘 UI 界面 (15x15 网格)
+     */
+    initGomokuUI() {
+        const boardContainer = document.getElementById('gomokuBoardContainer');
+        if (!boardContainer) return;
+
+        boardContainer.innerHTML = '';
+        const starPoints = ['3,3', '3,11', '7,7', '11,3', '11,11']; // 15x15 盘面星位与天元
+
+        for (let r = 0; r < 15; r++) {
+            for (let c = 0; c < 15; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'gomoku-cell';
+                if (starPoints.includes(`${r},${c}`)) {
+                    cell.classList.add('star-point');
+                }
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.addEventListener('click', () => this.handleGomokuCellClick(r, c));
+                boardContainer.appendChild(cell);
+            }
+        }
+    }
+
+    /**
+     * 开启单机 AI 五子棋切磋模式
+     */
+    startGomokuAiMode() {
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const gomokuScr = document.getElementById('gomokuGameScreen');
+        if (lobbyScr) lobbyScr.style.display = 'none';
+        if (gomokuScr) gomokuScr.style.display = 'flex';
+        this.updateHeaderVisibility();
+
+        const nick = (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
+        const nameBlack = document.getElementById('gNameBlack');
+        const nameWhite = document.getElementById('gNameWhite');
+        if (nameBlack) nameBlack.textContent = `${nick} (黑方)`;
+        if (nameWhite) nameWhite.textContent = 'AI 棋圣 (白方)';
+
+        window.gomokuEngine.reset(true, 1); // 玩家先手执黑
+        this.initGomokuUI();
+        this.updateGomokuStatusUI('黑方落子中 (你)');
+        UIRenderer.showToast('🟢 游鲸五子棋对局开始！你是先手黑棋');
+    }
+
+    /**
+     * 处理五子棋棋盘单元格点击落子
+     */
+    handleGomokuCellClick(r, c) {
+        const engine = window.gomokuEngine;
+        if (!engine || engine.isGameOver) return;
+        if (engine.isAiMode && engine.currentTurn !== engine.playerColor) return; // 轮到 AI 落子
+
+        const res = engine.placeStone(r, c);
+        if (!res || !res.success) return;
+
+        this.renderGomokuBoard();
+
+        if (res.isGameOver) {
+            this.handleGomokuWin(res.winner);
+            return;
+        }
+
+        // 若为单机 AI 模式，触发 AI 落子
+        if (engine.isAiMode && engine.currentTurn !== engine.playerColor) {
+            this.updateGomokuStatusUI('AI 棋圣思考中...');
+            setTimeout(() => {
+                const aiMove = engine.getBestAiMove();
+                if (aiMove) {
+                    const aiRes = engine.placeStone(aiMove.r, aiMove.c);
+                    this.renderGomokuBoard();
+                    if (aiRes && aiRes.isGameOver) {
+                        this.handleGomokuWin(aiRes.winner);
+                    } else {
+                        this.updateGomokuStatusUI('黑方落子中 (你)');
+                    }
+                }
+            }, 350);
+        } else {
+            this.updateGomokuStatusUI(engine.currentTurn === 1 ? '黑方落子中' : '白方落子中');
+        }
+    }
+
+    /**
+     * 重新渲染盘面棋子
+     */
+    renderGomokuBoard() {
+        const engine = window.gomokuEngine;
+        if (!engine) return;
+
+        const cells = document.querySelectorAll('.gomoku-cell');
+        cells.forEach(cell => {
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+            const val = engine.board[r][c];
+
+            cell.innerHTML = ''; // 清理旧棋子
+
+            if (val !== 0) {
+                const stone = document.createElement('div');
+                stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
+                if (engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c) {
+                    stone.classList.add('last-move');
+                }
+                cell.appendChild(stone);
+            }
+        });
+    }
+
+    /**
+     * 更新顶部对局状态指示
+     */
+    updateGomokuStatusUI(msg) {
+        const textEl = document.getElementById('gomokuTurnText');
+        if (textEl) textEl.textContent = msg;
+    }
+
+    /**
+     * 处理胜负结算
+     */
+    handleGomokuWin(winner) {
+        let msg = '';
+        if (winner === 1) msg = '🎉 恭喜黑方获得胜利 (五子连珠)！';
+        else if (winner === 2) msg = '🤖 游鲸 AI 棋圣获得胜利！';
+        else msg = '🤝 盘满平局！';
+
+        UIRenderer.showToast(msg);
+        this.updateGomokuStatusUI(winner === 0 ? '平局' : (winner === 1 ? '黑方胜' : '白方胜'));
     }
 
     /**
