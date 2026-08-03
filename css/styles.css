@@ -3541,16 +3541,40 @@ body:has(#lobbyScreen.active) .app-header,
 .mini-lb-ticker {
     flex: 1;
     overflow: hidden;
+    position: relative;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+}
+.mini-lb-track {
+    display: inline-flex;
+    align-items: center;
     white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 0.74rem;
-    color: #cbd5e1;
+    animation: marqueeScroll 28s linear infinite;
+    will-change: transform;
+}
+.mini-lb-ticker:hover .mini-lb-track {
+    animation-play-state: paused;
+}
+@keyframes marqueeScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 .mini-lb-ticker .lb-top-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-right: 6px;
+    margin-right: 14px;
+    font-size: 0.74rem;
+}
+.mini-lb-ticker .lb-top-item.is-top3 {
+    margin-right: 20px;
 }
 .mini-lb-ticker .lb-top-name {
     color: #fff;
@@ -3559,6 +3583,7 @@ body:has(#lobbyScreen.active) .app-header,
 .mini-lb-ticker .lb-top-score {
     color: #ffd700;
     font-size: 0.7rem;
+    font-weight: 800;
 }
 .mini-lb-more {
     font-size: 0.72rem;

@@ -883,7 +883,7 @@ class GameEngineController {
     }
 
     /**
-     * 渲染主页顶部简略排行榜 (Top 3 横向走马灯)
+     * 渲染主页顶部简略排行榜 (展示 Top 10，前三名加大间隔与奖牌，平滑无缝走马灯)
      */
     renderMiniLeaderboard() {
         const ticker = document.getElementById('miniLeaderboardTicker');
@@ -895,14 +895,33 @@ class GameEngineController {
                 return;
             }
 
-            const top3 = list.slice(0, 3);
-            const html = top3.map((u, i) => {
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
-                const cleanNick = typeof window.sanitizeNickname === 'function' ? window.sanitizeNickname(u.nickname) : u.nickname;
-                return `<span class="lb-top-item"><span>${medal}</span><span class="lb-top-name">${cleanNick}</span><span class="lb-top-score">(${u.yinCoins || 1000}知因币)</span></span>`;
-            }).join('<span style="color:rgba(255,255,255,0.2);margin:0 4px;">|</span>');
+            // 轮播总共展示前十名
+            const top10 = list.slice(0, 10);
 
-            ticker.innerHTML = html;
+            const buildItemsHtml = (items) => {
+                return items.map((u, i) => {
+                    const rank = i + 1;
+                    let medal = `<span style="font-weight:700;color:#94a3b8;font-size:0.68rem;">No.${rank}</span>`;
+                    if (rank === 1) medal = '🥇';
+                    if (rank === 2) medal = '🥈';
+                    if (rank === 3) medal = '🥉';
+                    const isTop3 = rank <= 3 ? 'is-top3' : '';
+                    const cleanNick = typeof window.sanitizeNickname === 'function' ? window.sanitizeNickname(u.nickname) : u.nickname;
+                    return `<span class="lb-top-item ${isTop3}"><span>${medal}</span><span class="lb-top-name">${cleanNick}</span><span class="lb-top-score">(${u.yinCoins !== undefined ? u.yinCoins : 1000}知因币)</span></span>`;
+                }).join('<span style="color:rgba(255,255,255,0.18);margin-right:14px;">•</span>');
+            };
+
+            const groupHtml = buildItemsHtml(top10);
+
+            // 复制两两无缝衔接，实现 360° 无卡顿平滑循环走马灯
+            ticker.innerHTML = `
+                <div class="mini-lb-track">
+                    ${groupHtml}
+                    <span style="color:rgba(255,255,255,0.18);margin-right:14px;">•</span>
+                    ${groupHtml}
+                    <span style="color:rgba(255,255,255,0.18);margin-right:14px;">•</span>
+                </div>
+            `;
         });
     }
 
