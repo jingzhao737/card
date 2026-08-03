@@ -952,7 +952,7 @@ class GameEngineController {
 
         const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
             const isWin = m.isWin;
-            const resStyle = isWin ? 'color:#34d399;background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.25);' : 'color:#f87171;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);';
+            const resStyle = isWin ? 'color:#00e676;background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.3);' : 'color:#ff2a2a;background:rgba(255,42,42,0.12);border-color:rgba(255,42,42,0.3);';
             const roleBadge = m.role === '资本家' ? '🎩 资本家' : '🐂 牛马';
             return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
@@ -978,11 +978,11 @@ class GameEngineController {
                     <div class="stat-lbl">综合胜率</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#34d399;">${wins} 胜</div>
+                    <div class="stat-val" style="color:#00e676;">${wins} 胜</div>
                     <div class="stat-lbl">胜场次数</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#f87171;">${losses} 败</div>
+                    <div class="stat-val" style="color:#ff2a2a;">${losses} 败</div>
                     <div class="stat-lbl">败场次数</div>
                 </div>
             </div>
