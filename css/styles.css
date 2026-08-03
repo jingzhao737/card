@@ -3580,12 +3580,12 @@ body:has(#lobbyScreen.active) .app-header,
     font-size: 0.95rem;
 }
 
-/* 主页顶部简略排行榜横幅 (完全独立置于大厅主卡片正上方) */
+/* 主页顶部简略排行榜横幅 (极简平淡微型流线 Bar，低调融入背景) */
 .mini-leaderboard-bar {
-    background: linear-gradient(135deg, rgba(201, 146, 42, 0.18), rgba(15, 6, 8, 0.95));
-    border: 1px solid rgba(201, 146, 42, 0.35);
-    border-radius: 4px;
-    padding: 7px 14px;
+    background: rgba(15, 10, 8, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 3px 10px;
     width: 90%;
     max-width: 430px;
     margin-left: auto;
@@ -3594,40 +3594,38 @@ body:has(#lobbyScreen.active) .app-header,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     z-index: 15;
 }
 .mini-leaderboard-bar:hover {
-    background: linear-gradient(135deg, rgba(201, 146, 42, 0.28), rgba(25, 10, 12, 0.98));
-    border-color: rgba(255, 215, 0, 0.5);
-    box-shadow: 0 8px 24px rgba(201, 146, 42, 0.25);
+    background: rgba(25, 18, 14, 0.7);
+    border-color: rgba(201, 146, 42, 0.25);
 }
 .mini-lb-left {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
 }
 .mini-lb-icon {
-    color: #ffd700;
-    font-size: 0.92rem;
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
+    color: #a07840;
+    font-size: 0.75rem;
 }
 .mini-lb-title {
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: #ffd700;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #a07840;
     white-space: nowrap;
 }
 .mini-lb-ticker {
     flex: 1;
     overflow: hidden;
     position: relative;
-    height: 22px;
+    height: 18px;
     display: flex;
     align-items: center;
     mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
@@ -3655,24 +3653,24 @@ body:has(#lobbyScreen.active) .app-header,
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-right: 14px;
-    font-size: 0.74rem;
+    margin-right: 12px;
+    font-size: 0.68rem;
 }
 .mini-lb-ticker .lb-top-item.is-top3 {
-    margin-right: 20px;
+    margin-right: 16px;
 }
 .mini-lb-ticker .lb-top-name {
-    color: #fff;
-    font-weight: 700;
+    color: #94a3b8;
+    font-weight: 500;
 }
 .mini-lb-ticker .lb-top-score {
-    color: #ffd700;
-    font-size: 0.7rem;
-    font-weight: 800;
+    color: #c9921a;
+    font-size: 0.68rem;
+    font-weight: 600;
 }
 .mini-lb-more {
-    font-size: 0.72rem;
-    color: #94a3b8;
+    font-size: 0.68rem;
+    color: #64748b;
     display: flex;
     align-items: center;
     gap: 2px;
@@ -3680,12 +3678,12 @@ body:has(#lobbyScreen.active) .app-header,
     white-space: nowrap;
 }
 .mini-lb-more i {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     transition: transform 0.15s ease;
 }
 .mini-leaderboard-bar:hover .mini-lb-more i {
     transform: translateX(2px);
-    color: #ffd700;
+    color: #a07840;
 }
 
 /* 大厅专属登录卡片 */
