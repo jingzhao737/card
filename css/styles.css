@@ -2898,6 +2898,27 @@ body, html {
         padding: 1px 3px;
     }
 
+    /* 手机端精细微型出牌牌型标注胶囊 (Compact Mobile Card Type Badge) */
+    .card-type-label {
+        font-size: 0.62rem !important;
+        padding: 1px 6px !important;
+        border-radius: 10px !important;
+        gap: 2px !important;
+        top: -18px !important;
+        letter-spacing: 0px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .card-type-label.label-bomb,
+    .card-type-label.label-rocket {
+        font-size: 0.68rem !important;
+        padding: 1px 7px !important;
+    }
+
+    #playedSelf .card-type-label {
+        top: -20px !important;
+    }
+
     #playedLeft {
         left: 8px !important;
         top: 160px !important;
