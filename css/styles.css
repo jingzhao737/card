@@ -79,6 +79,21 @@ body, html {
     border-bottom: 1px solid rgba(180,140,50,0.3);
 }
 
+/* 墨绿主题：游鲸五子棋专属全局背景与 Header */
+body.theme-gomoku .game-container {
+    background-color: #03140e !important;
+    background-image:
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(14, 61, 45, 0.95) 0%, rgba(6, 34, 24, 0.98) 60%, #020d09 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%2334d399' stroke-width='0.75' stroke-opacity='0.12'/%3E%3C/svg%3E") !important;
+    transition: background 0.4s ease;
+}
+
+body.theme-gomoku .top-nav,
+body.theme-gomoku .app-header {
+    background: linear-gradient(180deg, #062218 0%, #03140e 100%) !important;
+    border-bottom: 1px solid rgba(52, 211, 153, 0.3) !important;
+}
+
 /* 当主页大厅 (#lobbyScreen) 处于激活状态时，隐藏顶部 app-header 导航条 */
 body:has(#lobbyScreen.active) .app-header,
 .game-container:has(#lobbyScreen.active) .app-header,

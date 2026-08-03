@@ -329,22 +329,35 @@ class GameEngineController {
             this.startAiGame(nickname);
         });
 
-        // 在线公共房间大厅
-        const btnPublicRooms = document.getElementById('btnPublicRooms');
-        const publicModal    = document.getElementById('publicRoomsModal');
-        const closePublic    = document.getElementById('btnClosePublicRooms');
-        const refreshPublic  = document.getElementById('btnRefreshPublicRooms');
+        // 在线公共房间大厅 (斗地主 & 五子棋)
+        const btnPublicRooms       = document.getElementById('btnPublicRooms');
+        const btnPublicGomokuRooms = document.getElementById('btnPublicGomokuRooms');
+        const publicModal          = document.getElementById('publicRoomsModal');
+        const closePublic          = document.getElementById('btnClosePublicRooms');
+        const refreshPublic        = document.getElementById('btnRefreshPublicRooms');
+
+        let currentPublicGameType = 'DOUDIZHU';
 
         if (btnPublicRooms && publicModal) {
             btnPublicRooms.addEventListener('click', () => {
+                currentPublicGameType = 'DOUDIZHU';
                 publicModal.style.display = 'flex';
-                this.refreshPublicRoomsList();
+                this.refreshPublicRoomsList('DOUDIZHU');
             });
+        }
+        if (btnPublicGomokuRooms && publicModal) {
+            btnPublicGomokuRooms.addEventListener('click', () => {
+                currentPublicGameType = 'GOMOKU';
+                publicModal.style.display = 'flex';
+                this.refreshPublicRoomsList('GOMOKU');
+            });
+        }
+        if (publicModal) {
             if (closePublic) {
                 closePublic.addEventListener('click', () => publicModal.style.display = 'none');
             }
             if (refreshPublic) {
-                refreshPublic.addEventListener('click', () => this.refreshPublicRoomsList());
+                refreshPublic.addEventListener('click', () => this.refreshPublicRoomsList(currentPublicGameType));
             }
             publicModal.addEventListener('click', (e) => {
                 if (e.target === publicModal) publicModal.style.display = 'none';
@@ -359,11 +372,13 @@ class GameEngineController {
 
         const switchGameLobby = (gameType) => {
             if (gameType === 'GOMOKU') {
+                document.body.classList.add('theme-gomoku');
                 if (btnNavGomoku)   btnNavGomoku.classList.add('active');
                 if (btnNavDoudizhu) btnNavDoudizhu.classList.remove('active');
                 if (cardDoudizhu)   cardDoudizhu.style.display = 'none';
                 if (cardGomoku)     cardGomoku.style.display = 'block';
             } else {
+                document.body.classList.remove('theme-gomoku');
                 if (btnNavDoudizhu) btnNavDoudizhu.classList.add('active');
                 if (btnNavGomoku)   btnNavGomoku.classList.remove('active');
                 if (cardGomoku)     cardGomoku.style.display = 'none';
@@ -1330,11 +1345,19 @@ class GameEngineController {
     /**
      * 刷新并渲染云端公共房间大厅列表
      */
-    refreshPublicRoomsList() {
+    refreshPublicRoomsList(gameType = 'DOUDIZHU') {
         const container = document.getElementById('publicRoomsListContainer');
         if (!container) return;
 
-        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取在线房间列表...</div>';
+        const isGomoku = gameType === 'GOMOKU';
+        const modalTitle = document.querySelector('#publicRoomsModal .ct-title');
+        if (modalTitle) {
+            modalTitle.innerHTML = isGomoku ?
+                '<i class="fa-solid fa-chess-board" style="color:#34d399;"></i> 在线五子棋对局大厅' :
+                '<i class="fa-solid fa-list-check" style="color:#e2a820;"></i> 在线房间大厅';
+        }
+
+        container.innerHTML = `<div style="text-align:center;color:${isGomoku ? '#34d399' : '#94a3b8'};padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取${isGomoku ? '五子棋' : '斗地主'}在线房间...</div>`;
 
         NetworkManager.fetchPublicRooms((rooms) => {
             container.innerHTML = '';
@@ -1391,7 +1414,7 @@ class GameEngineController {
                 `;
                 container.appendChild(item);
             });
-        });
+        }, gameType);
     }
 
     /**

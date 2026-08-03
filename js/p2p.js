@@ -223,13 +223,13 @@ class P2PManager {
     /* ====================================================================
        拉取云端公共房间列表 (自动清理 >3分钟 无真人操作的过期房间)
        ==================================================================== */
-    fetchPublicRooms(callback) {
+    fetchPublicRooms(callback, gameTypeFilter = 'DOUDIZHU') {
         if (!this.db) {
             if (callback) callback([]);
             return;
         }
 
-        this.db.ref('rooms').limitToLast(20).once('value').then(snapshot => {
+        this.db.ref('rooms').limitToLast(30).once('value').then(snapshot => {
             const roomsMap = snapshot.val() || {};
             const activeRooms = [];
             const now = Date.now();
@@ -245,7 +245,12 @@ class P2PManager {
                         console.log(`[AutoClean] 房间 ${roomId} 超过 3 分钟无真人操作，自动销毁`);
                         this.db.ref('rooms/' + roomId).remove();
                     } else {
-                        activeRooms.push(room);
+                        const isGomoku = room.gameType === 'GOMOKU';
+                        if (gameTypeFilter === 'GOMOKU' && isGomoku) {
+                            activeRooms.push(room);
+                        } else if (gameTypeFilter !== 'GOMOKU' && !isGomoku) {
+                            activeRooms.push(room);
+                        }
                     }
                 }
             });
