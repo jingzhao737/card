@@ -3530,20 +3530,32 @@ body, html {
     font-size: 0.72rem;
     color: #94a3b8;
 }
+.auth-banner-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: stretch;
+    flex-shrink: 0;
+}
 .btn-auth-action {
     background: linear-gradient(135deg, #c9921a, #e2a820);
     color: #000;
     font-weight: 800;
     border: none;
     border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 0.8rem;
+    padding: 5px 12px;
+    font-size: 0.78rem;
     cursor: pointer;
     white-space: nowrap;
+    text-align: center;
     transition: transform 0.15s ease;
 }
+.btn-auth-action.btn-appearance {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+    color: #ffffff !important;
+}
 .btn-auth-action:hover {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 /* ============================================================
