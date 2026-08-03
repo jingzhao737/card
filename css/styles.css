@@ -662,87 +662,89 @@ body.theme-gomoku .overlay-screen {
     text-align: left !important;
 }
 
-/* 斗地主 Header 顶部右侧悬浮双王 3D 艺术装饰 (大王 & 小王) */
+/* 斗地主 Header 顶部右侧悬浮双王 3D 艺术装饰 (大王 & 小王 — 倾斜重叠放大版) */
 .doudizhu-cards-decoration {
     position: relative;
-    width: 72px;
-    height: 52px;
+    width: 78px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
-    margin-right: 18px; /* 适度向右微调 */
+    margin-right: 18px;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     z-index: 5;
 }
 
 .mini-poker-card {
-    width: 34px;
-    height: 48px;
-    border-radius: 4px;
+    width: 42px; /* 放大牌面 */
+    height: 58px;
+    border-radius: 5px;
     position: absolute;
     background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 3px 4px;
+    padding: 4px 5px;
     box-sizing: border-box;
     font-family: var(--font-num);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* 大王 (Red Joker) */
+/* 大王 (Red Joker - 倾斜重叠左侧) */
 .mini-poker-card.big-joker {
-    left: -4px;
+    left: 2px;
     top: -2px;
+    transform: rotate(-10deg);
     background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
     border: 1.5px solid #dc2626;
-    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.65), 0 0 8px rgba(220, 38, 38, 0.25);
+    box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.7), 0 0 10px rgba(220, 38, 38, 0.3);
     z-index: 2;
 }
 
 .mini-poker-card.big-joker .poker-corner {
     color: #dc2626;
     font-weight: 900;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     line-height: 1;
     align-self: flex-start;
 }
 
 .mini-poker-card.big-joker .poker-icon {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     line-height: 1;
     margin-bottom: 2px;
 }
 
-/* 小王 (Black Joker) */
+/* 小王 (Black Joker - 倾斜重叠右侧底座) */
 .mini-poker-card.small-joker {
-    right: -4px;
+    right: 4px;
     bottom: -2px;
+    transform: rotate(12deg);
     background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
     border: 1.5px solid #1e293b;
-    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.55);
     z-index: 1;
 }
 
 .mini-poker-card.small-joker .poker-corner {
     color: #0f172a;
     font-weight: 900;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     line-height: 1;
     align-self: flex-start;
 }
 
 .mini-poker-card.small-joker .poker-icon {
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     line-height: 1;
     margin-bottom: 2px;
 }
 
-/* 点击促发大小王对角弹跳动画 */
+/* 点击促发大小王重叠飞跃动画 */
 .doudizhu-cards-decoration.animate .big-joker {
     animation: jokerBounceBig 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -752,15 +754,15 @@ body.theme-gomoku .overlay-screen {
 }
 
 @keyframes jokerBounceBig {
-    0% { transform: scale(1); }
-    40% { transform: translate(-6px, -4px) scale(1.22) rotate(-14deg); box-shadow: 6px 10px 20px rgba(220, 38, 38, 0.5); }
-    100% { transform: scale(1); }
+    0% { transform: rotate(-10deg) scale(1); }
+    40% { transform: translate(-8px, -6px) scale(1.22) rotate(-22deg); box-shadow: 8px 14px 24px rgba(220, 38, 38, 0.55); }
+    100% { transform: rotate(-10deg) scale(1); }
 }
 
 @keyframes jokerBounceSmall {
-    0% { transform: scale(1); }
-    40% { transform: translate(6px, 4px) scale(1.22) rotate(14deg); box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.6); }
-    100% { transform: scale(1); }
+    0% { transform: rotate(12deg) scale(1); }
+    40% { transform: translate(8px, 6px) scale(1.22) rotate(24deg); box-shadow: 8px 14px 24px rgba(0, 0, 0, 0.65); }
+    100% { transform: rotate(12deg) scale(1); }
 }
 
 /* 横幅内隐约的横纹绒布纹 */
