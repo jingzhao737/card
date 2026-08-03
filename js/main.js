@@ -1368,22 +1368,30 @@ class GameEngineController {
             const c = parseInt(cell.dataset.c);
             const val = engine.board[r][c];
 
-            // 保持星位点 .star-dot 节点不被删除
-            const starDot = cell.querySelector('.star-dot');
-            cell.innerHTML = '';
-            if (starDot) cell.appendChild(starDot);
+            let stone = cell.querySelector('.gomoku-stone');
 
-            if (val !== 0) {
-                const stone = document.createElement('div');
-                stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
-                if (engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c) {
-                    stone.classList.add('last-move');
-                }
+            if (val === 0) {
+                // 如果格子上无棋子 (例如悔棋/重开)，移除旧棋子
+                if (stone) stone.remove();
+            } else {
+                const isLastMove = engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c;
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
-                if (isWinStone) {
-                    stone.classList.add('win-stone');
+
+                if (!stone) {
+                    // 仅当这颗棋子是新落下的，才新建 DOM 节点 (从而仅触发新棋子的单次 Pop 动画)
+                    stone = document.createElement('div');
+                    stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
+                    cell.appendChild(stone);
+                } else {
+                    // 若棋子已存在，仅更新基础类名，不重复销毁与新建节点
+                    stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
                 }
-                cell.appendChild(stone);
+
+                if (isLastMove) stone.classList.add('last-move');
+                else stone.classList.remove('last-move');
+
+                if (isWinStone) stone.classList.add('win-stone');
+                else stone.classList.remove('win-stone');
             }
         });
     }
