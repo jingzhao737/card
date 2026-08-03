@@ -287,6 +287,7 @@ class AuthManager {
         const lUserSub  = document.getElementById('lobbyUserSub');
         const lBtnAuth  = document.getElementById('btnLobbyAuth');
         const lAuthIcon = document.getElementById('lobbyAuthIcon');
+        const nickSec   = document.querySelector('.nickname-section');
 
         if (this.userData) {
             if (badge) {
@@ -299,9 +300,16 @@ class AuthManager {
                 `;
             }
             if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
-            if (lUserSub)  lUserSub.textContent  = `💰 资产: ${this.userData.coins || 1000} 金币 | 🏆 积分: ${this.userData.score || 1000}`;
-            if (lBtnAuth)  lBtnAuth.textContent  = '查看名片';
+            if (lUserSub)  lUserSub.textContent  = `账号: ${this.userData.email || '已绑定'} | 💰 ${this.userData.coins || 1000} | 🏆 ${this.userData.score || 1000}`;
+            if (lBtnAuth)  lBtnAuth.textContent  = '我的名片';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
+
+            // 登录后隐去随机昵称区块，避免误导
+            if (nickSec) nickSec.style.display   = 'none';
+
+            // 保持 nicknameInput 与账号昵称严格同步
+            const input = document.getElementById('nicknameInput');
+            if (input) input.value = this.userData.nickname;
         } else {
             if (badge) {
                 badge.innerHTML = `
@@ -313,6 +321,9 @@ class AuthManager {
             if (lUserSub)  lUserSub.textContent  = '登录保存战绩名片、天梯积分与金币系统';
             if (lBtnAuth)  lBtnAuth.textContent  = '登录 / 注册';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-circle-user auth-avatar-icon';
+
+            // 游客模式显示随机昵称区块
+            if (nickSec) nickSec.style.display   = 'block';
         }
     }
 }
