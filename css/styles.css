@@ -2736,6 +2736,84 @@ body:has(#lobbyScreen.active) .app-header,
         margin-right: auto !important;
     }
 
+    /* 手机端创建房间/房间等待界面极简优化 */
+    .waiting-card-hero {
+        padding: 14px 14px !important;
+        gap: 10px !important;
+        border-radius: 6px !important;
+        width: 96% !important;
+    }
+
+    .invite-action-card {
+        padding: 10px 12px !important;
+        border-radius: 4px !important;
+    }
+
+    .invite-card-title {
+        font-size: 0.85rem !important;
+        margin-bottom: 6px !important;
+    }
+
+    .share-box-redesign {
+        margin-bottom: 0 !important;
+        gap: 6px !important;
+    }
+
+    .share-box-redesign input {
+        padding: 7px 10px !important;
+        font-size: 0.76rem !important;
+    }
+
+    .btn-copy-gold {
+        padding: 0 12px !important;
+        font-size: 0.78rem !important;
+    }
+
+    /* 手机端隐藏占用屏幕大面积的二维码，保留纯净单行组局链接 */
+    .qr-box-toggle {
+        display: none !important;
+    }
+
+    .slots-grid-redesign {
+        gap: 6px !important;
+    }
+
+    .player-slot-card {
+        padding: 8px 4px !important;
+        border-radius: 4px !important;
+        gap: 4px !important;
+    }
+
+    .slot-badge-crown {
+        font-size: 0.6rem !important;
+        padding: 1px 5px !important;
+    }
+
+    .slot-avatar-emoji {
+        font-size: 1.6rem !important;
+    }
+
+    .slot-name-text {
+        font-size: 0.74rem !important;
+    }
+
+    .slot-status-pill {
+        font-size: 0.64rem !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+    }
+
+    .waiting-actions-bar {
+        margin-top: 4px !important;
+        gap: 8px !important;
+    }
+
+    .btn-start-game-gold, .btn-start-ai-sub, .btn-cancel-lobby {
+        height: 38px !important;
+        font-size: 0.82rem !important;
+        border-radius: 4px !important;
+    }
+
     /* 顶部品牌横幅：大幅压缩高度 */
     .lobby-header {
         padding: 12px 16px 10px;
