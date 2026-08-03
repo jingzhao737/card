@@ -83,7 +83,7 @@ body, html {
     align-items: center;
     justify-content: space-between;
     padding: 0 14px;
-    z-index: 100;
+    z-index: 9999 !important;
     position: relative;
 }
 
@@ -317,7 +317,7 @@ body, html {
     border-radius: 8px;
     padding: 6px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(255, 215, 0, 0.15);
-    z-index: 1000;
+    z-index: 10005 !important;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -1246,7 +1246,7 @@ body, html {
     align-items: center;
     margin-top: 32px;
     position: relative;
-    z-index: 100;
+    z-index: 50;
 }
 
 .bottom-cards-box {
@@ -2812,7 +2812,7 @@ body, html {
         align-items: center;
         width: 100%;
         position: relative;
-        z-index: 100;
+        z-index: 50;
     }
 
     .timer-badge {
