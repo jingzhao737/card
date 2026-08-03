@@ -433,8 +433,11 @@ class GameEngineController {
             btnCreateGomokuRoom.addEventListener('click', () => {
                 const nickname = getNickname();
                 NetworkManager.createRoom(nickname, (roomId) => {
-                    UIRenderer.showToast(`✅ 五子棋在线房间创建成功：#${roomId}`);
-                    this.startGomokuAiMode();
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(roomId);
+                    }
+                    UIRenderer.showToast(`✅ 五子棋在线房间创建成功：#${roomId} (房间号已复制)`);
+                    this.startGomokuOnlineGame(roomId, true);
                 }, (err) => {
                     UIRenderer.showToast(err || '创建五子棋房间失败');
                 }, 'GOMOKU');
@@ -454,7 +457,7 @@ class GameEngineController {
                 const nickname = getNickname();
                 NetworkManager.joinRoom(roomId, nickname, () => {
                     UIRenderer.showToast(`✅ 成功进入五子棋房间 #${roomId}`);
-                    this.startGomokuAiMode();
+                    this.startGomokuOnlineGame(roomId, false);
                 }, (err) => {
                     UIRenderer.showToast(err || '加入五子棋房间失败');
                 });
@@ -1283,6 +1286,59 @@ class GameEngineController {
     }
 
     /**
+     * 开启在线五子棋真人双人对战模式
+     */
+    startGomokuOnlineGame(roomId, isHost = false) {
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const waitingScr = document.getElementById('waitingScreen');
+        const gomokuScr = document.getElementById('gomokuGameScreen');
+
+        if (lobbyScr) {
+            lobbyScr.style.display = 'none';
+            lobbyScr.classList.remove('active');
+        }
+        if (waitingScr) {
+            waitingScr.style.display = 'none';
+            waitingScr.classList.remove('active');
+        }
+        if (gomokuScr) {
+            gomokuScr.style.display = 'flex';
+            gomokuScr.classList.add('active');
+        }
+        this.updateHeaderVisibility();
+
+        const myColor = isHost ? 1 : 2; // 房主执黑(1)，加入者执白(2)
+
+        const nameBlack = document.getElementById('gNameBlack');
+        const nameWhite = document.getElementById('gNameWhite');
+        if (nameBlack) nameBlack.textContent = isHost ? `${NetworkManager.nickname} (黑方)` : '房主 (黑方)';
+        if (nameWhite) nameWhite.textContent = !isHost ? `${NetworkManager.nickname} (白方)` : '对手 (白方)';
+
+        window.gomokuEngine.reset(false, myColor); // 双人在线模式
+        this.initGomokuUI();
+        this.renderGomokuBoard();
+
+        const isMyTurn = window.gomokuEngine.currentTurn === myColor;
+        this.updateGomokuStatusUI(isMyTurn ? `⚫ 房间 #${roomId} · 轮到你落子` : `⚪ 房间 #${roomId} · 对方思考中...`);
+
+        // 监听云端落子广播
+        NetworkManager.onGomokuMove((move) => {
+            if (!move) return;
+            const engine = window.gomokuEngine;
+            if (engine.board[move.r][move.c] === 0) {
+                const res = engine.placeStone(move.r, move.c);
+                this.renderGomokuBoard();
+                if (res && res.isGameOver) {
+                    this.handleGomokuWin(res.winner);
+                } else {
+                    const isNowMyTurn = engine.currentTurn === myColor;
+                    this.updateGomokuStatusUI(isNowMyTurn ? (myColor === 1 ? '⚫ 轮到你落子' : '⚪ 轮到你落子') : '⏳ 对方思考中...');
+                }
+            }
+        });
+    }
+
+    /**
      * 开启单机 AI 五子棋切磋模式
      */
     startGomokuAiMode() {
@@ -1317,6 +1373,28 @@ class GameEngineController {
     handleGomokuCellClick(r, c) {
         const engine = window.gomokuEngine;
         if (!engine || engine.isGameOver) return;
+
+        // 双人在线模式
+        if (!engine.isAiMode) {
+            const myColor = engine.playerColor;
+            if (engine.currentTurn !== myColor) {
+                UIRenderer.showToast('⏳ 还没轮到你，请等待对方落子');
+                return;
+            }
+            const res = engine.placeStone(r, c);
+            if (!res || !res.success) return;
+
+            this.renderGomokuBoard();
+            NetworkManager.sendGomokuMove(r, c, myColor);
+
+            if (res.isGameOver) {
+                this.handleGomokuWin(res.winner);
+            } else {
+                this.updateGomokuStatusUI('⏳ 对方思考中...');
+            }
+            return;
+        }
+
         if (engine.isAiMode && engine.currentTurn !== engine.playerColor) return; // 轮到 AI 落子
 
         const res = engine.placeStone(r, c);
