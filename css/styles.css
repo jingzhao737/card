@@ -80,6 +80,7 @@ body, html {
 }
 
 /* 墨绿主题：游鲸五子棋专属全局背景与 Header */
+body.theme-gomoku,
 body.theme-gomoku .game-container {
     background-color: #03140e !important;
     background-image:
