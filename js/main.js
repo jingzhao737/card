@@ -974,7 +974,7 @@ class GameEngineController {
             <!-- 顶部极简数据网格 (无头像、无资产) -->
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffd700;">${winRate}</div>
+                    <div class="stat-val" style="color:#ffffff;">${winRate}</div>
                     <div class="stat-lbl">综合胜率</div>
                 </div>
                 <div class="profile-stat-box">
@@ -989,15 +989,15 @@ class GameEngineController {
 
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:2px;">
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#f8fafc;">${total}</div>
+                    <div class="stat-val" style="color:#ffffff;">${total}</div>
                     <div class="stat-lbl">总对局数</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffd700;">${landlordWins}</div>
+                    <div class="stat-val" style="color:#ffffff;">${landlordWins}</div>
                     <div class="stat-lbl">资本家胜场</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#38bdf8;">${farmerWins}</div>
+                    <div class="stat-val" style="color:#ffffff;">${farmerWins}</div>
                     <div class="stat-lbl">牛马胜场</div>
                 </div>
             </div>
