@@ -437,7 +437,7 @@ class GameEngineController {
                         navigator.clipboard.writeText(roomId);
                     }
                     UIRenderer.showToast(`✅ 五子棋在线房间创建成功：#${roomId} (房间号已复制)`);
-                    this.startGomokuOnlineGame(roomId, true);
+                    this.setupWaitingScreen(roomId);
                 }, (err) => {
                     UIRenderer.showToast(err || '创建五子棋房间失败');
                 }, 'GOMOKU');
@@ -457,7 +457,7 @@ class GameEngineController {
                 const nickname = getNickname();
                 NetworkManager.joinRoom(roomId, nickname, () => {
                     UIRenderer.showToast(`✅ 成功进入五子棋房间 #${roomId}`);
-                    this.startGomokuOnlineGame(roomId, false);
+                    this.enterRoomAsClient(roomId);
                 }, (err) => {
                     UIRenderer.showToast(err || '加入五子棋房间失败');
                 });
@@ -776,6 +776,18 @@ class GameEngineController {
 
         if (tabBarInfo) tabBarInfo.addEventListener('click', () => switchProtrudingTab(true));
         if (tabBarStats) tabBarStats.addEventListener('click', () => switchProtrudingTab(false));
+
+        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU 分流)
+        const _btnStartGame = document.getElementById('btnStartGame');
+        if (_btnStartGame) {
+            _btnStartGame.addEventListener('click', () => {
+                if (NetworkManager.gameType === 'GOMOKU') {
+                    this.startGomokuOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
+                } else {
+                    this.fillAiAndStart();
+                }
+            });
+        }
 
         // 补齐机器人开局 (null-safe)
         const _btnStartWithAi = document.getElementById('btnStartWithAi');

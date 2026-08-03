@@ -321,6 +321,7 @@ class P2PManager {
         this.isHost = true;
         this.myPlayerIndex = 0;
         this.isAiMode = false;
+        this.gameType = gameType;
 
         if (!this.db) {
             if (this.onToast) this.onToast('❌ 云端服务未连接，请检查网络或刷新页面', 4000);
@@ -438,6 +439,7 @@ class P2PManager {
                     if (onError) onError('房间不存在，或超时无真人操作已被销毁');
                     return;
                 }
+                this.gameType = roomData.gameType || 'DOUDIZHU';
 
                 // 规则 2：检查该房间是否已超 3 分钟无真人操作
                 const lastHuman = roomData.lastHumanActivity || roomData.created || 0;
