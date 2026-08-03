@@ -572,6 +572,29 @@ class AudioSynth {
         osc.start(now);
         osc.stop(now + 0.07);
     }
+
+    /**
+     * 播放真实卡牌翻转音效 (sound/card-flip.wav)
+     */
+    playCardFlipSound() {
+        if (!this.enabled) return;
+        try {
+            const audio = new Audio('sound/card-flip.wav');
+            audio.volume = 0.85;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    if (typeof this.playCardPlace === 'function') {
+                        this.playCardPlace();
+                    }
+                });
+            }
+        } catch (e) {
+            if (typeof this.playCardPlace === 'function') {
+                this.playCardPlace();
+            }
+        }
+    }
 }
 
 const SoundEngine = new AudioSynth();

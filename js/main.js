@@ -882,15 +882,19 @@ class GameEngineController {
             });
         }
 
-        // 游鲸斗地主 Header 艺术大小王王炸卡牌点击互动弹跳缩放 + 洗牌发牌音效
+        // 游鲸斗地主 Header 艺术大小王王炸卡牌点击互动弹跳缩放 + 翻牌音效 (sound/card-flip.wav)
         const doudizhuCardsDeco = document.querySelector('.doudizhu-cards-decoration');
         if (doudizhuCardsDeco) {
             doudizhuCardsDeco.addEventListener('click', () => {
                 doudizhuCardsDeco.classList.remove('animate');
                 void doudizhuCardsDeco.offsetWidth; // 强制重发 Keyframe
                 doudizhuCardsDeco.classList.add('animate');
-                if (window.SoundEngine && window.SoundEngine.playCardPlace) {
-                    window.SoundEngine.playCardPlace();
+                if (window.SoundEngine) {
+                    if (typeof window.SoundEngine.playCardFlipSound === 'function') {
+                        window.SoundEngine.playCardFlipSound();
+                    } else if (typeof window.SoundEngine.playCardPlace === 'function') {
+                        window.SoundEngine.playCardPlace();
+                    }
                 }
             });
         }
