@@ -581,6 +581,7 @@ class AudioSynth {
         try {
             const audio = new Audio('sound/card-flip.wav');
             audio.volume = 0.85;
+            audio.playbackRate = 1.2; // 1.2倍速极速清脆
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
