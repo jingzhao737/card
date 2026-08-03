@@ -237,15 +237,31 @@ const UIRenderer = {
         div.dataset.id = card.id;
 
         if (card.isJoker) {
+            const isBigJoker = (card.rank === 17 || card.name === '大王' || card.isRed);
+            const gradId = isBigJoker ? 'redJokerGrad_' + card.id : 'blackJokerGrad_' + card.id;
+            const strokeColor = isBigJoker ? '#b91c1c' : '#0f172a';
+            const dotColor = isBigJoker ? '#ffd700' : '#cbd5e1';
+            const stopColor1 = isBigJoker ? '#ef4444' : '#475569';
+            const stopColor2 = isBigJoker ? '#991b1b' : '#0f172a';
+
             div.innerHTML = `
-                <div class="card-top-left joker-vertical">
-                    <span>J</span>
-                    <span>O</span>
-                    <span>K</span>
-                    <span>E</span>
-                    <span>R</span>
+                <div class="joker-vertical-label ${isBigJoker ? 'red' : 'black'}">
+                    <span>J</span><span>O</span><span>K</span><span>E</span><span>R</span>
                 </div>
-                <div class="card-center-symbol">${card.rank === 17 ? '👑' : '🃏'}</div>
+                <div class="joker-bottom-graphic">
+                    <svg class="joker-svg" viewBox="1 1 13 13">
+                        <path d="M12 2L15 8L21 5L18 12L22 17L15 16L12 22L9 16L2 17L6 12L3 5L9 8L12 2Z" fill="url(#${gradId})" stroke="${strokeColor}" stroke-width="0.5"/>
+                        <circle cx="12" cy="2" r="1.5" fill="${dotColor}"/>
+                        <circle cx="21" cy="5" r="1.5" fill="${dotColor}"/>
+                        <circle cx="3" cy="5" r="1.5" fill="${dotColor}"/>
+                        <defs>
+                            <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="${stopColor1}"/>
+                                <stop offset="100%" stop-color="${stopColor2}"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
             `;
         } else {
             div.innerHTML = `

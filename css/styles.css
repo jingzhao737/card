@@ -2272,6 +2272,7 @@ body.theme-gomoku .overlay-screen {
     transform: translateY(var(--stack-y, 0px));
     transform-origin: bottom center;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 @media (hover: hover) and (pointer: fine) {
