@@ -490,18 +490,21 @@ const UIRenderer = {
         const container = document.getElementById(targetAreaId);
         if (!container) return;
 
-        // 仅最最新打出的一手牌外围显示金色线条画框
+        // 仅最新打出的一手牌显示金色画框，非最新出牌区域自动移除金色画框与牌型标注
         if (isLatest && cards && cards.length > 0) {
             container.classList.add('latest-play-container');
         } else {
             container.classList.remove('latest-play-container');
+            const oldLabel = container.querySelector('.card-type-label');
+            if (oldLabel) oldLabel.remove();
         }
 
         const cardIdsStr = (cards || []).map(c => c.id).join(',');
-        if (container._renderedCardIdsStr === cardIdsStr) {
+        const renderKey = `${cardIdsStr}_${isLatest}`;
+        if (container._renderedStateKey === renderKey) {
             return;
         }
-        container._renderedCardIdsStr = cardIdsStr;
+        container._renderedStateKey = renderKey;
 
         container.innerHTML = '';
         if (!cards || cards.length === 0) return;
