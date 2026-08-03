@@ -121,7 +121,7 @@ class P2PManager {
     }
 
     /* ====================================================================
-       规则 1 实施：单设备单房间（创建/加入新房间前自动清除旧房间/旧槽位）
+       规则 1 实施：单设备单房间（创建/加入新房间前自动清除旧房间/旧槽位，带1.5秒超时保护）
        ==================================================================== */
     _leavePreviousRooms(targetRoomId, callback) {
         if (!this.db || !this.sessionId) {
@@ -129,7 +129,19 @@ class P2PManager {
             return;
         }
 
-        this.db.ref('rooms').orderByChild('created').limitToLast(20).once('value').then(snapshot => {
+        let done = false;
+        const safeCallback = () => {
+            if (!done) {
+                done = true;
+                if (callback) callback();
+            }
+        };
+
+        // 1.5 秒超时保护，防止云端网络慢时房间创建卡住挂起
+        const timer = setTimeout(safeCallback, 1500);
+
+        this.db.ref('rooms').limitToLast(15).once('value').then(snapshot => {
+            clearTimeout(timer);
             const roomsMap = snapshot.val() || {};
             const updatePromises = [];
 
@@ -149,7 +161,7 @@ class P2PManager {
                     for (let i = 1; i < 3; i++) {
                         if (players[i] && players[i].sid === this.sessionId) {
                             console.log(`[CleanRoom] 自动清除同设备在旧房间 ${rId} 的槽位 ${i}`);
-                            players[i] = { name: `🤖 机器人 AI_${i}`, isAi: true, isHost: false };
+                            players[i] = { name: `🤖 机器人 AI_${i}`, avatar: '🤖', isAi: true, isHost: false };
                             modified = true;
                         }
                     }
@@ -159,14 +171,8 @@ class P2PManager {
                 }
             });
 
-            Promise.all(updatePromises).then(() => {
-                if (callback) callback();
-            }).catch(() => {
-                if (callback) callback();
-            });
-        }).catch(() => {
-            if (callback) callback();
-        });
+            Promise.all(updatePromises).then(safeCallback).catch(safeCallback);
+        }).catch(safeCallback);
     }
 
     /* ====================================================================
@@ -176,27 +182,25 @@ class P2PManager {
         let unique = (requestedNick || '').trim();
         if (!unique) unique = '玩家';
 
-        // 关键修复：如果玩家是重新连入属于他自己的槽位，保留原昵称不增加 _2 后缀！
         if (ignoreSlotIndex !== undefined && ignoreSlotIndex >= 0 && existingPlayers && existingPlayers[ignoreSlotIndex]) {
-            const currentSlot = existingPlayers[ignoreSlotIndex];
-            if (currentSlot && !currentSlot.isAi) {
-                const slotName = (currentSlot.name || '').trim();
-                if (slotName === unique || currentSlot.sid === this.sessionId) {
-                    return slotName || unique;
-                }
+            if (existingPlayers[ignoreSlotIndex].name === unique) {
+                return unique;
             }
         }
 
-        const existingNames = new Set(
-            (existingPlayers || [])
-                .filter((p, idx) => p && !p.isAi && p.sid !== this.sessionId && idx !== ignoreSlotIndex)
-                .map(p => (p.name || '').trim())
-        );
+        let isDuplicate = false;
+        if (existingPlayers && Array.isArray(existingPlayers)) {
+            existingPlayers.forEach((p, idx) => {
+                if (idx !== ignoreSlotIndex && p && p.name === unique) {
+                    isDuplicate = true;
+                }
+            });
+        }
 
-        if (existingNames.has(unique)) {
-            let suffix = 2;
-            while (existingNames.has(`${unique}_${suffix}`)) {
-                suffix++;
+        if (isDuplicate) {
+            let suffix = Math.floor(Math.random() * 900 + 100);
+            if (typeof AuthEngine !== 'undefined' && AuthEngine.userData && AuthEngine.userData.uid) {
+                suffix = String(AuthEngine.userData.uid).slice(-3);
             }
             const newUnique = `${unique}_${suffix}`;
             if (this.onToast) {
@@ -205,7 +209,6 @@ class P2PManager {
             unique = newUnique;
         }
 
-        // 同步更正本地昵称与输入框
         this.nickname = unique;
         try { localStorage.setItem('youjing_doudizhu_nickname', unique); } catch(e) {}
         const input = document.getElementById('nicknameInput');
@@ -223,7 +226,7 @@ class P2PManager {
             return;
         }
 
-        this.db.ref('rooms').orderByChild('created').limitToLast(20).once('value').then(snapshot => {
+        this.db.ref('rooms').limitToLast(20).once('value').then(snapshot => {
             const roomsMap = snapshot.val() || {};
             const activeRooms = [];
             const now = Date.now();
@@ -289,7 +292,7 @@ class P2PManager {
     }
 
     /* ====================================================================
-       创建房间 (作为 Host) - Firebase 云端版
+       创建房间 (作为 Host) - Firebase 云端版 (带连接异常捕获与超时保护)
        ==================================================================== */
     createRoom(nickname, onReady, roomIdOverride) {
         this.roomId = roomIdOverride || this.generateRoomId();
@@ -297,16 +300,20 @@ class P2PManager {
         this.myPlayerIndex = 0;
         this.isAiMode = false;
 
-        // 实施规则 1：创建前先清除同设备的旧房间
+        if (!this.db) {
+            if (this.onToast) this.onToast('❌ 云端服务未连接，请检查网络或刷新页面', 4000);
+            return;
+        }
+
+        // 实施规则 1：创建前先清除同设备的旧房间 (带 1.5 秒超时保护)
         this._leavePreviousRooms(this.roomId, () => {
             this._removeAllListeners();
             this.roomRef = this.db.ref('rooms/' + this.roomId);
 
-            if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 3000);
+            if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 2500);
 
             // 实施规则 3：昵称去重
             const finalNick = this._ensureUniqueNickname(nickname, [], 0);
-
             const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
 
             const initialLobby = {
@@ -341,7 +348,7 @@ class P2PManager {
                     players.forEach((p, idx) => {
                         if (idx > 0 && !p.isAi && p.name) {
                             if (this.onPlayerJoined) {
-                                this.onPlayerJoined(idx, p.name);
+                                this.onPlayerJoined(idx, p.name, p.avatar);
                             }
                         }
                     });
