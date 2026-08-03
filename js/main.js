@@ -1329,9 +1329,10 @@ class GameEngineController {
             return;
         }
 
-        // 若为单机 AI 模式，触发 AI 落子
+        // 若为单机 AI 模式，触发 AI 落子 (模拟拟人化随机思考 600ms ~ 1400ms)
         if (engine.isAiMode && engine.currentTurn !== engine.playerColor) {
-            this.updateGomokuStatusUI('AI 棋圣思考中...');
+            this.updateGomokuStatusUI('🤖 AI 棋圣思考中...');
+            const randomThinkTime = Math.floor(Math.random() * 800 + 600); // 600ms - 1400ms 随机思考时长
             setTimeout(() => {
                 const aiMove = engine.getBestAiMove();
                 if (aiMove) {
@@ -1340,12 +1341,12 @@ class GameEngineController {
                     if (aiRes && aiRes.isGameOver) {
                         this.handleGomokuWin(aiRes.winner);
                     } else {
-                        this.updateGomokuStatusUI('黑方落子中 (你)');
+                        this.updateGomokuStatusUI('⚫ 黑方落子中 (你)');
                     }
                 }
-            }, 350);
+            }, randomThinkTime);
         } else {
-            this.updateGomokuStatusUI(engine.currentTurn === 1 ? '黑方落子中' : '白方落子中');
+            this.updateGomokuStatusUI(engine.currentTurn === 1 ? '⚫ 黑方落子中' : '⚪ 白方落子中');
         }
     }
 
