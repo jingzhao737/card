@@ -173,9 +173,72 @@ class AuthManager {
     }
 
     /* ====================================================================
+       专用测试账号 09966 / 09966 特殊快速登录与自动创建逻辑
+       ==================================================================== */
+    _handleTestAccountLogin(onSuccess, onError) {
+        const testAccountKey = '09966_qq_com';
+        const today = this.getTodayDateString();
+        const testData = {
+            uid: 9966,
+            accountKey: testAccountKey,
+            email: '09966@qq.com',
+            password: '09966',
+            nickname: '测试账号 09966',
+            avatar: '⚡',
+            yinCoins: 99999,
+            lastClaimDate: today,
+            totalGames: 99,
+            wins: 66,
+            landlordWins: 33,
+            farmerWins: 33,
+            bombsPlayed: 88,
+            created: Date.now()
+        };
+
+        const completeLogin = (data) => {
+            this.userData = data;
+            this.user = { uid: testAccountKey };
+            localStorage.setItem('youjing_doudizhu_account_key', testAccountKey);
+            localStorage.setItem('youjing_doudizhu_nickname', data.nickname);
+            const input = document.getElementById('nicknameInput');
+            if (input) input.value = data.nickname;
+
+            this.checkAndAutoClaimDailyReward();
+            this.updateUserHeaderUI();
+            if (onSuccess) onSuccess(data);
+        };
+
+        if (!this.db) {
+            completeLogin(testData);
+            return;
+        }
+
+        this.db.ref('users/' + testAccountKey).once('value').then(snap => {
+            if (snap.exists()) {
+                const data = snap.val();
+                completeLogin(data);
+            } else {
+                this.db.ref('users/' + testAccountKey).set(testData).then(() => {
+                    completeLogin(testData);
+                }).catch(() => {
+                    completeLogin(testData);
+                });
+            }
+        }).catch(() => {
+            completeLogin(testData);
+        });
+    }
+
+    /* ====================================================================
        账号密码注册 (自动计算递增 UID，初始赠送 1000 因币)
        ==================================================================== */
     registerWithEmail(inputAccount, password, nickname, onSuccess, onError) {
+        const cleanInput = (inputAccount || '').trim();
+        if ((cleanInput === '09966' || cleanInput === '09966@qq.com') && password === '09966') {
+            this._handleTestAccountLogin(onSuccess, onError);
+            return;
+        }
+
         if (!this.db) {
             if (onError) onError('云端服务未连接，请刷新页面重试');
             return;
@@ -241,6 +304,12 @@ class AuthManager {
        账号密码登录
        ==================================================================== */
     loginWithEmail(inputAccount, password, onSuccess, onError) {
+        const cleanInput = (inputAccount || '').trim();
+        if ((cleanInput === '09966' || cleanInput === '09966@qq.com') && password === '09966') {
+            this._handleTestAccountLogin(onSuccess, onError);
+            return;
+        }
+
         if (!this.db) {
             if (onError) onError('云端服务未连接，请刷新页面重试');
             return;
