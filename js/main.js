@@ -623,114 +623,17 @@ class GameEngineController {
     }
 
     /**
-     * 房主保活：Screen Wake Lock + 静音 Web Audio 防后台挂起 + 离开警告
+     * 房主保活：Screen Wake Lock + 静音 Web Audio 防后台挂起
      */
     _activateHostKeepAlive() {
-        // 1. Screen Wake Lock API（iOS 16.4+ / Android Chrome 支持）
-        //    阻止手机息屏，息屏是 JS 被挂起的最常见触发
+        // 1. Screen Wake Lock API（阻止手机熄屏）
         this._requestWakeLock();
-
         // 2. 静音 Web Audio 振荡器保活
-        //    部分手机浏览器后台会挂起普通 JS，但有 AudioContext 活动时会例外
         this._startAudioKeepAlive();
 
-        // 3. 房主离开页面时警告所有玩家
-        this._bindHostLeaveWarning();
-
-        // 4. 等待室顶部显示"请勿离开"提示条
-        this._showHostStayWarning();
-    }
-
-    async _requestWakeLock() {
-        if (!('wakeLock' in navigator)) return;
-        try {
-            this._wakeLock = await navigator.wakeLock.request('screen');
-            console.log('[WakeLock] 已获取屏幕保活锁');
-            // 重新获得焦点时重新申请（Wake Lock 在页面隐藏时会自动释放）
-            document.addEventListener('visibilitychange', async () => {
-                if (document.visibilityState === 'visible' && NetworkManager.isHost) {
-                    try {
-                        this._wakeLock = await navigator.wakeLock.request('screen');
-                    } catch (e) {}
-                }
-            });
-        } catch (e) {
-            console.warn('[WakeLock] 获取失败:', e.message);
-        }
-    }
-
-    _startAudioKeepAlive() {
-        try {
-            if (this._audioKeepAliveCtx) return; // 已启动
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = ctx.createOscillator();
-            const gain = ctx.createGain();
-            gain.gain.value = 0.00001; // 几乎无声，但足以保持 AudioContext 活跃
-            oscillator.connect(gain);
-            gain.connect(ctx.destination);
-            oscillator.start();
-            this._audioKeepAliveCtx = ctx;
-            console.log('[Audio] 静音保活已启动');
-        } catch (e) {
-            console.warn('[Audio] 保活启动失败:', e);
-        }
-    }
-
-    _stopKeepAlive() {
-        // 游戏结束/离开时停止保活
-        try {
-            if (this._wakeLock) { this._wakeLock.release(); this._wakeLock = null; }
-            if (this._audioKeepAliveCtx) { this._audioKeepAliveCtx.close(); this._audioKeepAliveCtx = null; }
-        } catch (e) {}
-    }
-
-    _bindHostLeaveWarning() {
-        // 房主切走页面时，广播警告给所有玩家
-        document.addEventListener('visibilitychange', () => {
-            if (!NetworkManager.isHost) return;
-            if (document.hidden) {
-                // 通知所有客户端
-                NetworkManager.connections.forEach(conn => {
-                    if (conn && conn.open) {
-                        try { conn.send({ type: 'TOAST', message: '⚠️ 房主切出了页面，游戏可能暂停...' }); } catch (e) {}
-                    }
-                });
-                UIRenderer.showToast('⚠️ 请回到此页面，否则连接会断开！', 5000);
-            }
-        });
-
-        // 阻止房主意外关闭/刷新页面
-        window.addEventListener('beforeunload', (e) => {
-            if (NetworkManager.isHost && this.gameState.phase === 'PLAYING') {
-                e.preventDefault();
-                e.returnValue = '游戏正在进行中，确定要离开吗？';
-            }
-        });
-    }
-
-    _showHostStayWarning() {
-        const waitingScreen = document.getElementById('waitingScreen');
-        if (!waitingScreen) return;
-
-        let warn = document.getElementById('hostStayWarning');
-        if (!warn) {
-            warn = document.createElement('div');
-            warn.id = 'hostStayWarning';
-            warn.style.cssText = [
-                'background:rgba(201,146,42,0.15)',
-                'border:1px solid rgba(201,146,42,0.4)',
-                'border-radius:8px',
-                'padding:10px 14px',
-                'margin:10px 16px 0',
-                'font-size:0.82rem',
-                'color:#f0c060',
-                'text-align:center',
-                'line-height:1.5'
-            ].join(';');
-            warn.innerHTML = '📌 <b>请保持此页面在前台</b>，房主的设备是游戏服务器，<br>切走或锁屏会导致所有玩家断线';
-            // 插入到等待室顶部
-            waitingScreen.insertBefore(warn, waitingScreen.firstChild);
-        }
+        // 移除旧的房主前台警告（现已改用 Firebase 实时云端数据库，房主切出/锁屏不再影响其他人）
+        const oldWarn = document.getElementById('hostStayWarning');
+        if (oldWarn) oldWarn.remove();
     }
 
     /**
