@@ -18,9 +18,10 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const SESSION_KEY     = 'ddz_session';     // sessionStorage key
-const GAMESTATE_KEY   = 'ddz_gamestate';   // localStorage key
-const SESSION_MAX_AGE = 30 * 60 * 1000;   // 30 分钟内的会话可恢复
+const SESSION_KEY       = 'ddz_session';     // localStorage key
+const GAMESTATE_KEY     = 'ddz_gamestate';   // localStorage key
+const SESSION_MAX_AGE   = 30 * 60 * 1000;   // 30 分钟内的会话可恢复
+const MAX_INACTIVE_TIME = 3 * 60 * 1000;    // 3 分钟（180,000ms）无真人操作自动销毁房间
 
 class P2PManager {
     constructor() {
@@ -109,7 +110,90 @@ class P2PManager {
     }
 
     /* ====================================================================
-       拉取云端公共房间列表 (活跃房间/可替代 AI 房间)
+       规则 1 实施：单设备单房间（创建/加入新房间前自动清除旧房间/旧槽位）
+       ==================================================================== */
+    _leavePreviousRooms(targetRoomId, callback) {
+        if (!this.db || !this.sessionId) {
+            if (callback) callback();
+            return;
+        }
+
+        this.db.ref('rooms').orderByChild('created').limitToLast(20).once('value').then(snapshot => {
+            const roomsMap = snapshot.val() || {};
+            const updatePromises = [];
+
+            Object.keys(roomsMap).forEach(rId => {
+                if (rId === targetRoomId) return; // 忽略目标房间
+                const room = roomsMap[rId];
+                if (!room) return;
+
+                // 如果该设备是旧房间的房主 -> 直接移除旧房间
+                if (room.hostSid === this.sessionId) {
+                    console.log('[CleanRoom] 自动清除同设备的旧房主房间:', rId);
+                    updatePromises.push(this.db.ref('rooms/' + rId).remove());
+                } else if (room.lobbyData && room.lobbyData.players) {
+                    // 如果该设备是旧房间的客户端 -> 将其槽位重置为 AI 候补
+                    const players = room.lobbyData.players;
+                    let modified = false;
+                    for (let i = 1; i < 3; i++) {
+                        if (players[i] && players[i].sid === this.sessionId) {
+                            console.log(`[CleanRoom] 自动清除同设备在旧房间 ${rId} 的槽位 ${i}`);
+                            players[i] = { name: `🤖 机器人 AI_${i}`, isAi: true, isHost: false };
+                            modified = true;
+                        }
+                    }
+                    if (modified) {
+                        updatePromises.push(this.db.ref(`rooms/${rId}/lobbyData/players`).set(players));
+                    }
+                }
+            });
+
+            Promise.all(updatePromises).then(() => {
+                if (callback) callback();
+            }).catch(() => {
+                if (callback) callback();
+            });
+        }).catch(() => {
+            if (callback) callback();
+        });
+    }
+
+    /* ====================================================================
+       规则 3 实施：在线玩家 ID / 昵称去重处理
+       ==================================================================== */
+    _ensureUniqueNickname(requestedNick, existingPlayers) {
+        let unique = (requestedNick || '').trim();
+        if (!unique) unique = '玩家';
+
+        const existingNames = new Set(
+            (existingPlayers || [])
+                .filter(p => p && !p.isAi && p.sid !== this.sessionId)
+                .map(p => (p.name || '').trim())
+        );
+
+        if (existingNames.has(unique)) {
+            let suffix = 2;
+            while (existingNames.has(`${unique}_${suffix}`)) {
+                suffix++;
+            }
+            const newUnique = `${unique}_${suffix}`;
+            if (this.onToast) {
+                this.onToast(`💡 昵称在房间内重复，已自动调整为：${newUnique}`, 3500);
+            }
+            unique = newUnique;
+        }
+
+        // 同步更正本地昵称与输入框
+        this.nickname = unique;
+        localStorage.setItem('youjing_doudizhu_nickname', unique);
+        const input = document.getElementById('nicknameInput');
+        if (input) input.value = unique;
+
+        return unique;
+    }
+
+    /* ====================================================================
+       拉取云端公共房间列表 (自动清理 >3分钟 无真人操作的过期房间)
        ==================================================================== */
     fetchPublicRooms(callback) {
         if (!this.db) {
@@ -125,9 +209,14 @@ class P2PManager {
             Object.keys(roomsMap).forEach(roomId => {
                 const room = roomsMap[roomId];
                 if (room && room.lobbyData && room.lobbyData.players) {
-                    const age = now - (room.created || 0);
-                    // 过滤 3 小时内活跃的房间
-                    if (age < 3 * 3600 * 1000) {
+                    const lastHuman = room.lastHumanActivity || room.created || 0;
+                    const inactiveDuration = now - lastHuman;
+
+                    // 规则 2：超过 3 分钟无真人操作 -> 自动从云端数据库清除销毁！
+                    if (inactiveDuration > MAX_INACTIVE_TIME) {
+                        console.log(`[AutoClean] 房间 ${roomId} 超过 3 分钟无真人操作，自动销毁`);
+                        this.db.ref('rooms/' + roomId).remove();
+                    } else {
                         activeRooms.push(room);
                     }
                 }
@@ -146,8 +235,17 @@ class P2PManager {
             if (document.hidden) return;
             // 当用户切回网页时，重新强行拉取最新云端状态，解决切后台挂起问题！
             if (this.roomRef && !this.isAiMode) {
-                this.roomRef.child('gameState').once('value').then(snapshot => {
-                    const state = snapshot.val();
+                this.roomRef.once('value').then(snapshot => {
+                    const roomData = snapshot.val();
+                    if (!roomData) {
+                        // 房间已被销毁（如超过 3 分钟超时）
+                        if (this.onToast) this.onToast('⌛ 该房间超过 3 分钟无真人操作已被销毁关闭');
+                        this.clearSession();
+                        window.location.href = window.location.pathname;
+                        return;
+                    }
+
+                    const state = roomData.gameState;
                     if (state && this.onStateUpdate) {
                         console.log('[CloudSync] 页面恢复，同步云端最新状态');
                         this.onStateUpdate(state);
@@ -172,78 +270,88 @@ class P2PManager {
        创建房间 (作为 Host) - Firebase 云端版
        ==================================================================== */
     createRoom(nickname, onReady, roomIdOverride) {
-        this.nickname      = nickname;
-        this.isHost        = true;
+        this.roomId = roomIdOverride || this.generateRoomId();
+        this.isHost = true;
         this.myPlayerIndex = 0;
-        this.roomId        = roomIdOverride || this.generateRoomId();
-        this.isAiMode      = false;
+        this.isAiMode = false;
 
-        this._removeAllListeners();
-        this.roomRef = this.db.ref('rooms/' + this.roomId);
+        // 实施规则 1：创建前先清除同设备的旧房间
+        this._leavePreviousRooms(this.roomId, () => {
+            this._removeAllListeners();
+            this.roomRef = this.db.ref('rooms/' + this.roomId);
 
-        if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 3000);
+            if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 3000);
 
-        const initialLobby = {
-            players: [
-                { name: nickname, isAi: false, isHost: true, sid: this.sessionId },
-                { name: '🤖 机器人 AI_1', isAi: true, isHost: false },
-                { name: '🤖 机器人 AI_2', isAi: true, isHost: false }
-            ]
-        };
+            // 实施规则 3：昵称去重
+            const finalNick = this._ensureUniqueNickname(nickname, []);
 
-        const roomPayload = {
-            roomId: this.roomId,
-            created: firebase.database.ServerValue.TIMESTAMP,
-            hostSid: this.sessionId,
-            lobbyData: initialLobby,
-            gameState: null,
-            action: null,
-            chat: null
-        };
+            const initialLobby = {
+                players: [
+                    { name: finalNick, isAi: false, isHost: true, sid: this.sessionId },
+                    { name: '🤖 机器人 AI_1', isAi: true, isHost: false },
+                    { name: '🤖 机器人 AI_2', isAi: true, isHost: false }
+                ]
+            };
 
-        this.roomRef.set(roomPayload).then(() => {
-            console.log('[CloudEngine] 房主创建云端房间成功 ID:', this.roomId);
-            if (onReady) onReady(this.roomId);
+            const now = Date.now();
+            const roomPayload = {
+                roomId: this.roomId,
+                created: firebase.database.ServerValue.TIMESTAMP,
+                lastHumanActivity: now, // 规则 2：记录真人初始活动时间
+                hostSid: this.sessionId,
+                lobbyData: initialLobby,
+                gameState: null,
+                action: null,
+                chat: null
+            };
 
-            // 监听玩家加入（监听 players 节点变化）
-            this.roomRef.child('lobbyData/players').on('value', snapshot => {
-                const players = snapshot.val();
-                if (!players) return;
+            this.roomRef.set(roomPayload).then(() => {
+                console.log('[CloudEngine] 房主创建云端房间成功 ID:', this.roomId);
+                if (onReady) onReady(this.roomId);
 
-                players.forEach((p, idx) => {
-                    if (idx > 0 && !p.isAi && p.name) {
-                        if (this.onPlayerJoined) {
-                            this.onPlayerJoined(idx, p.name);
+                // 监听玩家加入
+                this.roomRef.child('lobbyData/players').on('value', snapshot => {
+                    const players = snapshot.val();
+                    if (!players) return;
+
+                    players.forEach((p, idx) => {
+                        if (idx > 0 && !p.isAi && p.name) {
+                            if (this.onPlayerJoined) {
+                                this.onPlayerJoined(idx, p.name);
+                            }
+                        }
+                    });
+                });
+
+                // 房主监听客户端发来的操作指令
+                this.roomRef.child('action').on('value', snapshot => {
+                    const act = snapshot.val();
+                    if (act && act.id && act.id !== this._lastProcessedActionId) {
+                        this._lastProcessedActionId = act.id;
+                        // 规则 2：接收到真人操作指令，刷新真人活动时间
+                        this.roomRef.child('lastHumanActivity').set(Date.now());
+                        if (window.GameEngine) {
+                            window.GameEngine.handlePlayerAction(act.playerIndex, act.action, act.payload);
                         }
                     }
                 });
-            });
 
-            // 房主监听客户端发来的操作指令
-            this.roomRef.child('action').on('value', snapshot => {
-                const act = snapshot.val();
-                if (act && act.id && act.id !== this._lastProcessedActionId) {
-                    this._lastProcessedActionId = act.id;
-                    if (window.GameEngine) {
-                        window.GameEngine.handlePlayerAction(act.playerIndex, act.action, act.payload);
+                // 房主监听快捷聊天
+                this.roomRef.child('chat').on('value', snapshot => {
+                    const chat = snapshot.val();
+                    if (chat && chat.id && chat.id !== this._lastProcessedChatId) {
+                        this._lastProcessedChatId = chat.id;
+                        this.roomRef.child('lastHumanActivity').set(Date.now());
+                        if (window.GameEngine) {
+                            window.GameEngine.processChatPhrase(chat.senderIndex, chat.text);
+                        }
                     }
-                }
-            });
+                });
 
-            // 房主也监听快捷聊天
-            this.roomRef.child('chat').on('value', snapshot => {
-                const chat = snapshot.val();
-                if (chat && chat.id && chat.id !== this._lastProcessedChatId) {
-                    this._lastProcessedChatId = chat.id;
-                    if (window.GameEngine) {
-                        window.GameEngine.processChatPhrase(chat.senderIndex, chat.text);
-                    }
-                }
+            }).catch(err => {
+                console.error('[CloudEngine] 创建房间失败:', err);
+                if (this.onToast) this.onToast(`创建云端房间失败: ${err.message}`, 4000);
             });
-
-        }).catch(err => {
-            console.error('[CloudEngine] 创建房间失败:', err);
-            if (this.onToast) this.onToast(`创建云端房间失败: ${err.message}`, 4000);
         });
     }
 
@@ -251,127 +359,151 @@ class P2PManager {
        加入房间 (作为 Client) - Firebase 云端版
        ==================================================================== */
     joinRoom(roomId, nickname, onSuccess, onError) {
-        this.nickname  = nickname;
-        this.roomId    = roomId;
-        this.isAiMode  = false;
+        this.roomId   = roomId;
+        this.isAiMode = false;
 
-        this._removeAllListeners();
-        this.roomRef = this.db.ref('rooms/' + roomId);
+        // 实施规则 1：加入前先清除同设备的旧房间/旧槽位
+        this._leavePreviousRooms(roomId, () => {
+            this._removeAllListeners();
+            this.roomRef = this.db.ref('rooms/' + roomId);
 
-        if (this.onToast) this.onToast('☁️ 正在连接云端服务器...', 4000);
+            if (this.onToast) this.onToast('☁️ 正在连接云端服务器...', 4000);
 
-        this.roomRef.once('value').then(snapshot => {
-            const roomData = snapshot.val();
-            if (!roomData) {
-                if (onError) onError('房间不存在，请检查 6 位房间号');
-                return;
-            }
-
-            const lobby = roomData.lobbyData || { players: [] };
-            const players = lobby.players || [];
-
-            // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3)
-            let assignedSlot = -1;
-
-            // 1. 检查是否是房主 (槽位 0) 重连/加入
-            if (roomData.hostSid === this.sessionId || (players[0] && (players[0].sid === this.sessionId || players[0].name === nickname))) {
-                assignedSlot = 0;
-                this.isHost = true;
-            } else {
-                this.isHost = false;
-
-                // 2. 客户端重连：优先匹配相同 sid
-                for (let i = 1; i < 3; i++) {
-                    if (players[i] && players[i].sid === this.sessionId) {
-                        assignedSlot = i;
-                        break;
-                    }
+            this.roomRef.once('value').then(snapshot => {
+                const roomData = snapshot.val();
+                if (!roomData) {
+                    if (onError) onError('房间不存在，或超时无真人操作已被销毁');
+                    return;
                 }
 
-                // 3. 客户端重连：退而求其次匹配相同 nickname (非 AI)
-                if (assignedSlot === -1) {
+                // 规则 2：检查该房间是否已超 3 分钟无真人操作
+                const lastHuman = roomData.lastHumanActivity || roomData.created || 0;
+                if (Date.now() - lastHuman > MAX_INACTIVE_TIME) {
+                    this.db.ref('rooms/' + roomId).remove();
+                    if (onError) onError('该房间超过 3 分钟无真人操作已自动销毁');
+                    return;
+                }
+
+                const lobby = roomData.lobbyData || { players: [] };
+                const players = lobby.players || [];
+
+                // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3)
+                let assignedSlot = -1;
+
+                // 1. 检查是否是房主 (槽位 0) 重连/加入
+                if (roomData.hostSid === this.sessionId || (players[0] && (players[0].sid === this.sessionId || players[0].name === nickname))) {
+                    assignedSlot = 0;
+                    this.isHost = true;
+                } else {
+                    this.isHost = false;
+
+                    // 2. 客户端重连：优先匹配相同 sid
                     for (let i = 1; i < 3; i++) {
-                        if (players[i] && !players[i].isAi && players[i].name === nickname) {
+                        if (players[i] && players[i].sid === this.sessionId) {
                             assignedSlot = i;
                             break;
                         }
                     }
-                }
 
-                // 4. 新玩家加入：查找第一个 AI 候补槽位
-                if (assignedSlot === -1) {
-                    for (let i = 1; i < 3; i++) {
-                        if (!players[i] || players[i].isAi) {
-                            assignedSlot = i;
-                            break;
+                    // 3. 客户端重连：退而求其次匹配相同 nickname (非 AI)
+                    if (assignedSlot === -1) {
+                        for (let i = 1; i < 3; i++) {
+                            if (players[i] && !players[i].isAi && players[i].name === nickname) {
+                                assignedSlot = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    // 4. 新玩家加入：查找第一个 AI 候补槽位
+                    if (assignedSlot === -1) {
+                        for (let i = 1; i < 3; i++) {
+                            if (!players[i] || players[i].isAi) {
+                                assignedSlot = i;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (assignedSlot === -1) {
-                if (onError) onError('房间人数已满！');
-                return;
-            }
+                if (assignedSlot === -1) {
+                    if (onError) onError('房间人数已满！');
+                    return;
+                }
 
-            this.myPlayerIndex = assignedSlot;
-            console.log(`[CloudEngine] 加入房间成功，分配槽位 ${assignedSlot} (${this.isHost ? '房主' : '玩家'})`);
+                // 实施规则 3：昵称去重
+                const finalNick = this._ensureUniqueNickname(nickname, players);
 
-            // 更新云端该槽位的玩家信息
-            players[assignedSlot] = {
-                name: nickname,
-                isAi: false,
-                isHost: this.isHost,
-                sid: this.sessionId
-            };
+                this.myPlayerIndex = assignedSlot;
+                console.log(`[CloudEngine] 加入房间成功，分配槽位 ${assignedSlot} (${this.isHost ? '房主' : '玩家'})`);
 
-            return this.roomRef.child('lobbyData/players').set(players).then(() => {
-                // 如果是房主重连，挂载房主监听（监听客户端操作指令）
-                if (this.isHost) {
-                    this.roomRef.child('action').on('value', snap => {
-                        const act = snap.val();
-                        if (act && act.id && act.id !== this._lastProcessedActionId) {
-                            this._lastProcessedActionId = act.id;
+                // 更新云端该槽位的玩家信息 + 刷新真人活动时间
+                players[assignedSlot] = {
+                    name: finalNick,
+                    isAi: false,
+                    isHost: this.isHost,
+                    sid: this.sessionId
+                };
+
+                this.roomRef.child('lastHumanActivity').set(Date.now());
+
+                return this.roomRef.child('lobbyData/players').set(players).then(() => {
+                    // 如果是房主重连，挂载房主监听
+                    if (this.isHost) {
+                        this.roomRef.child('action').on('value', snap => {
+                            const act = snap.val();
+                            if (act && act.id && act.id !== this._lastProcessedActionId) {
+                                this._lastProcessedActionId = act.id;
+                                this.roomRef.child('lastHumanActivity').set(Date.now());
+                                if (window.GameEngine) {
+                                    window.GameEngine.handlePlayerAction(act.playerIndex, act.action, act.payload);
+                                }
+                            }
+                        });
+                    }
+
+                    // 监听全局状态更新
+                    this.roomRef.child('gameState').on('value', snap => {
+                        const state = snap.val();
+                        if (!state && roomData.gameState) {
+                            // 房间被物理移除
+                            if (this.onToast) this.onToast('⌛ 房间超时关闭');
+                            this.clearSession();
+                            window.location.href = window.location.pathname;
+                            return;
+                        }
+                        if (state && this.onStateUpdate) {
+                            this.onStateUpdate(state);
+                        }
+                    });
+
+                    // 监听大厅玩家列表同步
+                    this.roomRef.child('lobbyData').on('value', snap => {
+                        const lData = snap.val();
+                        if (lData && this.onLobbySync) {
+                            this.onLobbySync(lData);
+                        }
+                    });
+
+                    // 监听快捷聊天
+                    this.roomRef.child('chat').on('value', snap => {
+                        const chat = snap.val();
+                        if (chat && chat.id && chat.id !== this._lastProcessedChatId) {
+                            this._lastProcessedChatId = chat.id;
+                            this.roomRef.child('lastHumanActivity').set(Date.now());
                             if (window.GameEngine) {
-                                window.GameEngine.handlePlayerAction(act.playerIndex, act.action, act.payload);
+                                window.GameEngine.processChatPhrase(chat.senderIndex, chat.text);
                             }
                         }
                     });
-                }
 
-                // 监听全局状态更新
-                this.roomRef.child('gameState').on('value', snap => {
-                    const state = snap.val();
-                    if (state && this.onStateUpdate) {
-                        this.onStateUpdate(state);
-                    }
+                    if (onSuccess) onSuccess();
                 });
 
-                // 监听大厅玩家列表同步
-                this.roomRef.child('lobbyData').on('value', snap => {
-                    const lData = snap.val();
-                    if (lData && this.onLobbySync) {
-                        this.onLobbySync(lData);
-                    }
-                });
-
-                // 监听快捷聊天
-                this.roomRef.child('chat').on('value', snap => {
-                    const chat = snap.val();
-                    if (chat && chat.id && chat.id !== this._lastProcessedChatId) {
-                        this._lastProcessedChatId = chat.id;
-                        if (window.GameEngine) {
-                            window.GameEngine.processChatPhrase(chat.senderIndex, chat.text);
-                        }
-                    }
-                });
-
-                if (onSuccess) onSuccess();
+            }).catch(err => {
+                console.error('[CloudEngine] 加入房间异常:', err);
+                if (onError) onError(`连接异常: ${err.message}`);
             });
-
-        }).catch(err => {
-            console.error('[CloudEngine] 加入房间异常:', err);
-            if (onError) onError(`连接异常: ${err.message}`);
         });
     }
 
@@ -395,14 +527,21 @@ class P2PManager {
     }
 
     /* ====================================================================
-       客户端发送指令（写入云端 action 节点）
+       客户端发送指令（写入云端 action 节点，刷新真人活动时间）
        ==================================================================== */
     sendActionToHost(action, payload) {
         if (this.isHost || this.isAiMode) {
             if (window.GameEngine) {
+                // 规则 2：真人房主点击按键，刷新真人活动时间
+                if (this.roomRef && !this.isAiMode) {
+                    this.roomRef.child('lastHumanActivity').set(Date.now());
+                }
                 window.GameEngine.handlePlayerAction(this.myPlayerIndex, action, payload);
             }
         } else if (this.roomRef) {
+            // 规则 2：真人客户端发送动作，刷新真人活动时间
+            this.roomRef.child('lastHumanActivity').set(Date.now());
+
             const actionPayload = {
                 id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
                 playerIndex: this.myPlayerIndex,
@@ -424,10 +563,11 @@ class P2PManager {
     }
 
     /* ====================================================================
-       广播快捷聊天短语
+       广播快捷聊天短语（写入云端）
        ==================================================================== */
     broadcastChatPhrase(senderIndex, text) {
         if (this.roomRef && !this.isAiMode) {
+            this.roomRef.child('lastHumanActivity').set(Date.now());
             const chatPayload = {
                 id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
                 senderIndex: senderIndex,
