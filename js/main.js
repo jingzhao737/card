@@ -882,6 +882,19 @@ class GameEngineController {
             });
         }
 
+        // 游鲸斗地主 Header 艺术大小王王炸卡牌点击互动弹跳缩放 + 洗牌发牌音效
+        const doudizhuCardsDeco = document.querySelector('.doudizhu-cards-decoration');
+        if (doudizhuCardsDeco) {
+            doudizhuCardsDeco.addEventListener('click', () => {
+                doudizhuCardsDeco.classList.remove('animate');
+                void doudizhuCardsDeco.offsetWidth; // 强制重发 Keyframe
+                doudizhuCardsDeco.classList.add('animate');
+                if (window.SoundEngine && window.SoundEngine.playCardPlace) {
+                    window.SoundEngine.playCardPlace();
+                }
+            });
+        }
+
         // 离开/取消等待/返回大厅 (null-safe, 无重复绑定)
         const btnCancelWaiting = document.getElementById('btnCancelWaiting');
         const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
