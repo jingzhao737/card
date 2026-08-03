@@ -3534,10 +3534,11 @@ body:has(#lobbyScreen.active) .app-header,
     text-align: center;
 }
 .stat-val {
-    font-size: 1rem;
-    font-weight: 900;
+    font-size: 0.96rem;
+    font-weight: 500;
     color: #ffd700;
-    font-family: var(--font-num);
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.3px;
 }
 .stat-lbl {
     font-size: 0.7rem;
