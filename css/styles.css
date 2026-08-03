@@ -4450,15 +4450,19 @@ body:has(#lobbyScreen.active) .app-header,
     height: 50% !important;
 }
 
-/* 星位点 (4,4), (4,12), (8,8天元), (12,4), (12,12) */
-.gomoku-cell.star-point::before {
-    content: '';
+/* 星位点 (4,4), (4,12), (8,8天元), (12,4), (12,12) 交叉圆点 */
+.star-dot {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: #361702;
-    z-index: 2;
+    background: #321402;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
 /* 棋子 Style */

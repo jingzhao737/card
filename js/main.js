@@ -1262,13 +1262,17 @@ class GameEngineController {
             for (let c = 0; c < 15; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'gomoku-cell';
-                if (starPoints.includes(`${r},${c}`)) {
-                    cell.classList.add('star-point');
-                }
+
                 if (r === 0)  cell.classList.add('row-top');
                 if (r === 14) cell.classList.add('row-bottom');
                 if (c === 0)  cell.classList.add('col-left');
                 if (c === 14) cell.classList.add('col-right');
+
+                if (starPoints.includes(`${r},${c}`)) {
+                    const dot = document.createElement('div');
+                    dot.className = 'star-dot';
+                    cell.appendChild(dot);
+                }
 
                 cell.dataset.r = r;
                 cell.dataset.c = c;
@@ -1364,7 +1368,10 @@ class GameEngineController {
             const c = parseInt(cell.dataset.c);
             const val = engine.board[r][c];
 
-            cell.innerHTML = ''; // 清理旧棋子
+            // 保持星位点 .star-dot 节点不被删除
+            const starDot = cell.querySelector('.star-dot');
+            cell.innerHTML = '';
+            if (starDot) cell.appendChild(starDot);
 
             if (val !== 0) {
                 const stone = document.createElement('div');
