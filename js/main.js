@@ -953,7 +953,7 @@ class GameEngineController {
         const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
             const isWin = m.isWin;
             const resStyle = isWin ? 'color:#00e676;background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.3);' : 'color:#ff2a2a;background:rgba(255,42,42,0.12);border-color:rgba(255,42,42,0.3);';
-            const roleBadge = m.role === '资本家' ? '🎩 资本家' : '🐂 牛马';
+            const roleBadge = m.role;
             return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -993,11 +993,11 @@ class GameEngineController {
                     <div class="stat-lbl">总对局数</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffd700;">🎩 ${landlordWins}</div>
+                    <div class="stat-val" style="color:#ffd700;">${landlordWins}</div>
                     <div class="stat-lbl">资本家胜场</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#38bdf8;">🐂 ${farmerWins}</div>
+                    <div class="stat-val" style="color:#38bdf8;">${farmerWins}</div>
                     <div class="stat-lbl">牛马胜场</div>
                 </div>
             </div>
