@@ -1329,6 +1329,21 @@ class GameEngineController {
         document.getElementById('nameLeft').textContent = this.gameState.players[rel.left].name;
         document.getElementById('nameRight').textContent = this.gameState.players[rel.right].name;
 
+        const renderSeatAvatar = (avatarBoxId, avatarEmoji, isAi) => {
+            const box = document.getElementById(avatarBoxId);
+            if (!box) return;
+            if (isAi) {
+                box.innerHTML = '<i class="fa-solid fa-robot" style="color:#60a5fa;"></i>';
+            } else {
+                const emoji = avatarEmoji || '🤠';
+                box.innerHTML = `<span style="font-size:1.35rem;line-height:1;">${emoji}</span>`;
+            }
+        };
+
+        renderSeatAvatar('avatarSelf', this.gameState.players[rel.self].avatar || (AuthEngine.userData ? AuthEngine.userData.avatar : '🤠'), this.gameState.players[rel.self].isAi);
+        renderSeatAvatar('avatarLeft', this.gameState.players[rel.left].avatar, this.gameState.players[rel.left].isAi);
+        renderSeatAvatar('avatarRight', this.gameState.players[rel.right].avatar, this.gameState.players[rel.right].isAi);
+
         document.getElementById('cardCountLeft').querySelector('.count').textContent = this.gameState.players[rel.left].hand.length;
         document.getElementById('cardCountRight').querySelector('.count').textContent = this.gameState.players[rel.right].hand.length;
 
@@ -1412,6 +1427,18 @@ class GameEngineController {
             const bWrap = document.getElementById('bottomCardsWrapper');
             if (bWrap) bWrap.style.display = 'none';
 
+            // 全员 (不论房主还是客户端) 自动触发战绩结算 (每个账号每盘仅结算1次)
+            if (!this._hasSettledThisRound) {
+                this._hasSettledThisRound = true;
+                if (typeof AuthEngine !== 'undefined' && AuthEngine.userData) {
+                    const winnerIdx = this.gameState.winnerIndex;
+                    const winnerRole = (this.gameState.players[winnerIdx]) ? this.gameState.players[winnerIdx].role : 'FARMER';
+                    const myRole = (this.gameState.players[myIndex]) ? this.gameState.players[myIndex].role : 'FARMER';
+                    const isWin = (winnerIdx === myIndex) || (winnerRole === 'FARMER' && myRole === 'FARMER');
+                    AuthEngine.updateStats(isWin, myRole, 0, this.gameState.multiplier || 1);
+                }
+            }
+
             if (this.turnTimerInterval) {
                 clearInterval(this.turnTimerInterval);
                 this.turnTimerInterval = null;
@@ -1493,6 +1520,8 @@ class GameEngineController {
             UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
             UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
             UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
+
+            this._hasSettledThisRound = false;
         }
 
         // 6. 思考出牌/叫地主文本提示与头像高亮

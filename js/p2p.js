@@ -307,11 +307,13 @@ class P2PManager {
             // 实施规则 3：昵称去重
             const finalNick = this._ensureUniqueNickname(nickname, [], 0);
 
+            const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
+
             const initialLobby = {
                 players: [
-                    { name: finalNick, isAi: false, isHost: true, sid: this.sessionId },
-                    { name: '🤖 机器人 AI_1', isAi: true, isHost: false },
-                    { name: '🤖 机器人 AI_2', isAi: true, isHost: false }
+                    { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
+                    { name: '🤖 机器人 AI_1', avatar: '🤖', isAi: true, isHost: false },
+                    { name: '🤖 机器人 AI_2', avatar: '🤖', isAi: true, isHost: false }
                 ]
             };
 
@@ -459,9 +461,12 @@ class P2PManager {
                 this.myPlayerIndex = assignedSlot;
                 console.log(`[CloudEngine] 加入房间成功，分配槽位 ${assignedSlot} (${this.isHost ? '房主' : '玩家'})`);
 
+                const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
+
                 // 更新云端该槽位的玩家信息 + 刷新真人活动时间
                 players[assignedSlot] = {
                     name: finalNick,
+                    avatar: currentAvatar,
                     isAi: false,
                     isHost: this.isHost,
                     sid: this.sessionId
