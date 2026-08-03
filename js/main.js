@@ -54,6 +54,7 @@ class GameEngineController {
         }
 
         this.bindLobbyEvents();
+        this.renderMiniLeaderboard();
 
         // 监听网络层的全量状态同步与大厅同步事件
         NetworkManager.onStateUpdate = (state) => this.onReceiveStateUpdate(state);
@@ -576,25 +577,22 @@ class GameEngineController {
         if (tabSkinAvatar) tabSkinAvatar.addEventListener('click', () => switchSkinTab(tabSkinAvatar, viewSkinAvatar));
         if (tabSkinGlow)   tabSkinGlow.addEventListener('click', () => switchSkinTab(tabSkinGlow, viewSkinGlow));
 
-        // 战绩 Modal 选项卡
-        const tabMyStats     = document.getElementById('tabMyStats');
-        const tabLeaderboard = document.getElementById('tabLeaderboard');
-        const viewMyStats    = document.getElementById('viewMyStats');
-        const viewLeaderboard= document.getElementById('viewLeaderboard');
+        // 独立全网高手榜 Modal 绑定
+        const leaderboardModal = document.getElementById('leaderboardModal');
+        const lobbyMiniLb = document.getElementById('lobbyMiniLeaderboard');
+        const menuBtnLeaderboard = document.getElementById('menuBtnLeaderboard');
+        const btnCloseLbModal = document.getElementById('btnCloseLeaderboardModal');
 
-        if (tabMyStats && tabLeaderboard) {
-            tabMyStats.addEventListener('click', () => {
-                tabMyStats.classList.add('active');
-                tabLeaderboard.classList.remove('active');
-                if (viewMyStats) viewMyStats.style.display = 'flex';
-                if (viewLeaderboard) viewLeaderboard.style.display = 'none';
-            });
-            tabLeaderboard.addEventListener('click', () => {
-                tabLeaderboard.classList.add('active');
-                tabMyStats.classList.remove('active');
-                if (viewLeaderboard) viewLeaderboard.style.display = 'block';
-                if (viewMyStats) viewMyStats.style.display = 'none';
-                this.renderLeaderboard();
+        const openLeaderboardModal = () => {
+            if (leaderboardModal) leaderboardModal.style.display = 'flex';
+            this.renderLeaderboard();
+        };
+
+        if (lobbyMiniLb) lobbyMiniLb.addEventListener('click', openLeaderboardModal);
+        if (menuBtnLeaderboard) menuBtnLeaderboard.addEventListener('click', openLeaderboardModal);
+        if (btnCloseLbModal) {
+            btnCloseLbModal.addEventListener('click', () => {
+                if (leaderboardModal) leaderboardModal.style.display = 'none';
             });
         }
 
@@ -885,12 +883,36 @@ class GameEngineController {
     }
 
     /**
-     * 渲染全网因币资产排行榜 Top 10
+     * 渲染主页顶部简略排行榜 (Top 3 横向走马灯)
+     */
+    renderMiniLeaderboard() {
+        const ticker = document.getElementById('miniLeaderboardTicker');
+        if (!ticker) return;
+
+        AuthEngine.fetchLeaderboard(list => {
+            if (!list || list.length === 0) {
+                ticker.innerHTML = '<span style="color:#94a3b8">暂无上榜玩家，注册开局即可登顶！</span>';
+                return;
+            }
+
+            const top3 = list.slice(0, 3);
+            const html = top3.map((u, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+                const cleanNick = typeof window.sanitizeNickname === 'function' ? window.sanitizeNickname(u.nickname) : u.nickname;
+                return `<span class="lb-top-item"><span>${medal}</span><span class="lb-top-name">${cleanNick}</span><span class="lb-top-score">(${u.yinCoins || 1000}知因币)</span></span>`;
+            }).join('<span style="color:rgba(255,255,255,0.2);margin:0 4px;">|</span>');
+
+            ticker.innerHTML = html;
+        });
+    }
+
+    /**
+     * 渲染全网知因币资产排行榜 Top 10
      */
     renderLeaderboard() {
         const container = document.getElementById('leaderboardListContainer');
         if (!container) return;
-        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 加载因币资产榜...</div>';
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 加载知因币资产榜...</div>';
 
         AuthEngine.fetchLeaderboard(list => {
             container.innerHTML = '';

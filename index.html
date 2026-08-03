@@ -85,6 +85,20 @@
         <!-- 主大厅/大厅模式选择 (Hero Aesthetic Lobby) -->
         <div id="lobbyScreen" class="overlay-screen active">
             <div class="lobby-card hero-lobby-card">
+                <!-- 简略排行榜区域 (位于整个核心卡片正上方、游鲸斗地主区块之上) -->
+                <div class="mini-leaderboard-bar" id="lobbyMiniLeaderboard" title="点击查看全网详细高手榜">
+                    <div class="mini-lb-left">
+                        <i class="fa-solid fa-trophy mini-lb-icon"></i>
+                        <span class="mini-lb-title">全网高手榜</span>
+                    </div>
+                    <div class="mini-lb-ticker" id="miniLeaderboardTicker">
+                        <span><i class="fa-solid fa-spinner fa-spin"></i> 排行榜加载中...</span>
+                    </div>
+                    <div class="mini-lb-more">
+                        <span>详细榜单 <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+
                 <div class="lobby-header">
                     <div class="brand-hero">
                         <div class="brand-text">
@@ -690,19 +704,14 @@
         </div>
     </div>
 
-    <!-- 个人战绩 & 全网排行榜弹窗 -->
+    <!-- 个人战绩弹窗 (纯个人信息) -->
     <div id="statsModal" class="card-type-modal" style="display:none;">
-        <div class="card-type-inner" style="max-width: 520px;">
+        <div class="card-type-inner" style="max-width: 480px;">
             <div class="ct-header">
-                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-id-card"></i> 个人信息与排行榜</span>
+                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-id-card"></i> 个人战绩与名片</span>
                 <button class="ct-close" id="btnCloseStatsModal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="ct-body" style="padding: 16px 20px;">
-                <div class="auth-tabs">
-                    <button class="auth-tab active" id="tabMyStats">个人信息</button>
-                    <button class="auth-tab" id="tabLeaderboard">全网高手榜 Top 10</button>
-                </div>
-
                 <!-- 个人战绩 View -->
                 <div id="viewMyStats" style="display:flex;flex-direction:column;gap:12px;">
                     <div class="user-profile-hero" id="userProfileHero">
@@ -715,12 +724,20 @@
                         <i class="fa-solid fa-power-off"></i> 退出登录
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- 全网排行榜 View -->
-                <div id="viewLeaderboard" style="display:none;max-height:360px;overflow-y:auto;">
-                    <div id="leaderboardListContainer">
-                        <!-- 动态排行榜 -->
-                    </div>
+    <!-- 全网高手榜独立详细弹窗 -->
+    <div id="leaderboardModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner" style="max-width: 480px;">
+            <div class="ct-header">
+                <span class="ct-title"><i class="fa-solid fa-trophy"></i> 全网高手榜 Top 10</span>
+                <button class="ct-close" id="btnCloseLeaderboardModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body" style="padding: 16px 20px;">
+                <div id="leaderboardListContainer" style="max-height:360px;overflow-y:auto;">
+                    <!-- 动态排行榜 -->
                 </div>
             </div>
         </div>

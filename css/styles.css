@@ -3501,6 +3501,83 @@ body:has(#lobbyScreen.active) .app-header,
     font-size: 0.95rem;
 }
 
+/* 主页顶部简略排行榜横幅 (核心卡片正上方、游鲸斗地主区块之上) */
+.mini-leaderboard-bar {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.16), rgba(0, 0, 0, 0.45));
+    border: 1px solid rgba(201, 146, 42, 0.28);
+    border-radius: 4px;
+    padding: 7px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.mini-leaderboard-bar:hover {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.26), rgba(0, 0, 0, 0.55));
+    border-color: rgba(255, 215, 0, 0.45);
+    box-shadow: 0 0 12px rgba(201, 146, 42, 0.2);
+}
+.mini-lb-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.mini-lb-icon {
+    color: #ffd700;
+    font-size: 0.92rem;
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
+}
+.mini-lb-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #ffd700;
+    white-space: nowrap;
+}
+.mini-lb-ticker {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.74rem;
+    color: #cbd5e1;
+}
+.mini-lb-ticker .lb-top-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 6px;
+}
+.mini-lb-ticker .lb-top-name {
+    color: #fff;
+    font-weight: 700;
+}
+.mini-lb-ticker .lb-top-score {
+    color: #ffd700;
+    font-size: 0.7rem;
+}
+.mini-lb-more {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.mini-lb-more i {
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+}
+.mini-leaderboard-bar:hover .mini-lb-more i {
+    transform: translateX(2px);
+    color: #ffd700;
+}
+
 /* 大厅专属登录卡片 */
 .auth-banner-card {
     background: linear-gradient(135deg, rgba(201, 146, 42, 0.15), rgba(0, 0, 0, 0.45));
