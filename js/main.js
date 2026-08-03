@@ -912,16 +912,20 @@ class GameEngineController {
     _fillSlotWithAi(slotIndex) {
         const aiName = `机器人 AI_${slotIndex}`;
         this.gameState.players[slotIndex].name = aiName;
+        this.gameState.players[slotIndex].avatar = '🤖';
         this.gameState.players[slotIndex].isAi = true;
 
         const nameEl = document.getElementById(`slotName${slotIndex}`);
+        const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
         const slotEl = document.getElementById(`slot${slotIndex}`);
         if (nameEl) nameEl.textContent = `🤖 ${aiName}`;
+        if (avatarEl) avatarEl.textContent = '🤖';
         if (slotEl) {
-            const statusEl = slotEl.querySelector('.slot-status');
-            const avatarEl = slotEl.querySelector('.avatar i');
-            if (statusEl) { statusEl.textContent = 'AI 候补'; statusEl.classList.add('ready'); }
-            if (avatarEl) { avatarEl.className = 'fa-solid fa-robot'; }
+            const statusEl = slotEl.querySelector('.slot-status-pill');
+            if (statusEl) {
+                statusEl.textContent = '⚙️ 备选 AI';
+                statusEl.classList.remove('ready');
+            }
         }
     }
 
@@ -940,12 +944,6 @@ class GameEngineController {
 
         const btnGoHomeTop = document.getElementById('btnGoHomeTop');
         if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
-        
-        // 隐藏不需要给客户端展示的二维码和分享框，保持界面干净
-        const qrContainer = document.querySelector('.qr-container');
-        if (qrContainer) qrContainer.style.display = 'none';
-        const shareBox = document.querySelector('.share-box');
-        if (shareBox) shareBox.style.display = 'none';
 
         UIRenderer.showToast('已进入房间，等待房主开始游戏...');
     }
@@ -953,28 +951,33 @@ class GameEngineController {
     /**
      * 当有新玩家加入 (Host处理) — 替换最早的一个 AI 占位符
      */
-    onPlayerJoined(slotIndex, nickname) {
+    onPlayerJoined(slotIndex, nickname, avatarEmoji) {
         if (!NetworkManager.isHost) return;
 
         const name = nickname || `玩家 ${slotIndex + 1}`;
+        const avatar = avatarEmoji || '🤠';
         this.gameState.players[slotIndex].name = name;
+        this.gameState.players[slotIndex].avatar = avatar;
         this.gameState.players[slotIndex].isAi = false;
 
         const nameEl = document.getElementById(`slotName${slotIndex}`);
+        const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
         const slotEl = document.getElementById(`slot${slotIndex}`);
         if (nameEl) nameEl.textContent = name;
+        if (avatarEl) avatarEl.textContent = avatar;
         if (slotEl) {
-            const statusEl = slotEl.querySelector('.slot-status');
-            const avatarEl = slotEl.querySelector('.avatar i');
-            if (statusEl) { statusEl.textContent = '已就绪'; statusEl.classList.add('ready'); }
-            if (avatarEl) { avatarEl.className = 'fa-solid fa-user'; }
+            const statusEl = slotEl.querySelector('.slot-status-pill');
+            if (statusEl) {
+                statusEl.textContent = '✅ 已就绪';
+                statusEl.classList.add('ready');
+            }
         }
 
         const humanCount = this.gameState.players.filter(p => !p.isAi).length;
         document.getElementById('connectedCount').textContent = humanCount;
 
         if (humanCount === 3) {
-            UIRenderer.showToast('全员就位，可以开始游戏了！');
+            UIRenderer.showToast('🎉 全员就位，可以开始游戏了！');
         }
 
         this.broadcastLobbyState();
@@ -988,6 +991,7 @@ class GameEngineController {
         const lobbyData = {
             players: this.gameState.players.map(p => ({
                 name: p.name,
+                avatar: p.avatar || (p.isAi ? '🤖' : '🤠'),
                 isAi: p.isAi,
                 isHost: p.isHost
             }))
@@ -1004,25 +1008,31 @@ class GameEngineController {
 
         let humanCount = 0;
         lobbyData.players.forEach((p, i) => {
-            const slotEl = document.getElementById(`slot${i}`);
-            const nameEl = document.getElementById(`slotName${i}`);
+            const slotEl   = document.getElementById(`slot${i}`);
+            const nameEl   = document.getElementById(`slotName${i}`);
+            const avatarEl = document.getElementById(`slotAvatar${i}`);
             if (!slotEl || !nameEl) return;
 
-            const statusEl = slotEl.querySelector('.slot-status');
-            const avatarEl = slotEl.querySelector('.avatar i');
+            const statusEl = slotEl.querySelector('.slot-status-pill');
 
             if (p.isAi) {
                 nameEl.textContent = `🤖 ${p.name}`;
-                if (statusEl) { statusEl.textContent = 'AI 候补'; statusEl.classList.add('ready'); }
-                if (avatarEl) avatarEl.className = 'fa-solid fa-robot';
+                if (avatarEl) avatarEl.textContent = '🤖';
+                if (statusEl) {
+                    statusEl.textContent = '⚙️ 备选 AI';
+                    statusEl.classList.remove('ready');
+                }
             } else if (p.name) {
                 humanCount++;
                 let displayName = p.name;
                 if (i === 0) displayName += ' (房主)';
-                if (i === myIndex) displayName += ' (你)';
+                if (i === myIndex && i !== 0) displayName += ' (你)';
                 nameEl.textContent = displayName;
-                if (statusEl) { statusEl.textContent = '已就绪'; statusEl.classList.add('ready'); }
-                if (avatarEl) avatarEl.className = 'fa-solid fa-user';
+                if (avatarEl) avatarEl.textContent = p.avatar || '🤠';
+                if (statusEl) {
+                    statusEl.textContent = '✅ 已就绪';
+                    statusEl.classList.add('ready');
+                }
             }
         });
 

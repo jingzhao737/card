@@ -175,48 +175,77 @@
             </div>
         </div>
 
-        <!-- 房间等待大厅 (Waiting Room) -->
+        <!-- 房间等待大厅 (Waiting Room Redesign) -->
         <div id="waitingScreen" class="overlay-screen" style="display: none;">
-            <div class="lobby-card waiting-card">
-                <h2><i class="fa-solid fa-users"></i> 组局等待中 (<span id="connectedCount">1</span>/3)</h2>
-                <p class="share-hint">将下方链接或二维码发给微信/QQ好友，好友点击即刻加入！</p>
-
-                <div class="share-box">
-                    <input type="text" id="inviteUrlInput" readonly>
-                    <button class="btn-primary" id="btnCopyInviteUrl"><i class="fa-solid fa-copy"></i> 复制链接</button>
-                </div>
-
-                <div class="qr-container">
-                    <div id="qrcode"></div>
-                    <span>扫码在手机上直接玩</span>
-                </div>
-
-                <div class="slots-container">
-                    <div class="player-slot host" id="slot0">
-                        <div class="avatar"><i class="fa-solid fa-crown"></i></div>
-                        <div class="slot-name" id="slotName0">房主 (你)</div>
-                        <div class="slot-status ready">已就绪</div>
+            <div class="lobby-card waiting-card-hero">
+                <!-- 顶部房间信息头 -->
+                <div class="waiting-header-bar">
+                    <div class="room-id-pill">
+                        <i class="fa-solid fa-house-user"></i>
+                        <span>房间号: <b id="displayRoomId" style="color:#ffd700;font-size:1.1rem;letter-spacing:1px;">------</b></span>
                     </div>
-                    <div class="player-slot" id="slot1">
-                        <div class="avatar"><i class="fa-solid fa-user-gear"></i></div>
-                        <div class="slot-name" id="slotName1">等待好友 1...</div>
-                        <div class="slot-status">连接中</div>
-                    </div>
-                    <div class="player-slot" id="slot2">
-                        <div class="avatar"><i class="fa-solid fa-user-gear"></i></div>
-                        <div class="slot-name" id="slotName2">等待好友 2...</div>
-                        <div class="slot-status">连接中</div>
+                    <div class="connected-badge">
+                        <span class="status-dot green"></span>
+                        <span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>
                     </div>
                 </div>
 
-                <div class="waiting-actions">
-                    <button class="btn-mode primary" id="btnStartGame" style="display: none;">
-                        <i class="fa-solid fa-play"></i> 开始游戏
+                <!-- 组局邀请卡片 -->
+                <div class="invite-action-card">
+                    <div class="invite-card-title">
+                        <i class="fa-solid fa-paper-plane" style="color:#ffd700;"></i> 邀请微信 / QQ 好友开局
+                    </div>
+                    <div class="invite-card-sub">复制下方组局链接发给好友，好友在手机或电脑点击即刻联机加入！</div>
+                    
+                    <div class="share-box-redesign">
+                        <input type="text" id="inviteUrlInput" readonly placeholder="生成专属房间链接中...">
+                        <button class="btn-copy-gold" id="btnCopyInviteUrl">
+                            <i class="fa-solid fa-link"></i> 复制组局链接
+                        </button>
+                    </div>
+
+                    <div class="qr-box-toggle">
+                        <div id="qrcode" class="qr-canvas-box"></div>
+                        <div class="qr-text">
+                            <div><i class="fa-solid fa-qrcode"></i> 手机扫码对局</div>
+                            <span style="font-size:0.72rem;color:#94a3b8;">微信/浏览器直接扫码进入</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 玩家席位 3D 卡片网格 -->
+                <div class="slots-grid-redesign">
+                    <div class="player-slot-card host" id="slot0">
+                        <div class="slot-badge-crown"><i class="fa-solid fa-crown"></i> 房主</div>
+                        <div class="slot-avatar-emoji" id="slotAvatar0">🤠</div>
+                        <div class="slot-name-text" id="slotName0">房主 (你)</div>
+                        <div class="slot-status-pill ready">✅ 房主就绪</div>
+                    </div>
+                    <div class="player-slot-card" id="slot1">
+                        <div class="slot-badge-crown" style="display:none;"><i class="fa-solid fa-user"></i> 玩家</div>
+                        <div class="slot-avatar-emoji" id="slotAvatar1">🤖</div>
+                        <div class="slot-name-text" id="slotName1">🤖 机器人 AI_1</div>
+                        <div class="slot-status-pill">⚙️ 备选 AI</div>
+                    </div>
+                    <div class="player-slot-card" id="slot2">
+                        <div class="slot-badge-crown" style="display:none;"><i class="fa-solid fa-user"></i> 玩家</div>
+                        <div class="slot-avatar-emoji" id="slotAvatar2">🤖</div>
+                        <div class="slot-name-text" id="slotName2">🤖 机器人 AI_2</div>
+                        <div class="slot-status-pill">⚙️ 备选 AI</div>
+                    </div>
+                </div>
+
+                <!-- 底部开局与退出控制栏 -->
+                <div class="waiting-actions-bar">
+                    <button class="btn-start-game-gold" id="btnStartGame">
+                        <i class="fa-solid fa-gamepad"></i> 立即开始斗地主
                     </button>
-                    <button class="btn-mode primary" id="btnStartWithAi" style="display: none;">
+                    <button class="btn-start-ai-sub" id="btnStartWithAi" style="display: none;">
                         <i class="fa-solid fa-robot"></i> 补齐机器人并立即开局
                     </button>
-                    <button class="btn-secondary" id="btnCancelWaiting">返回大厅</button>
+                    <button class="btn-cancel-lobby" id="btnCancelWaiting">
+                        <i class="fa-solid fa-arrow-left"></i> 返回大厅
+                    </button>
                 </div>
             </div>
         </div>
@@ -639,12 +668,12 @@
     <div id="statsModal" class="card-type-modal" style="display:none;">
         <div class="card-type-inner" style="max-width: 520px;">
             <div class="ct-header">
-                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-trophy"></i> 战绩名片与排行榜</span>
+                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-id-card"></i> 个人信息与排行榜</span>
                 <button class="ct-close" id="btnCloseStatsModal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="ct-body" style="padding: 16px 20px;">
                 <div class="auth-tabs">
-                    <button class="auth-tab active" id="tabMyStats">我的战绩名片</button>
+                    <button class="auth-tab active" id="tabMyStats">个人信息</button>
                     <button class="auth-tab" id="tabLeaderboard">全网高手榜 Top 10</button>
                 </div>
 

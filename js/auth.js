@@ -417,7 +417,7 @@ class AuthManager {
             }
             if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
             if (lUserSub)  lUserSub.textContent  = `账号: ${this.userData.email || '已绑定'} | 🔮 资产: ${currentYin} 因币`;
-            if (lBtnAuth)  lBtnAuth.textContent  = canClaim ? '🎁 领因币' : '我的名片';
+            if (lBtnAuth)  lBtnAuth.textContent  = canClaim ? '🎁 领因币' : '个人信息';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
 
             // 登录后隐去随机昵称区块，避免误导
