@@ -4342,8 +4342,8 @@ body:has(#lobbyScreen.active) .app-header,
     display: grid;
     grid-template-columns: repeat(15, 1fr);
     grid-template-rows: repeat(15, 1fr);
-    width: 330px;
-    height: 330px;
+    width: 380px;
+    height: 380px;
     position: relative;
     user-select: none;
     touch-action: manipulation;
@@ -4354,6 +4354,46 @@ body:has(#lobbyScreen.active) .app-header,
     .gomoku-board {
         width: 300px;
         height: 300px;
+    }
+}
+
+/* PC 桌面大屏专属：大幅扩展棋盘尺寸与高清晰视野 */
+@media (min-width: 768px) {
+    .gomoku-container {
+        max-width: 660px;
+        gap: 16px;
+    }
+
+    .gomoku-board-wrapper {
+        padding: 18px;
+        border-width: 9px;
+    }
+
+    .gomoku-board {
+        width: 540px;
+        height: 540px;
+    }
+
+    .gomoku-header-bar {
+        padding: 12px 18px;
+    }
+
+    .gomoku-player-pill .p-name {
+        font-size: 0.95rem;
+    }
+
+    .gomoku-player-pill .p-role {
+        font-size: 0.78rem;
+    }
+
+    .gomoku-turn-status {
+        font-size: 0.88rem;
+        padding: 6px 14px;
+    }
+
+    .btn-gomoku-action {
+        padding: 10px 18px;
+        font-size: 0.9rem;
     }
 }
 
