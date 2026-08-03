@@ -4374,7 +4374,7 @@ body:has(#lobbyScreen.active) .app-header,
     left: 0;
     width: 100%;
     height: 1px;
-    background: rgba(50, 24, 4, 0.78);
+    background: rgba(50, 24, 4, 0.85);
     z-index: 1;
 }
 
@@ -4385,8 +4385,29 @@ body:has(#lobbyScreen.active) .app-header,
     top: 0;
     width: 1px;
     height: 100%;
-    background: rgba(50, 24, 4, 0.78);
+    background: rgba(50, 24, 4, 0.85);
     z-index: 1;
+}
+
+/* 边缘格线条精确裁剪，止于 15x15 外围交叉点封边 */
+.gomoku-cell.col-left::before {
+    left: 50% !important;
+    width: 50% !important;
+}
+
+.gomoku-cell.col-right::before {
+    left: 0 !important;
+    width: 50% !important;
+}
+
+.gomoku-cell.row-top::after {
+    top: 50% !important;
+    height: 50% !important;
+}
+
+.gomoku-cell.row-bottom::after {
+    top: 0 !important;
+    height: 50% !important;
 }
 
 /* 星位点 (4,4), (4,12), (8,8天元), (12,4), (12,12) */

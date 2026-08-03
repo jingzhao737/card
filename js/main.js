@@ -1265,6 +1265,11 @@ class GameEngineController {
                 if (starPoints.includes(`${r},${c}`)) {
                     cell.classList.add('star-point');
                 }
+                if (r === 0)  cell.classList.add('row-top');
+                if (r === 14) cell.classList.add('row-bottom');
+                if (c === 0)  cell.classList.add('col-left');
+                if (c === 14) cell.classList.add('col-right');
+
                 cell.dataset.r = r;
                 cell.dataset.c = c;
                 cell.addEventListener('click', () => this.handleGomokuCellClick(r, c));
