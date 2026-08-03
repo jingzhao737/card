@@ -1409,6 +1409,7 @@ class GameEngineController {
         document.getElementById('waitingScreen').style.display = 'none';
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('gameTable').style.display = 'grid';
+        this.updateHeaderVisibility();
         const _btnLeave = document.getElementById('btnLeaveRoom');
         if (_btnLeave) _btnLeave.style.display = 'inline-flex';
         const menuLeaveBtn4 = document.getElementById('menuBtnLeaveRoom');
