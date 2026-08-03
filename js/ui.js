@@ -153,6 +153,7 @@ const UIRenderer = {
                     toyBtn.textContent = '';
                     toyBtn.style.transform = 'translateY(-50%) scale(1)';
                     toyBtn.style.background = '';
+                    toyBtn.style.borderColor = '';
                     toyBtn.style.boxShadow = '';
                     toyBtn.style.filter = '';
                 }, 450);
@@ -163,16 +164,16 @@ const UIRenderer = {
                     SoundEngine.playToySqueeze(this._toyClicks);
                 }
 
-                // 越按越大，越按越红
+                // 越按越大，从纯白 (245, 245, 245) 逐级变深烈红 (239, 15, 15)
                 toyBtn.textContent = '';
                 const scale = 1.0 + (this._toyClicks * 0.16); // 1.0 -> 2.12
-                const redG = Math.max(10, 138 - this._toyClicks * 16);
-                const redB = Math.max(10, 138 - this._toyClicks * 16);
-                const glowRadius = this._toyClicks * 3;
+                const gbVal = Math.max(10, 245 - this._toyClicks * 33);
+                const glowRadius = this._toyClicks * 3.5;
 
                 toyBtn.style.transform = `translateY(-50%) scale(${scale})`;
-                toyBtn.style.background = `radial-gradient(circle at 35% 35%, #ffa0a0 0%, rgb(239, ${redG}, ${redB}) 60%, #7f1d1d 100%)`;
-                toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, 0.9), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
+                toyBtn.style.background = `radial-gradient(circle at 35% 35%, rgb(255, ${Math.min(255, gbVal + 30)}, ${Math.min(255, gbVal + 30)}) 0%, rgb(239, ${gbVal}, ${gbVal}) 55%, rgb(${Math.max(10, gbVal - 40)}, 0, 0) 100%)`;
+                toyBtn.style.borderColor = `rgba(255, ${gbVal}, ${gbVal}, 0.85)`;
+                toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, ${0.35 + this._toyClicks * 0.08}), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
             }
         });
     },
