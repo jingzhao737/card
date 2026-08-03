@@ -77,6 +77,19 @@ body, html {
     height: 48px;
     background: linear-gradient(180deg, #180a04 0%, #0e0602 100%);
     border-bottom: 1px solid rgba(180,140,50,0.3);
+}
+
+/* 当主页大厅 (#lobbyScreen) 处于激活状态时，隐藏顶部 app-header 导航条 */
+body:has(#lobbyScreen.active) .app-header,
+.game-container:has(#lobbyScreen.active) .app-header,
+.app-header.in-lobby {
+    display: none !important;
+}
+
+.app-header {
+    height: 48px;
+    background: linear-gradient(180deg, #180a04 0%, #0e0602 100%);
+    border-bottom: 1px solid rgba(180,140,50,0.3);
     /* 顶部细金线 */
     box-shadow: 0 1px 0 0 rgba(201,146,42,0.15), 0 2px 12px rgba(0,0,0,0.6);
     display: flex;

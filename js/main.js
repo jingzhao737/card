@@ -42,6 +42,7 @@ class GameEngineController {
 
     init() {
         UIRenderer.init();
+        this.updateHeaderVisibility();
 
         // 优先使用上次保存的昵称，没有再随机生成
         const nickInput = document.getElementById('nicknameInput');
@@ -986,6 +987,24 @@ class GameEngineController {
     }
 
     /**
+     * 根据当前界面 (大厅 / 游戏房) 动态切换顶部 app-header 可见性
+     * 主页大厅时彻底隐藏 app-header 导航条，进入房间或打牌时恢复显示
+     */
+    updateHeaderVisibility() {
+        const appHeader = document.querySelector('.app-header');
+        const lobbyScr = document.getElementById('lobbyScreen');
+        if (!appHeader) return;
+
+        if (lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none')) {
+            appHeader.style.display = 'none';
+            appHeader.classList.add('in-lobby');
+        } else {
+            appHeader.style.display = 'flex';
+            appHeader.classList.remove('in-lobby');
+        }
+    }
+
+    /**
      * 进入等待界面 (Host视角)
      */
     setupWaitingScreen(roomId) {
@@ -993,6 +1012,7 @@ class GameEngineController {
         document.getElementById('lobbyScreen').style.display = 'none';
         document.getElementById('waitingScreen').style.display = 'flex';
         document.getElementById('waitingScreen').classList.add('active');
+        this.updateHeaderVisibility();
 
         const btnGoHomeTop = document.getElementById('btnGoHomeTop');
         if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
@@ -1153,6 +1173,7 @@ class GameEngineController {
 
         if (lobbyScr) { lobbyScr.classList.remove('active'); lobbyScr.style.display = 'none'; }
         if (waitScr)  { waitScr.style.display = 'flex'; waitScr.classList.add('active'); }
+        this.updateHeaderVisibility();
         if (dispRoom) dispRoom.textContent = roomId;
         const waitingRoomDisp2 = document.getElementById('waitingRoomIdDisplay');
         if (waitingRoomDisp2) waitingRoomDisp2.textContent = roomId;
@@ -1366,6 +1387,7 @@ class GameEngineController {
             lobbyScreen.style.display = 'flex';
             lobbyScreen.classList.add('active');
         }
+        this.updateHeaderVisibility();
 
         // 恢复大厅基础按钮可见性
         const createBtn = document.getElementById('btnCreateRoom');
