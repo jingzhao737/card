@@ -302,14 +302,29 @@ class P2PManager {
     /* ====================================================================
        创建房间 (作为 Host) - Firebase 云端版 (带连接异常捕获与超时保护)
        ==================================================================== */
-    createRoom(nickname, onReady, roomIdOverride, gameType = 'DOUDIZHU') {
-        this.roomId = roomIdOverride || this.generateRoomId();
+    createRoom(nickname, onReady, param3, param4) {
+        let roomIdOverride = null;
+        let onError = null;
+        let gameType = 'DOUDIZHU';
+
+        if (typeof param3 === 'string') {
+            roomIdOverride = param3;
+            if (typeof param4 === 'string') gameType = param4;
+        } else if (typeof param3 === 'function') {
+            onError = param3;
+            if (typeof param4 === 'string') gameType = param4;
+        } else if (typeof param4 === 'string') {
+            gameType = param4;
+        }
+
+        this.roomId = (typeof roomIdOverride === 'string' && roomIdOverride) ? roomIdOverride : this.generateRoomId();
         this.isHost = true;
         this.myPlayerIndex = 0;
         this.isAiMode = false;
 
         if (!this.db) {
             if (this.onToast) this.onToast('❌ 云端服务未连接，请检查网络或刷新页面', 4000);
+            if (onError) onError('云端服务未连接');
             return;
         }
 
