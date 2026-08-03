@@ -3671,7 +3671,7 @@ body.theme-gomoku .overlay-screen {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 16px 22px !important;
+    padding: 16px 20px 16px 26px !important;
     text-align: left !important;
 }
 
@@ -3681,6 +3681,7 @@ body.theme-gomoku .overlay-screen {
     align-items: flex-start;
     gap: 6px;
     text-align: left;
+    padding-left: 6px; /* 文本稍向右移 */
 }
 
 .hero-lobby-card.theme-emerald .brand-title {
@@ -3688,8 +3689,8 @@ body.theme-gomoku .overlay-screen {
     background: none !important;
     -webkit-text-fill-color: #2b1103 !important;
     text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35) !important;
-    font-size: 1.3rem !important;
-    letter-spacing: 1px !important;
+    font-size: 1.35rem !important;
+    letter-spacing: 1.5px !important;
 }
 
 .hero-lobby-card.theme-emerald .brand-subtitle {
@@ -3707,52 +3708,55 @@ body.theme-gomoku .overlay-screen {
     margin-top: 2px;
 }
 
-/* 顶部右侧悬浮双子 3D 艺术装饰 (黑白交错双棋子) */
+/* 顶部右侧悬浮双子 3D 艺术装饰 (放大、对角交错摆放、向左移动) */
 .gomoku-stones-decoration {
     position: relative;
-    width: 60px;
-    height: 48px;
+    width: 72px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
+    margin-right: 12px; /* 整体往左边移动一点 */
 }
 
 .mini-stone {
-    width: 32px;
-    height: 32px;
+    width: 38px;  /* 棋子放大 */
+    height: 38px;
     border-radius: 50%;
     position: absolute;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* 黑子：对角左上方 */
 .mini-stone.black-stone {
-    left: 2px;
-    top: 4px;
+    left: -4px;
+    top: -2px;
     background: radial-gradient(circle at 35% 35%, #4b5563 0%, #111827 70%, #000000 100%);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.65), inset -2px -2px 4px rgba(0, 0, 0, 0.9);
-    z-index: 1;
-}
-
-.mini-stone.white-stone {
-    right: 2px;
-    bottom: 4px;
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.45), inset -2px -2px 4px rgba(0, 0, 0, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 3px 5px 14px rgba(0, 0, 0, 0.7), inset -2px -2px 4px rgba(0, 0, 0, 0.9);
     z-index: 2;
 }
 
+/* 白子：对角右下方 */
+.mini-stone.white-stone {
+    right: -4px;
+    bottom: -2px;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+    border: 1.5px solid rgba(0, 0, 0, 0.28);
+    box-shadow: 3px 5px 14px rgba(0, 0, 0, 0.45), inset -2px -2px 4px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+}
+
 .gomoku-stones-decoration:hover .black-stone {
-    transform: translate(-3px, -2px) rotate(-10deg) scale(1.06);
-    box-shadow: 4px 7px 16px rgba(0, 0, 0, 0.75);
+    transform: translate(-4px, -3px) rotate(-12deg) scale(1.08);
+    box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.8);
 }
 
 .gomoku-stones-decoration:hover .white-stone {
-    transform: translate(3px, 2px) rotate(10deg) scale(1.06);
-    box-shadow: 4px 7px 16px rgba(0, 0, 0, 0.55);
+    transform: translate(4px, 3px) rotate(12deg) scale(1.08);
+    box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.6);
 }
 
 .auth-banner-card.emerald-auth {
