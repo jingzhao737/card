@@ -8,6 +8,7 @@ class AudioSynth {
         this.enabled = true;
         this.cardFlipBuffer = null;
         this.isBufferLoading = false;
+        this.mobileAudioUnlocked = false;
     }
 
     init() {
@@ -22,6 +23,35 @@ class AudioSynth {
         }
         if (this.ctx && !this.cardFlipBuffer && !this.isBufferLoading) {
             this.loadCardFlipBuffer();
+        }
+    }
+
+    /**
+     * 移动端 (iOS Safari / Android Chrome / 微信) 首次触摸极速解封音频引擎
+     */
+    unlockMobileAudio() {
+        this.init();
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+
+        // 解封 HTML5 Audio 标签 (iOS Safari 关键静音触发解封)
+        const el = document.getElementById('audioCardFlip');
+        if (el && !this.mobileAudioUnlocked) {
+            this.mobileAudioUnlocked = true;
+            try {
+                el.volume = 0.001;
+                const p = el.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        el.pause();
+                        el.currentTime = 0;
+                        el.volume = 0.85;
+                    }).catch(() => {
+                        this.mobileAudioUnlocked = false;
+                    });
+                }
+            } catch (e) {}
         }
     }
 
@@ -665,3 +695,13 @@ class AudioSynth {
 const SoundEngine = new AudioSynth();
 window.SoundEngine = SoundEngine;
 window.audioSynth  = SoundEngine;
+
+// 全局绑定移动端 (iOS Safari / Android / 微信) 触摸极速解封音频引擎
+const _unlockAudioOnTouch = () => {
+    if (window.SoundEngine) {
+        window.SoundEngine.unlockMobileAudio();
+    }
+};
+window.addEventListener('touchstart', _unlockAudioOnTouch, { passive: true, capture: true });
+window.addEventListener('touchend', _unlockAudioOnTouch, { passive: true, capture: true });
+window.addEventListener('click', _unlockAudioOnTouch, { capture: true });
