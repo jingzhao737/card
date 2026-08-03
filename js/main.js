@@ -1357,11 +1357,6 @@ class GameEngineController {
         const engine = window.gomokuEngine;
         if (!engine) return;
 
-        // 播放真实物理落子音效
-        if (typeof audioSynth !== 'undefined' && audioSynth.playStoneDrop) {
-            audioSynth.playStoneDrop();
-        }
-
         const winNodes = engine.winLine || [];
         const cells = document.querySelectorAll('.gomoku-cell');
         cells.forEach(cell => {
@@ -1379,10 +1374,14 @@ class GameEngineController {
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
 
                 if (!stone) {
-                    // 仅当这颗棋子是新落下的，才新建 DOM 节点 (从而仅触发新棋子的单次 Pop 动画)
+                    // 仅当这颗棋子是新落下的，新建 DOM 节点并播放微随机物理落子音效
                     stone = document.createElement('div');
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
                     cell.appendChild(stone);
+
+                    if (typeof audioSynth !== 'undefined' && audioSynth.playStoneDrop) {
+                        audioSynth.playStoneDrop(val === 2); // 白棋音高更高脆，黑棋更沉稳，带±12%微随机音调！
+                    }
                 } else {
                     // 若棋子已存在，仅更新基础类名，不重复销毁与新建节点
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;

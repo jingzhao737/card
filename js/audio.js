@@ -26,26 +26,61 @@ class AudioSynth {
     }
 
     /**
-     * 五子棋落子音效：清脆木质/玉石碰撞声 (Crisp Stone Clack)
+     * 五子棋落子音效：真实物理木纹与玉石/棋子微随机音效 (Varied Organic Stone Clack)
+     * @param {boolean} isWhite - 是否为白棋 (白棋更高脆，黑棋更沉稳)
      */
-    playStoneDrop() {
+    playStoneDrop(isWhite = false) {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
+        // 微随机音高抖动 (±12%)，确保绝不机械重复！
+        const pitchMod = 0.88 + Math.random() * 0.24;
+
+        // 黑子较低沉稳，白子较清脆
+        const startFreq = (isWhite ? 960 : 720) * pitchMod;
+        const endFreq = (isWhite ? 220 : 150) * pitchMod;
+        const duration = 0.045 + Math.random() * 0.015; // 45ms - 60ms 自然衰减
+
+        // 主冲击波 (Impact Transient)
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(800, now);
-        osc.frequency.exponentialRampToValueAtTime(180, now + 0.05);
+        osc.type = isWhite ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(startFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
 
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        const volume = 0.32 + Math.random() * 0.1;
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(volume, now + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
+
+        // 35% 概率触发极微弱的二次余震落座声 (Secondary Tap Bounce)
+        if (Math.random() < 0.35) {
+            const tapTime = now + 0.022 + Math.random() * 0.008;
+            const tapOsc = this.ctx.createOscillator();
+            const tapGain = this.ctx.createGain();
+
+            tapOsc.type = 'triangle';
+            tapOsc.frequency.setValueAtTime(startFreq * 0.6, tapTime);
+            tapOsc.frequency.exponentialRampToValueAtTime(100, tapTime + 0.02);
+
+            tapGain.gain.setValueAtTime(0.08, tapTime);
+            tapGain.gain.exponentialRampToValueAtTime(0.001, tapTime + 0.02);
+
+            tapOsc.connect(tapGain);
+            tapGain.connect(this.ctx.destination);
+
+            tapOsc.start(tapTime);
+            tapOsc.stop(tapTime + 0.025);
+        }
+
+        osc.start(now);
+        osc.stop(now + duration + 0.01);
     }
 
     /**
