@@ -1048,6 +1048,22 @@ class GameEngineController {
     }
 
     /**
+     * 退出房间时停止所有保活机制（Screen Wake Lock + 静音 Audio）
+     */
+    _stopKeepAlive() {
+        // 释放 Screen Wake Lock
+        if (this._wakeLockObj) {
+            try { this._wakeLockObj.release(); } catch (e) {}
+            this._wakeLockObj = null;
+        }
+        // 关闭静音 Audio 振荡器
+        if (this._audioKeepAliveCtx) {
+            try { this._audioKeepAliveCtx.close(); } catch (e) {}
+            this._audioKeepAliveCtx = null;
+        }
+    }
+
+    /**
      * 将指定 slot 标记为 AI 机器人，并更新 UI
      */
     _fillSlotWithAi(slotIndex) {
