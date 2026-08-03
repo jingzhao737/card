@@ -1089,7 +1089,8 @@ class GameEngineController {
             }
         });
 
-        document.getElementById('connectedCount').textContent = humanCount;
+        const ccEl = document.getElementById('connectedCount');
+        if (ccEl) ccEl.textContent = humanCount;
     }
 
     /**
@@ -1218,7 +1219,8 @@ class GameEngineController {
         document.getElementById('waitingScreen').style.display = 'none';
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('gameTable').style.display = 'grid';
-        document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+        const _btnLeave = document.getElementById('btnLeaveRoom');
+        if (_btnLeave) _btnLeave.style.display = 'inline-flex';
 
         // Bug 修复：清除上一局残留的回合倒计时 interval，防止上局 timer 继续触发 handleTurnTimeout
         if (this.turnTimerInterval) {
