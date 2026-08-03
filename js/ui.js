@@ -137,8 +137,10 @@ const UIRenderer = {
             this._toyClicks++;
 
             if (this._toyClicks >= maxClicks) {
-                // 💥 触发啪的一声爆炸
-                this.playPopSound();
+                // 💥 触发啪的一声爆炸 (调用全局单例 SoundEngine，防止重复创建 AudioContext 超限卡死)
+                if (typeof SoundEngine !== 'undefined') {
+                    SoundEngine.playToyPop();
+                }
 
                 toyBtn.textContent = '💥'; // 炸的时候展示爆裂图标 💥
                 toyBtn.style.transform = 'translateY(-50%) scale(2.4)';
@@ -157,7 +159,9 @@ const UIRenderer = {
 
             } else {
                 // 按压挤压音效
-                this.playSqueezeSound(this._toyClicks);
+                if (typeof SoundEngine !== 'undefined') {
+                    SoundEngine.playToySqueeze(this._toyClicks);
+                }
 
                 // 越按越大，越按越红
                 toyBtn.textContent = '';
@@ -171,83 +175,6 @@ const UIRenderer = {
                 toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, 0.9), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
             }
         });
-    },
-
-    /**
-     * 气球挤压膨胀音频合成本地播放
-     */
-    playSqueezeSound(stage) {
-        try {
-            const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioCtxClass) return;
-            const ctx = new AudioCtxClass();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-
-            osc.type = 'sine';
-            const startFreq = 240 + stage * 35;
-            osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(startFreq + 70, ctx.currentTime + 0.07);
-
-            gain.gain.setValueAtTime(0.25, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.07);
-        } catch(e) {}
-    },
-
-    /**
-     * 气球 POP 啪！爆炸音频合成本地播放
-     */
-    playPopSound() {
-        try {
-            const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioCtxClass) return;
-            const ctx = new AudioCtxClass();
-
-            // 1. 高频噪点炸裂
-            const bufferSize = ctx.sampleRate * 0.09;
-            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.12));
-            }
-
-            const noise = ctx.createBufferSource();
-            noise.buffer = buffer;
-
-            const filter = ctx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1400, ctx.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.09);
-
-            const gain = ctx.createGain();
-            gain.gain.setValueAtTime(1.0, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
-
-            noise.connect(filter);
-            filter.connect(gain);
-            gain.connect(ctx.destination);
-            noise.start();
-
-            // 2. 低音沉降冲击
-            const osc = ctx.createOscillator();
-            const oscGain = ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(340, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.07);
-
-            oscGain.gain.setValueAtTime(0.7, ctx.currentTime);
-            oscGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
-
-            osc.connect(oscGain);
-            oscGain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.07);
-        } catch(e) {}
     },
 
     /**

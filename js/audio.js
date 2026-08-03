@@ -434,6 +434,83 @@ class AudioSynth {
             osc.stop(now + idx * 0.035 + 0.25);
         });
     }
+
+    /**
+     * 解闷气球按压挤压音效 (使用单例 SoundEngine.ctx，永不上限卡死)
+     */
+    playToySqueeze(stage) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        const startFreq = 240 + stage * 40;
+        osc.frequency.setValueAtTime(startFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(startFreq + 80, now + 0.07);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.07);
+    }
+
+    /**
+     * 解闷气球啪！爆炸音效 (使用单例 SoundEngine.ctx，永不上限卡死)
+     */
+    playToyPop() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+
+        // 1. 爆裂噪点
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.12));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1400, now);
+        filter.frequency.exponentialRampToValueAtTime(100, now + 0.09);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(1.0, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+
+        // 2. 低音冲击
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(340, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.07);
+
+        oscGain.gain.setValueAtTime(0.7, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        osc.connect(oscGain);
+        oscGain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.07);
+    }
 }
 
 const SoundEngine = new AudioSynth();
