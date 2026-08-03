@@ -573,9 +573,13 @@ class GameEngineController {
             this.fillAiAndStart();
         });
 
-        // 离开/取消等待
-        document.getElementById('btnCancelWaiting').addEventListener('click', () => this.resetToLobby());
-        document.getElementById('btnLeaveRoom').addEventListener('click', () => this.resetToLobby());
+        // 离开/取消等待/返回大厅
+        const btnCancelWaiting = document.getElementById('btnCancelWaiting');
+        const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
+        const btnBackToLobby   = document.getElementById('btnBackToLobby');
+        if (btnCancelWaiting) btnCancelWaiting.addEventListener('click', () => this.resetToLobby());
+        if (btnLeaveRoom)     btnLeaveRoom.addEventListener('click', () => this.resetToLobby());
+        if (btnBackToLobby)   btnBackToLobby.addEventListener('click', () => this.resetToLobby());
 
         // 音效开关
         document.getElementById('btnToggleSound').addEventListener('click', () => {
@@ -1030,20 +1034,74 @@ class GameEngineController {
     }
 
     /**
-     * 重新回到初始大厅
+     * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
      */
     resetToLobby() {
-        // 停止房主保活（节省电量）
         this._stopKeepAlive();
-        // 先清除会话，防止回大厅后又弹出重连提示
         NetworkManager.clearSession();
-        // 先销毁 P2P 连接，避免对方看到悬空连接且避免 Peer ID 冲突
-        try {
-            if (NetworkManager.peer && !NetworkManager.peer.destroyed) {
-                NetworkManager.peer.destroy();
-            }
-        } catch (e) {}
-        window.location.href = window.location.pathname;
+
+        // 1. 如果在房间中，清除云端对应的槽位或房间
+        if (NetworkManager.roomId && NetworkManager.db) {
+            const rId = NetworkManager.roomId;
+            const myIdx = NetworkManager.myPlayerIndex;
+            try {
+                if (NetworkManager.isHost && !NetworkManager.isAiMode) {
+                    // 如果房主主动退出，物理注销移除整个房间
+                    NetworkManager.db.ref('rooms/' + rId).remove().catch(() => {});
+                } else if (myIdx > 0 && !NetworkManager.isAiMode) {
+                    // 如果客户端主动退出，将其槽位重置为 AI 候补
+                    NetworkManager.db.ref(`rooms/${rId}/lobbyData/players/${myIdx}`).set({
+                        name: `🤖 机器人 AI_${myIdx}`,
+                        isAi: true,
+                        isHost: false
+                    }).catch(() => {});
+                }
+            } catch (e) {}
+        }
+
+        // 2. 清除云端网络监听
+        NetworkManager._removeAllListeners();
+        NetworkManager.roomId = null;
+        NetworkManager.isHost = false;
+        NetworkManager.isAiMode = false;
+
+        // 3. 关键修复：清除浏览器 URL 地址栏里的 ?room=XXXXXX 邀请参数
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // 4. 界面瞬间平滑切回大厅 Screen (无需刷新网页)
+        const waitingScreen = document.getElementById('waitingScreen');
+        const gameTable     = document.getElementById('gameTable');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const lobbyScreen   = document.getElementById('lobbyScreen');
+        const roomInfoBar   = document.getElementById('roomInfoBar');
+        const btnLeaveRoom  = document.getElementById('btnLeaveRoom');
+        const btnGoHomeTop  = document.getElementById('btnGoHomeTop');
+
+        if (waitingScreen) { waitingScreen.style.display = 'none'; waitingScreen.classList.remove('active'); }
+        if (gameTable)     gameTable.style.display = 'none';
+        if (gameOverModal) gameOverModal.style.display = 'none';
+        if (roomInfoBar)   roomInfoBar.style.display = 'none';
+        if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
+        if (btnGoHomeTop)  btnGoHomeTop.style.display = 'none';
+
+        if (lobbyScreen) {
+            lobbyScreen.style.display = 'flex';
+            lobbyScreen.classList.add('active');
+        }
+
+        // 恢复大厅基础按钮可见性
+        const createBtn = document.getElementById('btnCreateRoom');
+        const aiBtn     = document.getElementById('btnPlayAi');
+        const divider   = document.querySelector('.divider');
+        const banner    = document.getElementById('quickJoinBanner');
+        if (createBtn) createBtn.style.display = 'flex';
+        if (aiBtn)     aiBtn.style.display = 'flex';
+        if (divider)   divider.style.display = 'flex';
+        if (banner)    banner.style.display = 'none';
+
+        UIRenderer.showToast('已成功退出并安全返回主页大厅');
     }
 
     /**
