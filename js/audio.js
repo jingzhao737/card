@@ -33,6 +33,9 @@ class AudioSynth {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
 
         const now = this.ctx.currentTime;
         // 微随机音高抖动 (±12%)，确保绝不机械重复！
@@ -572,3 +575,5 @@ class AudioSynth {
 }
 
 const SoundEngine = new AudioSynth();
+window.SoundEngine = SoundEngine;
+window.audioSynth  = SoundEngine;

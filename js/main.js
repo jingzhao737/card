@@ -1379,8 +1379,9 @@ class GameEngineController {
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
                     cell.appendChild(stone);
 
-                    if (typeof audioSynth !== 'undefined' && audioSynth.playStoneDrop) {
-                        audioSynth.playStoneDrop(val === 2); // 白棋音高更高脆，黑棋更沉稳，带±12%微随机音调！
+                    const soundObj = typeof SoundEngine !== 'undefined' ? SoundEngine : (typeof audioSynth !== 'undefined' ? audioSynth : null);
+                    if (soundObj && soundObj.playStoneDrop) {
+                        soundObj.playStoneDrop(val === 2); // 白棋音高更高脆，黑棋更沉稳，带±12%微随机音调！
                     }
                 } else {
                     // 若棋子已存在，仅更新基础类名，不重复销毁与新建节点
