@@ -322,8 +322,8 @@ class P2PManager {
             const initialLobby = {
                 players: [
                     { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
-                    { name: '🤖 机器人 AI_1', avatar: '🤖', isAi: true, isHost: false },
-                    { name: '🤖 机器人 AI_2', avatar: '🤖', isAi: true, isHost: false }
+                    { name: 'AI-1', avatar: '🤖', isAi: true, isHost: false },
+                    { name: 'AI-2', avatar: '🤖', isAi: true, isHost: false }
                 ]
             };
 

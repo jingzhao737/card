@@ -1072,7 +1072,7 @@ class GameEngineController {
      * 将指定 slot 标记为 AI 机器人，并更新 UI
      */
     _fillSlotWithAi(slotIndex) {
-        const aiName = `机器人 AI_${slotIndex}`;
+        const aiName = `AI-${slotIndex}`;
         this.gameState.players[slotIndex].name = aiName;
         this.gameState.players[slotIndex].avatar = '🤖';
         this.gameState.players[slotIndex].isAi = true;
@@ -1080,7 +1080,7 @@ class GameEngineController {
         const nameEl = document.getElementById(`slotName${slotIndex}`);
         const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
         const slotEl = document.getElementById(`slot${slotIndex}`);
-        if (nameEl) nameEl.textContent = `🤖 ${aiName}`;
+        if (nameEl) nameEl.textContent = aiName;
         if (avatarEl) avatarEl.textContent = '🤖';
         if (slotEl) {
             const statusEl = slotEl.querySelector('.slot-status-pill');
@@ -1233,7 +1233,7 @@ class GameEngineController {
     fillAiAndStart() {
         for (let i = 1; i <= 2; i++) {
             if (!this.gameState.players[i].name || this.gameState.players[i].name.includes('等待')) {
-                this.gameState.players[i].name = `机器人 AI_${i}`;
+                this.gameState.players[i].name = `AI-${i}`;
                 this.gameState.players[i].isAi = true;
             }
         }
@@ -1249,8 +1249,8 @@ class GameEngineController {
         NetworkManager.myPlayerIndex = 0;
 
         this.gameState.players[0] = { id: 0, name: nickname, hand: [], isAi: false, isHost: true, role: 'FARMER', passedBid: false };
-        this.gameState.players[1] = { id: 1, name: '智能机器人 1号', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
-        this.gameState.players[2] = { id: 2, name: '智能机器人 2号', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
+        this.gameState.players[1] = { id: 1, name: 'AI-1', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
+        this.gameState.players[2] = { id: 2, name: 'AI-2', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
 
         document.getElementById('lobbyScreen').classList.remove('active');
         document.getElementById('lobbyScreen').style.display = 'none';
@@ -1277,7 +1277,7 @@ class GameEngineController {
                 } else if (myIdx > 0 && !NetworkManager.isAiMode) {
                     // 如果客户端主动退出，将其槽位重置为 AI 候补
                     NetworkManager.db.ref(`rooms/${rId}/lobbyData/players/${myIdx}`).set({
-                        name: `🤖 机器人 AI_${myIdx}`,
+                        name: `AI-${myIdx}`,
                         isAi: true,
                         isHost: false
                     }).catch(() => {});
