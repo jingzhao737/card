@@ -573,13 +573,15 @@ class GameEngineController {
             this.fillAiAndStart();
         });
 
-        // 离开/取消等待/返回大厅
+        // 离开/取消等待/返回大厅/复制邀请链接
         const btnCancelWaiting = document.getElementById('btnCancelWaiting');
         const btnLeaveRoom     = document.getElementById('btnLeaveRoom');
         const btnBackToLobby   = document.getElementById('btnBackToLobby');
+        const btnCopyInviteUrl = document.getElementById('btnCopyInviteUrl');
         if (btnCancelWaiting) btnCancelWaiting.addEventListener('click', () => this.resetToLobby());
         if (btnLeaveRoom)     btnLeaveRoom.addEventListener('click', () => this.resetToLobby());
         if (btnBackToLobby)   btnBackToLobby.addEventListener('click', () => this.resetToLobby());
+        if (btnCopyInviteUrl) btnCopyInviteUrl.addEventListener('click', () => this.copyInviteUrl());
 
         // 音效开关
         document.getElementById('btnToggleSound').addEventListener('click', () => {
