@@ -5,11 +5,11 @@
 
 /**
  * 敏感字符过滤与昵称安全化函数
- * 自动强行剔除：乃、坚、cnj（不区分大小写）、nj（不区分大小写）
+ * 自动强行剔除：乃、奶、坚、cnj（不区分大小写）、nj（不区分大小写）
  */
 window.sanitizeNickname = function(nick) {
     if (!nick) return '';
-    let clean = String(nick).replace(/乃|坚|cnj|nj/gi, '').trim();
+    let clean = String(nick).replace(/乃|奶|坚|cnj|nj/gi, '').trim();
     if (!clean) {
         clean = '玩家_' + Math.floor(100 + Math.random() * 900);
     }
