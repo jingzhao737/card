@@ -47,12 +47,23 @@ class P2PManager {
         this._bindVisibilityChange();
     }
 
+    /* ====================================================================
+       微信 Webview 兼容支持：Cookie + localStorage 双重设备唯一标识
+       ==================================================================== */
     _getOrCreateSessionId() {
         let sid = localStorage.getItem('ddz_client_sid');
         if (!sid) {
-            sid = 'sid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem('ddz_client_sid', sid);
+            // Cookie 备选恢复 (专门解决微信内置浏览器关闭 Webview 清空 localStorage 的问题)
+            const match = document.cookie.match(/(?:^|; )ddz_client_sid=([^;]*)/);
+            if (match && match[1]) sid = match[1];
         }
+        if (!sid) {
+            sid = 'sid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        }
+        // 写入 localStorage + Cookie (有效期 30 天)
+        try { localStorage.setItem('ddz_client_sid', sid); } catch (e) {}
+        try { document.cookie = `ddz_client_sid=${sid}; max-age=${30 * 24 * 3600}; path=/`; } catch (e) {}
+
         return sid;
     }
 
@@ -61,7 +72,7 @@ class P2PManager {
     }
 
     /* ====================================================================
-       会话持久化 (使用 localStorage 保证跨标签页/关闭浏览器后不失效)
+       会话持久化 (localStorage + Cookie 双重保护)
        ==================================================================== */
     saveSession(gameState) {
         try {
@@ -159,15 +170,26 @@ class P2PManager {
     }
 
     /* ====================================================================
-       规则 3 实施：在线玩家 ID / 昵称去重处理
+       规则 3 实施：在线玩家 ID / 昵称去重处理（排除玩家自身槽位）
        ==================================================================== */
-    _ensureUniqueNickname(requestedNick, existingPlayers) {
+    _ensureUniqueNickname(requestedNick, existingPlayers, ignoreSlotIndex) {
         let unique = (requestedNick || '').trim();
         if (!unique) unique = '玩家';
 
+        // 关键修复：如果玩家是重新连入属于他自己的槽位，保留原昵称不增加 _2 后缀！
+        if (ignoreSlotIndex !== undefined && ignoreSlotIndex >= 0 && existingPlayers && existingPlayers[ignoreSlotIndex]) {
+            const currentSlot = existingPlayers[ignoreSlotIndex];
+            if (currentSlot && !currentSlot.isAi) {
+                const slotName = (currentSlot.name || '').trim();
+                if (slotName === unique || currentSlot.sid === this.sessionId) {
+                    return slotName || unique;
+                }
+            }
+        }
+
         const existingNames = new Set(
             (existingPlayers || [])
-                .filter(p => p && !p.isAi && p.sid !== this.sessionId)
+                .filter((p, idx) => p && !p.isAi && p.sid !== this.sessionId && idx !== ignoreSlotIndex)
                 .map(p => (p.name || '').trim())
         );
 
@@ -178,14 +200,14 @@ class P2PManager {
             }
             const newUnique = `${unique}_${suffix}`;
             if (this.onToast) {
-                this.onToast(`💡 昵称在房间内重复，已自动调整为：${newUnique}`, 3500);
+                this.onToast(`💡 房间内已有同名玩家，昵称已自动调整为：${newUnique}`, 3500);
             }
             unique = newUnique;
         }
 
         // 同步更正本地昵称与输入框
         this.nickname = unique;
-        localStorage.setItem('youjing_doudizhu_nickname', unique);
+        try { localStorage.setItem('youjing_doudizhu_nickname', unique); } catch(e) {}
         const input = document.getElementById('nicknameInput');
         if (input) input.value = unique;
 
@@ -283,7 +305,7 @@ class P2PManager {
             if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 3000);
 
             // 实施规则 3：昵称去重
-            const finalNick = this._ensureUniqueNickname(nickname, []);
+            const finalNick = this._ensureUniqueNickname(nickname, [], 0);
 
             const initialLobby = {
                 players: [
@@ -431,8 +453,8 @@ class P2PManager {
                     return;
                 }
 
-                // 实施规则 3：昵称去重
-                const finalNick = this._ensureUniqueNickname(nickname, players);
+                // 实施规则 3：昵称去重（传入 assignedSlot 排除玩家自身槽位，避免重连被误判重名加 _2 后缀）
+                const finalNick = this._ensureUniqueNickname(nickname, players, assignedSlot);
 
                 this.myPlayerIndex = assignedSlot;
                 console.log(`[CloudEngine] 加入房间成功，分配槽位 ${assignedSlot} (${this.isHost ? '房主' : '玩家'})`);
