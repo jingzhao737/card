@@ -130,10 +130,22 @@ const UIRenderer = {
         if (!toyBtn) return;
 
         this._toyClicks = 0;
+        this._toyIdleTimer = null;
         const maxClicks = 8; // 第 8 次点击触发 POP 爆裂
+
+        const resetToyToDefault = () => {
+            clearTimeout(this._toyIdleTimer);
+            this._toyClicks = 0;
+            toyBtn.textContent = '';
+            toyBtn.style.transform = 'translateY(-50%) scale(1)';
+            toyBtn.style.background = '';
+            toyBtn.style.boxShadow = '';
+            toyBtn.style.filter = '';
+        };
 
         toyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            clearTimeout(this._toyIdleTimer);
             this._toyClicks++;
 
             if (this._toyClicks >= maxClicks) {
@@ -147,12 +159,7 @@ const UIRenderer = {
                 toyBtn.style.filter = 'brightness(1.8)';
 
                 setTimeout(() => {
-                    this._toyClicks = 0;
-                    toyBtn.textContent = '';
-                    toyBtn.style.transform = 'translateY(-50%) scale(1)';
-                    toyBtn.style.background = '';
-                    toyBtn.style.boxShadow = '';
-                    toyBtn.style.filter = '';
+                    resetToyToDefault();
                 }, 450);
 
             } else {
@@ -179,6 +186,11 @@ const UIRenderer = {
                     toyBtn.style.background = `radial-gradient(circle at 35% 35%, rgb(255, ${Math.min(255, gbVal + 30)}, ${Math.min(255, gbVal + 30)}) 0%, rgb(239, ${gbVal}, ${gbVal}) 55%, rgb(${Math.max(10, gbVal - 40)}, 0, 0) 100%)`;
                     toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, ${0.35 + this._toyClicks * 0.08}), inset -1.5px -1.5px 3px rgba(0,0,0,0.5), inset 1.5px 1.5px 3px rgba(255,255,255,0.7)`;
                 }
+
+                // 3 秒无后续操作，自动泄气回归到 10px 黑灰色阶段
+                this._toyIdleTimer = setTimeout(() => {
+                    resetToyToDefault();
+                }, 3000);
             }
         });
     },
