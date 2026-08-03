@@ -636,7 +636,7 @@ class GameEngineController {
     }
 
     /**
-     * 打开个人战绩名片与排行榜弹窗
+     * 打开个人战绩名片与排行榜弹窗 (支持每日改名一次 + 更换头像)
      */
     openStatsModal(activeTab) {
         const statsModal = document.getElementById('statsModal');
@@ -657,17 +657,41 @@ class GameEngineController {
         const winRate  = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0%';
         const currentYin = data.yinCoins !== undefined ? data.yinCoins : 1000;
         const canClaim = AuthEngine.canClaimDailyReward();
+        const canRename = AuthEngine.canRenameToday();
+
+        const avatarList = ['🤠', '👑', '🦁', '🦊', '🐱', '🐶', '🐼', '🐯', '🦄', '🚀', '🤖', '💎', '🔥', '⚡', '🎃', '👽'];
 
         const hero = document.getElementById('userProfileHero');
         if (hero) {
             hero.innerHTML = `
                 <div class="profile-top">
-                    <div class="profile-avatar-big">${data.avatar || '🤠'}</div>
+                    <div class="profile-avatar-big" id="btnChangeAvatar" title="点击选择新头像" style="cursor:pointer;position:relative;">
+                        <span>${data.avatar || '🤠'}</span>
+                        <div style="position:absolute;bottom:-2px;right:-2px;font-size:0.6rem;background:#ffd700;color:#000;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.4);"><i class="fa-solid fa-pen"></i></div>
+                    </div>
                     <div class="profile-names">
-                        <div class="profile-nick">${data.nickname}</div>
+                        <div class="profile-nick" style="display:flex;align-items:center;gap:8px;">
+                            <span>${data.nickname}</span>
+                            ${canRename ? `
+                                <button id="btnEditNick" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#ffd700;border-radius:4px;padding:2px 8px;font-size:0.75rem;cursor:pointer;font-weight:700;">
+                                    <i class="fa-solid fa-pen-to-square"></i> 改名
+                                </button>
+                            ` : `
+                                <span style="font-size:0.7rem;color:#94a3b8;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">今日已改名</span>
+                            `}
+                        </div>
                         <div class="profile-email">${data.email || '游客账号'}</div>
                     </div>
                 </div>
+
+                <!-- 头像选择框 (点击头像展开/关闭) -->
+                <div id="avatarPickerBox" style="display:none;background:rgba(0,0,0,0.4);border:1px solid rgba(201,146,42,0.3);border-radius:8px;padding:10px;margin:4px 0 8px;">
+                    <div style="font-size:0.78rem;color:#ffd700;margin-bottom:8px;font-weight:700;">点击切换你的专属游戏头像：</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                        ${avatarList.map(a => `<span class="avatar-opt" data-avatar="${a}" style="font-size:1.6rem;cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.08);transition:transform 0.15s ease;">${a}</span>`).join('')}
+                    </div>
+                </div>
+
                 <div class="profile-grid">
                     <div class="profile-stat-box">
                         <div class="stat-val" style="color:#ffd700;">🔮 ${currentYin}</div>
@@ -682,6 +706,7 @@ class GameEngineController {
                         <div class="stat-lbl">对局胜场</div>
                     </div>
                 </div>
+
                 <div style="margin-top:10px;">
                     ${canClaim ? `
                         <button id="btnClaimDaily" class="btn-join-action" style="width:100%;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.9rem;border-radius:8px;font-weight:800;box-shadow:0 0 16px rgba(245,158,11,0.4);">
@@ -695,6 +720,44 @@ class GameEngineController {
                 </div>
             `;
 
+            // 头像点击展开/收起选择面板
+            const avatarBtn = document.getElementById('btnChangeAvatar');
+            const pickerBox = document.getElementById('avatarPickerBox');
+            if (avatarBtn && pickerBox) {
+                avatarBtn.addEventListener('click', () => {
+                    pickerBox.style.display = pickerBox.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+
+            // 选择新头像
+            const avatarOpts = hero.querySelectorAll('.avatar-opt');
+            avatarOpts.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const newAvatar = opt.dataset.avatar;
+                    AuthEngine.changeAvatar(newAvatar, (a) => {
+                        UIRenderer.showToast(`✨ 头像已更换为 ${a}`);
+                        this.openStatsModal('MY_STATS');
+                    }, (err) => UIRenderer.showToast(`❌ ${err}`));
+                });
+            });
+
+            // 点击【改名】按钮
+            const editNickBtn = document.getElementById('btnEditNick');
+            if (editNickBtn) {
+                editNickBtn.addEventListener('click', () => {
+                    const newNick = prompt('请输入新游戏昵称 (1-10个字符，每天仅可修改1次)：', data.nickname);
+                    if (newNick !== null) {
+                        AuthEngine.changeNickname(newNick, (nick) => {
+                            UIRenderer.showToast(`🎉 昵称已成功修改为：${nick}`);
+                            this.openStatsModal('MY_STATS');
+                        }, (err) => {
+                            UIRenderer.showToast(`❌ ${err}`);
+                        });
+                    }
+                });
+            }
+
+            // 每日签到领取按钮
             const claimBtn = document.getElementById('btnClaimDaily');
             if (claimBtn) {
                 claimBtn.addEventListener('click', () => {

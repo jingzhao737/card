@@ -222,6 +222,71 @@ class AuthManager {
         });
     }
 
+    /* 检查今天是否可以修改昵称 (每天限改1次) */
+    canRenameToday() {
+        if (!this.userData) return false;
+        const today = this.getTodayDateString();
+        return this.userData.lastRenameDate !== today;
+    }
+
+    /* 修改玩家昵称 (每天限1次) */
+    changeNickname(newNickname, onSuccess, onError) {
+        if (!this.userData || !this.db || !this.userData.accountKey) {
+            if (onError) onError('请先登录账号后再修改昵称');
+            return;
+        }
+
+        if (!this.canRenameToday()) {
+            if (onError) onError('每天只能修改一次昵称，明天0点后可再次修改');
+            return;
+        }
+
+        const nick = (newNickname || '').trim();
+        if (!nick || nick.length > 10) {
+            if (onError) onError('昵称不能为空且不能超过 10 个字符');
+            return;
+        }
+
+        const today = this.getTodayDateString();
+        const accountKey = this.userData.accountKey;
+
+        this.db.ref('users/' + accountKey).update({
+            nickname: nick,
+            lastRenameDate: today
+        }).then(() => {
+            this.userData.nickname = nick;
+            this.userData.lastRenameDate = today;
+            localStorage.setItem('youjing_doudizhu_nickname', nick);
+            const input = document.getElementById('nicknameInput');
+            if (input) input.value = nick;
+            this.updateUserHeaderUI();
+            if (onSuccess) onSuccess(nick);
+        }).catch(err => {
+            if (onError) onError('修改昵称失败：' + err.message);
+        });
+    }
+
+    /* 更换玩家头像 */
+    changeAvatar(newAvatar, onSuccess, onError) {
+        if (!this.userData || !this.db || !this.userData.accountKey) {
+            if (onError) onError('请先登录账号后再更换头像');
+            return;
+        }
+
+        const avatar = (newAvatar || '🤠').trim();
+        const accountKey = this.userData.accountKey;
+
+        this.db.ref('users/' + accountKey).update({
+            avatar: avatar
+        }).then(() => {
+            this.userData.avatar = avatar;
+            this.updateUserHeaderUI();
+            if (onSuccess) onSuccess(avatar);
+        }).catch(err => {
+            if (onError) onError('更换头像失败：' + err.message);
+        });
+    }
+
     /* ====================================================================
        更新比赛战绩（只记录对局输赢，暂不扣除/加因币）
        ==================================================================== */
