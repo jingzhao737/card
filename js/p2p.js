@@ -47,10 +47,10 @@ class P2PManager {
     }
 
     _getOrCreateSessionId() {
-        let sid = sessionStorage.getItem('ddz_client_sid');
+        let sid = localStorage.getItem('ddz_client_sid');
         if (!sid) {
             sid = 'sid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-            sessionStorage.setItem('ddz_client_sid', sid);
+            localStorage.setItem('ddz_client_sid', sid);
         }
         return sid;
     }
@@ -60,7 +60,7 @@ class P2PManager {
     }
 
     /* ====================================================================
-       会话持久化
+       会话持久化 (使用 localStorage 保证跨标签页/关闭浏览器后不失效)
        ==================================================================== */
     saveSession(gameState) {
         try {
@@ -72,7 +72,7 @@ class P2PManager {
                 phase:       gameState ? gameState.phase : 'WAITING',
                 ts:          Date.now()
             };
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+            localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
             if (gameState && gameState.phase !== 'GAMEOVER') {
                 localStorage.setItem(GAMESTATE_KEY, JSON.stringify(gameState));
@@ -84,12 +84,12 @@ class P2PManager {
 
     loadSession() {
         try {
-            const raw = sessionStorage.getItem(SESSION_KEY);
+            const raw = localStorage.getItem(SESSION_KEY);
             if (!raw) return null;
             const session = JSON.parse(raw);
             if (!session || !session.roomId) return null;
             if (Date.now() - session.ts > SESSION_MAX_AGE) {
-                sessionStorage.removeItem(SESSION_KEY);
+                localStorage.removeItem(SESSION_KEY);
                 return null;
             }
             return session;
@@ -104,7 +104,7 @@ class P2PManager {
     }
 
     clearSession() {
-        sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(GAMESTATE_KEY);
     }
 
@@ -219,7 +219,6 @@ class P2PManager {
        ==================================================================== */
     joinRoom(roomId, nickname, onSuccess, onError) {
         this.nickname  = nickname;
-        this.isHost    = false;
         this.roomId    = roomId;
         this.isAiMode  = false;
 
@@ -238,23 +237,41 @@ class P2PManager {
             const lobby = roomData.lobbyData || { players: [] };
             const players = lobby.players || [];
 
-            // 查找属于当前玩家的槽位或可加入槽位
+            // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3)
             let assignedSlot = -1;
 
-            // 优先匹配相同 sid (重连)
-            for (let i = 1; i < 3; i++) {
-                if (players[i] && players[i].sid === this.sessionId) {
-                    assignedSlot = i;
-                    break;
-                }
-            }
+            // 1. 检查是否是房主 (槽位 0) 重连/加入
+            if (roomData.hostSid === this.sessionId || (players[0] && (players[0].sid === this.sessionId || players[0].name === nickname))) {
+                assignedSlot = 0;
+                this.isHost = true;
+            } else {
+                this.isHost = false;
 
-            // 否则查找第一个 AI 槽位
-            if (assignedSlot === -1) {
+                // 2. 客户端重连：优先匹配相同 sid
                 for (let i = 1; i < 3; i++) {
-                    if (!players[i] || players[i].isAi) {
+                    if (players[i] && players[i].sid === this.sessionId) {
                         assignedSlot = i;
                         break;
+                    }
+                }
+
+                // 3. 客户端重连：退而求其次匹配相同 nickname (非 AI)
+                if (assignedSlot === -1) {
+                    for (let i = 1; i < 3; i++) {
+                        if (players[i] && !players[i].isAi && players[i].name === nickname) {
+                            assignedSlot = i;
+                            break;
+                        }
+                    }
+                }
+
+                // 4. 新玩家加入：查找第一个 AI 候补槽位
+                if (assignedSlot === -1) {
+                    for (let i = 1; i < 3; i++) {
+                        if (!players[i] || players[i].isAi) {
+                            assignedSlot = i;
+                            break;
+                        }
                     }
                 }
             }
@@ -265,17 +282,30 @@ class P2PManager {
             }
 
             this.myPlayerIndex = assignedSlot;
-            console.log(`[CloudEngine] 客户端加入房间成功，分配槽位 ${assignedSlot}`);
+            console.log(`[CloudEngine] 加入房间成功，分配槽位 ${assignedSlot} (${this.isHost ? '房主' : '玩家'})`);
 
             // 更新云端该槽位的玩家信息
             players[assignedSlot] = {
                 name: nickname,
                 isAi: false,
-                isHost: false,
+                isHost: this.isHost,
                 sid: this.sessionId
             };
 
             return this.roomRef.child('lobbyData/players').set(players).then(() => {
+                // 如果是房主重连，挂载房主监听（监听客户端操作指令）
+                if (this.isHost) {
+                    this.roomRef.child('action').on('value', snap => {
+                        const act = snap.val();
+                        if (act && act.id && act.id !== this._lastProcessedActionId) {
+                            this._lastProcessedActionId = act.id;
+                            if (window.GameEngine) {
+                                window.GameEngine.handlePlayerAction(act.playerIndex, act.action, act.payload);
+                            }
+                        }
+                    });
+                }
+
                 // 监听全局状态更新
                 this.roomRef.child('gameState').on('value', snap => {
                     const state = snap.val();
