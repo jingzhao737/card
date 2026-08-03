@@ -492,7 +492,6 @@ class AuthManager {
             const list = [];
             Object.keys(map).forEach(key => {
                 const u = map[key];
-                // 排除测试账号 09966 (accountKey: '09966_qq_com' / uid: 9966 / email: '09966@qq.com') 上榜
                 if (u && u.accountKey !== '09966_qq_com' && u.uid !== 9966 && u.email !== '09966@qq.com') {
                     list.push(u);
                 }
@@ -514,6 +513,10 @@ class AuthManager {
         const lUserNick = document.getElementById('lobbyUserNick');
         const lUserSub  = document.getElementById('lobbyUserSub');
         const lBtnAuth  = document.getElementById('btnLobbyAuth');
+        const gAuthAvatar = document.getElementById('gomokuAuthAvatar');
+        const gUserNick = document.getElementById('gomokuUserNick');
+        const gUserSub  = document.getElementById('gomokuUserSub');
+        const gBtnAuth  = document.getElementById('btnGomokuAuth');
         const nickSec   = document.querySelector('.nickname-section');
 
         if (this.userData) {
@@ -533,6 +536,11 @@ class AuthManager {
             if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (lBtnAuth)    lBtnAuth.textContent    = '个人信息';
 
+            if (gAuthAvatar) gAuthAvatar.textContent = this.userData.avatar || '🤠';
+            if (gUserNick)   gUserNick.textContent   = this.userData.nickname;
+            if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin}`;
+            if (gBtnAuth)    gBtnAuth.textContent    = '个人信息';
+
             // 登录后隐去随机昵称区块，避免误导
             if (nickSec) nickSec.style.display   = 'none';
 
@@ -550,6 +558,11 @@ class AuthManager {
             if (lUserNick)   lUserNick.textContent   = '未登录 (游客)';
             if (lUserSub)    lUserSub.textContent    = '🪙 知因币: 0';
             if (lBtnAuth)    lBtnAuth.textContent    = '登录 / 注册';
+
+            if (gAuthAvatar) gAuthAvatar.textContent = '👤';
+            if (gUserNick)   gUserNick.textContent   = '未登录 (游客)';
+            if (gUserSub)    gUserSub.textContent    = '🪙 知因币: 0';
+            if (gBtnAuth)    gBtnAuth.textContent    = '登录 / 注册';
 
             // 游客模式显示随机昵称区块
             if (nickSec) nickSec.style.display   = 'block';

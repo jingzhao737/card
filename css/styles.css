@@ -3580,6 +3580,102 @@ body:has(#lobbyScreen.active) .app-header,
     font-size: 0.95rem;
 }
 
+/* 顶部游鲸多游戏大厅切换 Navigation Bar */
+.game-switch-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px auto 4px;
+    width: 90%;
+    max-width: 430px;
+}
+
+.game-nav-btn {
+    flex: 1;
+    background: rgba(15, 10, 8, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.game-nav-btn:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.game-nav-btn.active#btnNavDoudizhu {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.22) 0%, rgba(20, 10, 5, 0.9) 100%);
+    border-color: rgba(201, 146, 42, 0.45);
+    color: #ffd700;
+    box-shadow: 0 4px 14px rgba(201, 146, 42, 0.15);
+}
+
+.game-nav-btn.active#btnNavGomoku {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 29, 21, 0.95) 100%);
+    border-color: rgba(52, 211, 153, 0.45);
+    color: #34d399;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+}
+
+.nav-new-pill {
+    font-size: 0.6rem;
+    font-weight: 900;
+    background: #10b981;
+    color: #000;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+}
+
+/* 墨绿主调：游鲸五子棋专属 Lobby Card */
+.hero-lobby-card.theme-emerald {
+    background: linear-gradient(180deg, #07241a 0%, #03140e 100%) !important;
+    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(16, 185, 129, 0.12) !important;
+}
+
+.auth-banner-card.emerald-auth {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 0, 0, 0.5));
+    border-color: rgba(52, 211, 153, 0.25);
+}
+
+.badge-tag.green {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(52, 211, 153, 0.35);
+    color: #34d399;
+}
+
+.mode-card.primary-card.green-theme {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(6, 29, 21, 0.6) 100%);
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+.mode-card.primary-card.green-theme:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(6, 29, 21, 0.8) 100%);
+    border-color: rgba(52, 211, 153, 0.55);
+}
+
+.btn-auth-action.green {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+}
+
+.btn-join-action.green {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+}
+
 /* 主页顶部简略排行榜横幅 (极简平淡微型流线 Bar，低调融入背景) */
 .mini-leaderboard-bar {
     background: rgba(15, 10, 8, 0.45);

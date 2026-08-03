@@ -351,6 +351,67 @@ class GameEngineController {
             });
         }
 
+        // 多游戏大厅切换 (斗地主 <-> 五子棋)
+        const btnNavDoudizhu = document.getElementById('btnNavDoudizhu');
+        const btnNavGomoku   = document.getElementById('btnNavGomoku');
+        const cardDoudizhu   = document.getElementById('doudizhuLobbyCard');
+        const cardGomoku     = document.getElementById('gomokuLobbyCard');
+
+        const switchGameLobby = (gameType) => {
+            if (gameType === 'GOMOKU') {
+                if (btnNavGomoku)   btnNavGomoku.classList.add('active');
+                if (btnNavDoudizhu) btnNavDoudizhu.classList.remove('active');
+                if (cardDoudizhu)   cardDoudizhu.style.display = 'none';
+                if (cardGomoku)     cardGomoku.style.display = 'block';
+            } else {
+                if (btnNavDoudizhu) btnNavDoudizhu.classList.add('active');
+                if (btnNavGomoku)   btnNavGomoku.classList.remove('active');
+                if (cardGomoku)     cardGomoku.style.display = 'none';
+                if (cardDoudizhu)   cardDoudizhu.style.display = 'block';
+            }
+        };
+
+        if (btnNavDoudizhu) btnNavDoudizhu.addEventListener('click', () => switchGameLobby('DOUDIZHU'));
+        if (btnNavGomoku)   btnNavGomoku.addEventListener('click', () => switchGameLobby('GOMOKU'));
+
+        // 绑定五子棋个人信息按钮点击
+        const btnGomokuAuth = document.getElementById('btnGomokuAuth');
+        if (btnGomokuAuth) {
+            btnGomokuAuth.addEventListener('click', () => {
+                if (AuthEngine.user && AuthEngine.userData) {
+                    this.openStatsModal('MY_STATS');
+                } else {
+                    const authModal = document.getElementById('authModal');
+                    if (authModal) authModal.style.display = 'flex';
+                }
+            });
+        }
+
+        // 手势左滑 / 右滑切换游戏大厅
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const lobbyScr = document.getElementById('lobbyScreen');
+        if (lobbyScr) {
+            lobbyScr.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            lobbyScr.addEventListener('touchend', (e) => {
+                const diffX = e.changedTouches[0].clientX - touchStartX;
+                const diffY = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+                    if (diffX < 0) {
+                        // 左滑切换到五子棋
+                        switchGameLobby('GOMOKU');
+                    } else {
+                        // 右滑切换到斗地主
+                        switchGameLobby('DOUDIZHU');
+                    }
+                }
+            }, { passive: true });
+        }
+
         // 代理列表项中的"一键加入/替换AI"按钮点击
         const listContainer = document.getElementById('publicRoomsListContainer');
         if (listContainer) {

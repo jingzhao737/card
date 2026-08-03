@@ -98,7 +98,18 @@
                 </div>
             </div>
 
-            <div class="lobby-card hero-lobby-card">
+            <!-- 顶级多游戏切换导航 Bar -->
+            <div class="game-switch-nav">
+                <button class="game-nav-btn active" id="btnNavDoudizhu">
+                    <i class="fa-solid fa-layer-group"></i> 游鲸斗地主
+                </button>
+                <button class="game-nav-btn" id="btnNavGomoku">
+                    <i class="fa-solid fa-chess-board"></i> 游鲸五子棋 <span class="nav-new-pill">NEW</span>
+                </button>
+            </div>
+
+            <!-- 游鲸斗地主 主大厅卡片 -->
+            <div class="lobby-card hero-lobby-card" id="doudizhuLobbyCard">
                 <div class="lobby-header">
                     <div class="brand-hero">
                         <div class="brand-text">
@@ -207,6 +218,83 @@
 
                 <div class="lobby-footer">
                     <span><i class="fa-solid fa-shield-halved"></i> 极速云端对局</span>
+                </div>
+            </div>
+
+            <!-- 游鲸五子棋 专属墨绿主大厅卡片 -->
+            <div class="lobby-card hero-lobby-card theme-emerald" id="gomokuLobbyCard" style="display:none;">
+                <div class="lobby-header">
+                    <div class="brand-hero">
+                        <div class="brand-text">
+                            <h1 class="brand-title" style="color:#34d399;">游鲸五子棋</h1>
+                            <p class="brand-subtitle">GOMOKU FIVE-IN-A-ROW</p>
+                        </div>
+                    </div>
+                    <div class="hero-tags">
+                        <span class="badge-tag green"><i class="fa-solid fa-chess-board"></i> 标准 15x15 盘面</span>
+                    </div>
+                </div>
+
+                <div class="lobby-form">
+                    <!-- 账号登录/注册 快捷卡片横幅 -->
+                    <div class="auth-banner-card emerald-auth" id="gomokuAuthBanner">
+                        <div class="auth-banner-left">
+                            <div class="auth-avatar-badge" id="gomokuAuthAvatar">🤠</div>
+                            <div class="auth-banner-info">
+                                <div class="auth-banner-nick" id="gomokuUserNick">未登录 (游客)</div>
+                                <div class="auth-banner-sub" id="gomokuUserSub">🪙 知因币: 0</div>
+                            </div>
+                        </div>
+                        <div class="auth-banner-actions">
+                            <button class="btn-auth-action green" id="btnGomokuAuth" type="button">个人信息</button>
+                        </div>
+                    </div>
+
+                    <!-- 模式选择区 -->
+                    <div class="mode-selection">
+                        <!-- 创建五子棋房间 -->
+                        <button class="mode-card primary-card green-theme" id="btnCreateGomokuRoom">
+                            <div class="card-icon-wrap green">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>创建五子棋对局</span>
+                                    <span class="pill-badge green">房主</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
+                        <!-- 输入房间号加入五子棋 -->
+                        <div class="mode-card join-card">
+                            <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入 6 位五子棋房间号</div>
+                            <div class="join-input-row">
+                                <input type="text" id="joinGomokuInput" placeholder="6 位房间号" maxlength="6">
+                                <button class="btn-join-action green" id="btnJoinGomoku">进入对局 <i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="divider"><span>人机切磋</span></div>
+
+                        <!-- 单机五子棋 AI 练习 -->
+                        <button class="mode-card ai-card" id="btnPlayGomokuAi">
+                            <div class="card-icon-wrap cyan">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>AI 棋圣练习</span>
+                                    <span class="pill-badge cyan">智能博弈</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lobby-footer">
+                    <span><i class="fa-solid fa-chess"></i> 墨绿棋盘 · 智力博弈</span>
                 </div>
             </div>
         </div>
