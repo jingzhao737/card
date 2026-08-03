@@ -1,23 +1,11 @@
-/* 全局禁止移动端双击放大与双指缩放 (Disable double-tap zoom & pinch zoom) */
-(function disablePageZoom() {
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function (e) {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            const target = e.target;
-            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
-            if (!isInput) {
-                e.preventDefault();
-            }
-        }
-        lastTouchEnd = now;
-    }, { passive: false });
-
+/* 全局禁止双指手势缩放 (Pinch zoom prevention while preserving fast clicks) */
+(function disablePinchZoom() {
     // 禁止 iOS 捏合手势缩放 (Pinch gesture prevention)
     document.addEventListener('gesturestart', function (e) {
         e.preventDefault();
     }, { passive: false });
 
+    // 禁止双指触控拖拽缩放
     document.addEventListener('touchmove', function (e) {
         if (e.touches && e.touches.length > 1) {
             e.preventDefault();
