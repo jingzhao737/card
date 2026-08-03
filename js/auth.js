@@ -37,6 +37,43 @@ class AuthManager {
     }
 
     /* ====================================================================
+       自动补全与追溯历史账号的数字 UID (从 10001 开始按注册时间递增)
+       ==================================================================== */
+    _assignUidsToExistingUsers(callback) {
+        if (!this.db) {
+            if (callback) callback(0);
+            return;
+        }
+
+        this.db.ref('users').once('value').then(snap => {
+            const usersMap = snap.val() || {};
+            const usersList = Object.keys(usersMap).map(k => usersMap[k]);
+
+            // 按注册创建时间升序排序 (未带 created 的按 0 处理)
+            usersList.sort((a, b) => (a.created || 0) - (b.created || 0));
+
+            const updatePromises = [];
+            usersList.forEach((user, idx) => {
+                const assignedUid = 10001 + idx;
+                if (!user.uid || user.uid !== assignedUid) {
+                    user.uid = assignedUid;
+                    if (user.accountKey) {
+                        updatePromises.push(this.db.ref('users/' + user.accountKey + '/uid').set(assignedUid));
+                    }
+                }
+            });
+
+            Promise.all(updatePromises).then(() => {
+                if (callback) callback(usersList.length);
+            }).catch(() => {
+                if (callback) callback(usersList.length);
+            });
+        }).catch(() => {
+            if (callback) callback(0);
+        });
+    }
+
+    /* ====================================================================
        自动登录恢复 (从 localStorage 恢复已登录账号)
        ==================================================================== */
     checkAutoLogin() {
@@ -48,6 +85,15 @@ class AuthManager {
                     // 数据兼容：如果旧数据只有 coins/score，自动迁移到 yinCoins
                     if (data.yinCoins === undefined) {
                         data.yinCoins = data.coins || 1000;
+                    }
+                    // 补全旧账号缺失的 UID
+                    if (!data.uid) {
+                        this._assignUidsToExistingUsers(() => {
+                            this.db.ref('users/' + savedAccountKey).once('value').then(s2 => {
+                                this.userData = s2.val() || data;
+                                this.updateUserHeaderUI();
+                            });
+                        });
                     }
                     this.userData = data;
                     this.user = { uid: savedAccountKey };
@@ -72,7 +118,7 @@ class AuthManager {
     }
 
     /* ====================================================================
-       账号密码注册 (初始赠送 1000 因币)
+       账号密码注册 (自动计算递增 UID，初始赠送 1000 因币)
        ==================================================================== */
     registerWithEmail(inputAccount, password, nickname, onSuccess, onError) {
         if (!this.db) {
@@ -96,31 +142,38 @@ class AuthManager {
                 return;
             }
 
-            const initialData = {
-                accountKey: accountKey,
-                email: email,
-                password: password,
-                nickname: nick,
-                avatar: '🤠',
-                yinCoins: 1000,           // 默认新注册就赠送 1000 因币
-                lastClaimDate: '',        // 上次领取每日因币的日期
-                totalGames: 0,
-                wins: 0,
-                landlordWins: 0,
-                farmerWins: 0,
-                bombsPlayed: 0,
-                created: firebase.database.ServerValue.TIMESTAMP
-            };
+            // 计算全局累积玩家数量，自动生成按时间递增的 UID
+            this._assignUidsToExistingUsers((totalUsersCount) => {
+                const assignedUid = 10001 + totalUsersCount;
+                const nowTs = Date.now();
 
-            return this.db.ref('users/' + accountKey).set(initialData).then(() => {
-                this.userData = initialData;
-                this.user = { uid: accountKey };
-                localStorage.setItem('youjing_doudizhu_account_key', accountKey);
-                localStorage.setItem('youjing_doudizhu_nickname', nick);
-                const input = document.getElementById('nicknameInput');
-                if (input) input.value = nick;
-                this.updateUserHeaderUI();
-                if (onSuccess) onSuccess(initialData);
+                const initialData = {
+                    uid: assignedUid,        // 专属递增数字 UID
+                    accountKey: accountKey,
+                    email: email,
+                    password: password,
+                    nickname: nick,
+                    avatar: '🤠',
+                    yinCoins: 1000,          // 默认新注册就赠送 1000 因币
+                    lastClaimDate: '',       // 上次领取每日因币的日期
+                    totalGames: 0,
+                    wins: 0,
+                    landlordWins: 0,
+                    farmerWins: 0,
+                    bombsPlayed: 0,
+                    created: nowTs           // 记录精准注册时间戳
+                };
+
+                return this.db.ref('users/' + accountKey).set(initialData).then(() => {
+                    this.userData = initialData;
+                    this.user = { uid: accountKey };
+                    localStorage.setItem('youjing_doudizhu_account_key', accountKey);
+                    localStorage.setItem('youjing_doudizhu_nickname', nick);
+                    const input = document.getElementById('nicknameInput');
+                    if (input) input.value = nick;
+                    this.updateUserHeaderUI();
+                    if (onSuccess) onSuccess(initialData);
+                });
             });
         }).catch(err => {
             console.error('[Auth] 注册失败:', err);

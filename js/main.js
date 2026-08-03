@@ -661,6 +661,11 @@ class GameEngineController {
 
         const avatarList = ['🤠', '👑', '🦁', '🦊', '🐱', '🐶', '🐼', '🐯', '🦄', '🚀', '🤖', '💎', '🔥', '⚡', '🎃', '👽'];
 
+        const createdTs = data.created || Date.now();
+        const dateObj = new Date(createdTs);
+        const regDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        const uidStr = data.uid ? `UID: ${data.uid}` : 'UID: 10001';
+
         const hero = document.getElementById('userProfileHero');
         if (hero) {
             hero.innerHTML = `
@@ -680,7 +685,13 @@ class GameEngineController {
                                 <span style="font-size:0.7rem;color:#94a3b8;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">今日已改名</span>
                             `}
                         </div>
-                        <div class="profile-email">${data.email || '游客账号'}</div>
+                        <div class="profile-email" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px;">
+                            <span>${data.email || '游客账号'}</span>
+                            <span style="color:#ffd700;font-weight:800;background:rgba(255,215,0,0.12);padding:1px 6px;border-radius:4px;font-size:0.78rem;">${uidStr}</span>
+                        </div>
+                        <div style="font-size:0.75rem;color:#94a3b8;margin-top:3px;">
+                            <i class="fa-solid fa-calendar-check" style="color:#34d399;"></i> 注册时间: ${regDateStr}
+                        </div>
                     </div>
                 </div>
 
