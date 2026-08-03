@@ -698,17 +698,19 @@
         </div>
     </div>
 
-    <!-- 个人信息 & 战绩弹窗 -->
+    <!-- 个人信息 & 战绩弹窗 (左上方延伸页签 Bar 风格) -->
     <div id="statsModal" class="card-type-modal" style="display:none;">
         <div class="card-type-inner" style="max-width: 480px;">
-            <div class="ct-header">
-                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-id-card"></i> 个人信息</span>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <button class="btn-toggle-stats" id="btnToggleStatsView" style="background:rgba(201,146,42,0.15);border:1px solid rgba(201,146,42,0.3);color:#ffd700;border-radius:3px;padding:3px 10px;font-size:0.78rem;cursor:pointer;font-weight:700;transition:all 0.15s ease;">
+            <div class="ct-header ct-header-protruding">
+                <div class="protruding-tabs-left">
+                    <button class="protruding-tab active" id="tabBarInfo">
+                        <i class="fa-solid fa-id-card"></i> 个人信息
+                    </button>
+                    <button class="protruding-tab" id="tabBarStats">
                         <i class="fa-solid fa-chart-pie"></i> 战绩
                     </button>
-                    <button class="ct-close" id="btnCloseStatsModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
+                <button class="ct-close" id="btnCloseStatsModal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="ct-body" style="padding: 16px 20px;">
                 <!-- 个人信息 View -->

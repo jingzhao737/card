@@ -598,29 +598,29 @@ class GameEngineController {
             });
         }
 
-        // 个人信息 与 个人战绩 视图切换绑定
-        const btnToggleStatsView = document.getElementById('btnToggleStatsView');
+        // 个人信息 与 个人战绩 左上方延伸 Bar 页签切换绑定
+        const tabBarInfo = document.getElementById('tabBarInfo');
+        const tabBarStats = document.getElementById('tabBarStats');
         const viewMyStats = document.getElementById('viewMyStats');
         const viewDetailedStats = document.getElementById('viewDetailedStats');
-        const statsModalTitle = document.getElementById('statsModalTitle');
 
-        if (btnToggleStatsView) {
-            btnToggleStatsView.addEventListener('click', () => {
-                const isViewingInfo = viewMyStats && viewMyStats.style.display !== 'none';
-                if (isViewingInfo) {
-                    if (viewMyStats) viewMyStats.style.display = 'none';
-                    if (viewDetailedStats) viewDetailedStats.style.display = 'flex';
-                    if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-chart-line"></i> 个人战绩';
-                    btnToggleStatsView.innerHTML = '<i class="fa-solid fa-user"></i> 个人信息';
-                    this.renderDetailedStatsView();
-                } else {
-                    if (viewDetailedStats) viewDetailedStats.style.display = 'none';
-                    if (viewMyStats) viewMyStats.style.display = 'flex';
-                    if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-id-card"></i> 个人信息';
-                    btnToggleStatsView.innerHTML = '<i class="fa-solid fa-chart-pie"></i> 战绩';
-                }
-            });
-        }
+        const switchProtrudingTab = (isInfo) => {
+            if (isInfo) {
+                if (tabBarInfo) tabBarInfo.classList.add('active');
+                if (tabBarStats) tabBarStats.classList.remove('active');
+                if (viewMyStats) viewMyStats.style.display = 'flex';
+                if (viewDetailedStats) viewDetailedStats.style.display = 'none';
+            } else {
+                if (tabBarStats) tabBarStats.classList.add('active');
+                if (tabBarInfo) tabBarInfo.classList.remove('active');
+                if (viewDetailedStats) viewDetailedStats.style.display = 'flex';
+                if (viewMyStats) viewMyStats.style.display = 'none';
+                this.renderDetailedStatsView();
+            }
+        };
+
+        if (tabBarInfo) tabBarInfo.addEventListener('click', () => switchProtrudingTab(true));
+        if (tabBarStats) tabBarStats.addEventListener('click', () => switchProtrudingTab(false));
 
         // 补齐机器人开局 (null-safe)
         const _btnStartWithAi = document.getElementById('btnStartWithAi');
@@ -782,16 +782,16 @@ class GameEngineController {
         if (!statsModal) return;
         statsModal.style.display = 'flex';
 
-        // 默认重置回 个人信息 视图
+        // 默认重置回 个人信息 延伸页签
+        const tabBarInfo = document.getElementById('tabBarInfo');
+        const tabBarStats = document.getElementById('tabBarStats');
         const viewMyStats = document.getElementById('viewMyStats');
         const viewDetailedStats = document.getElementById('viewDetailedStats');
-        const statsModalTitle = document.getElementById('statsModalTitle');
-        const btnToggleStatsView = document.getElementById('btnToggleStatsView');
 
+        if (tabBarInfo) tabBarInfo.classList.add('active');
+        if (tabBarStats) tabBarStats.classList.remove('active');
         if (viewMyStats) viewMyStats.style.display = 'flex';
         if (viewDetailedStats) viewDetailedStats.style.display = 'none';
-        if (statsModalTitle) statsModalTitle.innerHTML = '<i class="fa-solid fa-id-card"></i> 个人信息';
-        if (btnToggleStatsView) btnToggleStatsView.innerHTML = '<i class="fa-solid fa-chart-pie"></i> 战绩';
 
         const data = AuthEngine.userData || {
             nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
