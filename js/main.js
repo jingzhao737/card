@@ -636,60 +636,6 @@ class GameEngineController {
     }
 
     /**
-     * 进入等待解界面 (Host视角)
-     */
-    setupWaitingScreen(roomId) {
-        document.getElementById('lobbyScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').style.display = 'none';
-        document.getElementById('waitingScreen').style.display = 'flex';
-        document.getElementById('waitingScreen').classList.add('active');
-
-        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
-        if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
-
-        // 如果在 localhost 下运行，提示换成本机 IP
-        let origin = window.location.origin;
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            UIRenderer.showToast('提示：同一 Wi-Fi 测试请访问局域网 IP 地址', 4000);
-        }
-
-        const shareUrl = `${origin}${window.location.pathname}?room=${roomId}`;
-        document.getElementById('inviteUrlInput').value = shareUrl;
-        document.getElementById('displayRoomId').textContent = roomId;
-        document.getElementById('roomInfoBar').style.display = 'flex';
-
-        // 生成二维码
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = '';
-        if (window.QRCode) {
-            new QRCode(qrContainer, {
-                text: shareUrl,
-                width: 120,
-                height: 120
-            });
-        }
-
-        // 初始化房主 slot0
-        this.gameState.players[0].name = NetworkManager.nickname;
-        this.gameState.players[0].isAi = false;
-        document.getElementById('slotName0').textContent = `${NetworkManager.nickname} (房主)`;
-
-        // 立即展示空位为 AI 机器人（真人加入时再替换）
-        this._fillSlotWithAi(1);
-        this._fillSlotWithAi(2);
-
-        // 房主始终可以直接开始（空位已预填 AI）
-        document.getElementById('btnStartGame').style.display = 'block';
-        document.getElementById('btnStartWithAi').style.display = 'none';
-
-        this.broadcastLobbyState();
-
-        // ====== 房主保活机制 ======
-        // 房主浏览器 = 游戏服务器，一旦挂起所有人断线，需要尽力阻止挂起
-        this._activateHostKeepAlive();
-    }
-
-    /**
      * 打开个人战绩名片与排行榜弹窗
      */
     openStatsModal(activeTab) {
@@ -699,17 +645,18 @@ class GameEngineController {
 
         const data = AuthEngine.userData || {
             nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
-            email: '游客账号（尚未绑定）',
+            email: '游客账号（未绑定）',
             avatar: '🤠',
-            coins: 1000,
-            score: 1000,
+            yinCoins: 1000,
             totalGames: 0,
             wins: 0
         };
 
-        const total   = data.totalGames || 0;
-        const wins    = data.wins || 0;
-        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0%';
+        const total    = data.totalGames || 0;
+        const wins     = data.wins || 0;
+        const winRate  = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0%';
+        const currentYin = data.yinCoins !== undefined ? data.yinCoins : 1000;
+        const canClaim = AuthEngine.canClaimDailyReward();
 
         const hero = document.getElementById('userProfileHero');
         if (hero) {
@@ -723,19 +670,42 @@ class GameEngineController {
                 </div>
                 <div class="profile-grid">
                     <div class="profile-stat-box">
-                        <div class="stat-val">💰 ${data.coins || 1000}</div>
-                        <div class="stat-lbl">金币资产</div>
-                    </div>
-                    <div class="profile-stat-box">
-                        <div class="stat-val">🏆 ${data.score || 1000}</div>
-                        <div class="stat-lbl">天梯积分</div>
+                        <div class="stat-val" style="color:#ffd700;">🔮 ${currentYin}</div>
+                        <div class="stat-lbl">因币资产</div>
                     </div>
                     <div class="profile-stat-box">
                         <div class="stat-val">${winRate}</div>
                         <div class="stat-lbl">总胜率 (${wins}/${total})</div>
                     </div>
+                    <div class="profile-stat-box">
+                        <div class="stat-val">${wins} 胜</div>
+                        <div class="stat-lbl">对局胜场</div>
+                    </div>
+                </div>
+                <div style="margin-top:10px;">
+                    ${canClaim ? `
+                        <button id="btnClaimDaily" class="btn-join-action" style="width:100%;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.9rem;border-radius:8px;font-weight:800;box-shadow:0 0 16px rgba(245,158,11,0.4);">
+                            <i class="fa-solid fa-gift"></i> 领取今日福利 100 因币 (每天0点刷新)
+                        </button>
+                    ` : `
+                        <button class="btn-secondary" style="width:100%;height:40px;opacity:0.75;cursor:default;font-size:0.85rem;" disabled>
+                            <i class="fa-solid fa-circle-check" style="color:#34d399;"></i> 今日 100 因币已领取 (明日0点刷新)
+                        </button>
+                    `}
                 </div>
             `;
+
+            const claimBtn = document.getElementById('btnClaimDaily');
+            if (claimBtn) {
+                claimBtn.addEventListener('click', () => {
+                    AuthEngine.claimDailyReward((newCoins) => {
+                        UIRenderer.showToast(`🎉 成功领取今日福利：100 因币！当前资产：${newCoins} 因币`);
+                        this.openStatsModal('MY_STATS');
+                    }, (err) => {
+                        UIRenderer.showToast(`❌ ${err}`);
+                    });
+                });
+            }
         }
 
         const tabStats = document.getElementById('tabMyStats');
@@ -748,17 +718,17 @@ class GameEngineController {
     }
 
     /**
-     * 渲染全网高手排行榜 Top 10
+     * 渲染全网因币资产排行榜 Top 10
      */
     renderLeaderboard() {
         const container = document.getElementById('leaderboardListContainer');
         if (!container) return;
-        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 加载高手排行榜...</div>';
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 加载因币资产榜...</div>';
 
         AuthEngine.fetchLeaderboard(list => {
             container.innerHTML = '';
             if (!list || list.length === 0) {
-                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;">暂无上榜高手，快去开局拿首胜吧！</div>';
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;">暂无上榜玩家，注册即送 1000 因币！</div>';
                 return;
             }
 
@@ -774,7 +744,7 @@ class GameEngineController {
                 item.innerHTML = `
                     <div class="lb-rank ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
                     <div class="lb-nick">${user.avatar || '🤠'} ${user.nickname}</div>
-                    <div class="lb-score">🏆 ${user.score || 1000} 分</div>
+                    <div class="lb-score">🔮 ${user.yinCoins !== undefined ? user.yinCoins : 1000} 因币</div>
                 `;
                 container.appendChild(item);
             });
