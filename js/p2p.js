@@ -2,7 +2,6 @@
    P2P 通信与房间状态同步引擎 (WebRTC P2P Engine & Network Sync)
    ========================================================================== */
 
-// 国内与国际超高速 STUN 节点 (包含 3478 标准端口与 Google/小米/B站 节点，保障移动端 4G/5G 秒级穿透)
 const FAST_ICE_SERVERS = [
     { urls: 'stun:stun.miwifi.com:3478' },
     { urls: 'stun:stun.chat.bilibili.com:3478' },
@@ -12,30 +11,35 @@ const FAST_ICE_SERVERS = [
     { urls: 'stun:stun.cloudflare.com:3478' }
 ];
 
+const SESSION_KEY      = 'ddz_session';     // sessionStorage key
+const GAMESTATE_KEY    = 'ddz_gamestate';   // localStorage key (host only)
+const SESSION_MAX_AGE  = 20 * 60 * 1000;   // 20 分钟内的会话可以恢复
+
 class P2PManager {
     constructor() {
-        this.peer = null;
-        this.connections = []; // 房主保存连接的客户端 (PeerJS DataConnections)
-        this.hostConn = null;  // 客户端保存与房主的连接
-        this.isHost = false;
-        this.myPlayerIndex = 0; // 0, 1, 或 2
-        this.roomId = null;
-        this.nickname = '一键三连';
-        this.isAiMode = false;
-        
-        // 渲染更新回调
-        this.onStateUpdate = null;
-        this.onPlayerJoined = null;
-        this.onLobbySync = null;
-        this.onToast = null;
+        this.peer        = null;
+        this.connections = [];          // 房主保存已连接的客户端
+        this._pendingConnCount = 0;     // Bug修复：预计数，防止两人同时加入突破上限
+        this.hostConn    = null;        // 客户端与房主的连接
+        this.isHost      = false;
+        this.myPlayerIndex = 0;
+        this.roomId      = null;
+        this.nickname    = '一键三连';
+        this.isAiMode    = false;
 
-        // 开启 2.5 秒心跳保活，防止手机移动网络 (4G/5G) NAT 映射超时断连卡顿
+        this.onStateUpdate  = null;
+        this.onPlayerJoined = null;
+        this.onLobbySync    = null;
+        this.onToast        = null;
+        this.onReconnecting = null;     // 重连状态回调
+
         this.startHeartbeat();
+        this._bindVisibilityChange();
     }
 
-    /**
-     * 移动网络 WebRTC 心跳保活 (防止手机锁屏或长思考时 NAT 端口老化掉线)
-     */
+    /* ====================================================================
+       心跳保活
+       ==================================================================== */
     startHeartbeat() {
         setInterval(() => {
             if (this.isHost) {
@@ -50,70 +54,153 @@ class P2PManager {
         }, 2500);
     }
 
-    /**
-     * 生成随机 6 位六进制/数字房间号
-     */
+    /* ====================================================================
+       页面可见性变化：切回来时尝试检查并重连
+       ==================================================================== */
+    _bindVisibilityChange() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) return;
+            // 用户切回了标签页
+            if (this.isAiMode) return;
+            if (this.isHost) {
+                // 房主：检查所有客户端连接是否还活着（心跳已处理，无需额外操作）
+            } else if (this.hostConn && !this.hostConn.open) {
+                // 客户端：与房主的连接断了，尝试重连
+                console.log('[P2P] 检测到与房主连接断开，尝试重连...');
+                if (this.onToast) this.onToast('检测到断线，正在尝试重连...', 4000);
+                this._attemptClientReconnect();
+            }
+        });
+    }
+
+    /* ====================================================================
+       工具方法
+       ==================================================================== */
     generateRoomId() {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    /**
-     * 创建 P2P 房间 (作为 Host)
-     */
-    createRoom(nickname, onReady) {
-        this.nickname = nickname;
-        this.isHost = true;
-        this.myPlayerIndex = 0;
-        this.roomId = this.generateRoomId();
-        const peerId = `youjing-doudizhu-${this.roomId}`;
+    /* ====================================================================
+       会话持久化（sessionStorage + localStorage）
+       ==================================================================== */
+    saveSession(gameState) {
+        try {
+            const session = {
+                roomId:      this.roomId,
+                playerIndex: this.myPlayerIndex,
+                nickname:    this.nickname,
+                isHost:      this.isHost,
+                phase:       gameState ? gameState.phase : 'WAITING',
+                ts:          Date.now()
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
-        // 立即回调UI进行界面切换，提供 0ms 闪电响应
-        if (onReady) onReady(this.roomId);
+            // 仅房主保存完整 gameState，用于重连后恢复
+            if (this.isHost && gameState && gameState.phase !== 'GAMEOVER') {
+                localStorage.setItem(GAMESTATE_KEY, JSON.stringify(gameState));
+            }
+        } catch (e) {
+            console.warn('[Session] 保存会话失败:', e);
+        }
+    }
+
+    loadSession() {
+        try {
+            const raw = sessionStorage.getItem(SESSION_KEY);
+            if (!raw) return null;
+            const session = JSON.parse(raw);
+            if (!session || !session.roomId) return null;
+            if (Date.now() - session.ts > SESSION_MAX_AGE) {
+                sessionStorage.removeItem(SESSION_KEY);
+                return null;
+            }
+            return session;
+        } catch (e) { return null; }
+    }
+
+    loadSavedGameState() {
+        try {
+            const raw = localStorage.getItem(GAMESTATE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+
+    clearSession() {
+        sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(GAMESTATE_KEY);
+    }
+
+    /* ====================================================================
+       创建 P2P 房间（房主）
+       Bug修复：onReady 移到 peer.on('open') 内，确保 Peer 真正注册后才显示邀请链接
+       ==================================================================== */
+    createRoom(nickname, onReady, roomIdOverride) {
+        this.nickname  = nickname;
+        this.isHost    = true;
+        this.myPlayerIndex = 0;
+        this.roomId    = roomIdOverride || this.generateRoomId();
+        const peerId   = `youjing-doudizhu-${this.roomId}`;
 
         if (this.peer) {
             try { this.peer.destroy(); } catch (e) {}
         }
+        this._pendingConnCount = 0;
+        this.connections = [];
+
+        // 显示"正在建立房间..."提示
+        if (this.onToast) this.onToast('正在建立房间连接，请稍候...', 5000);
 
         this.peer = new Peer(peerId, {
             debug: 1,
-            config: {
-                iceServers: FAST_ICE_SERVERS
-            }
+            config: { iceServers: FAST_ICE_SERVERS }
         });
 
         this.peer.on('open', (id) => {
-            console.log('[P2P] 房主 Peer 穿透接入完成 ID:', id);
+            console.log('[P2P] 房主 Peer 就绪，ID:', id);
+            // Bug修复：Peer 真正注册成功后才回调，确保朋友点链接时能连上
+            if (onReady) onReady(this.roomId);
         });
 
         this.peer.on('connection', (conn) => {
-            console.log('[P2P] 收到来自玩家的连接请求:', conn.peer);
+            console.log('[P2P] 收到连接请求:', conn.peer);
             this.handleIncomingConnection(conn);
         });
 
         this.peer.on('error', (err) => {
             console.error('[P2P] PeerJS 错误:', err);
-            if (this.onToast) this.onToast(`网络连接提示: ${err.type || '信号建立中'}`);
+            // ID 已被占用（如断线重连时旧 peer 尚未注销）
+            if (err.type === 'unavailable-id') {
+                if (this.onToast) this.onToast('房间 ID 占用中，等待旧连接释放后重试...', 4000);
+                setTimeout(() => this.createRoom(nickname, onReady, this.roomId), 3000);
+            } else {
+                if (this.onToast) this.onToast(`网络连接提示: ${err.type || '信号建立中'}`);
+            }
         });
     }
 
-    /**
-     * 房主处理客户端加入连接
-     */
+    /* ====================================================================
+       房主处理新客户端加入
+       Bug修复：使用 _pendingConnCount 预计数，防止两人同时加入突破2人上限
+       ==================================================================== */
     handleIncomingConnection(conn) {
-        if (this.connections.length >= 2) {
+        // 用已连接数 + 待握手数 判断是否超员
+        const occupied = this.connections.length + this._pendingConnCount;
+        if (occupied >= 2) {
             conn.on('open', () => {
                 conn.send({ type: 'ERROR', message: '房间人数已满' });
                 setTimeout(() => conn.close(), 500);
             });
             return;
         }
+        this._pendingConnCount++;  // 预占一个槽位
 
         conn.on('open', () => {
+            this._pendingConnCount--;  // 握手完成，正式记入 connections
             this.connections.push(conn);
             const assignedIndex = this.connections.length; // 1 或 2
             conn._assignedIndex = assignedIndex;
 
-            console.log(`[P2P] 玩家 ${assignedIndex} 连接建立成功，等待 JOIN_REQ...`);
+            console.log(`[P2P] 玩家 ${assignedIndex} 握手成功`);
 
             conn.send({
                 type: 'WELCOME',
@@ -136,47 +223,56 @@ class P2PManager {
         conn.on('close', () => {
             console.log('[P2P] 玩家断开连接');
             this.connections = this.connections.filter(c => c !== conn);
-            if (this.onToast) this.onToast('已有玩家断开网络');
+            if (this.onToast) this.onToast('已有玩家断开网络，等待重连...');
+        });
+
+        conn.on('error', () => {
+            this._pendingConnCount = Math.max(0, this._pendingConnCount - 1);
         });
     }
 
-    /**
-     * 加入已建立的 P2P 房间 (作为 Client)
-     */
+    /* ====================================================================
+       加入房间（客户端）
+       Bug修复：超时条件改为只判断 !connected，修复"连接卡住不报错"问题
+       ==================================================================== */
     joinRoom(roomId, nickname, onSuccess, onError) {
-        this.nickname = nickname;
-        this.isHost = false;
-        this.roomId = roomId;
+        this.nickname  = nickname;
+        this.isHost    = false;
+        this.roomId    = roomId;
         const hostPeerId = `youjing-doudizhu-${roomId}`;
 
         if (this.onToast) this.onToast('正在穿透 P2P 网络建立连接...', 4000);
 
+        if (this.peer) {
+            try { this.peer.destroy(); } catch (e) {}
+        }
+
         this.peer = new Peer({
             debug: 1,
-            config: {
-                iceServers: FAST_ICE_SERVERS
-            }
+            config: { iceServers: FAST_ICE_SERVERS }
         });
 
         let connected = false;
 
         this.peer.on('open', () => {
-            console.log('[P2P] Client Peer 准备就绪，正在发起对房主的连接...');
+            console.log('[P2P] 客户端 Peer 准备就绪，正在连接房主...');
             const conn = this.peer.connect(hostPeerId, { reliable: true, serialization: 'json' });
             this.hostConn = conn;
 
             conn.on('open', () => {
                 connected = true;
                 console.log('[P2P] 已连接到房主！');
-                conn.send({
-                    type: 'JOIN_REQ',
-                    nickname: this.nickname
-                });
+                conn.send({ type: 'JOIN_REQ', nickname: this.nickname });
                 if (onSuccess) onSuccess();
             });
 
             conn.on('data', (data) => {
                 this.handleDataFromHost(data);
+            });
+
+            conn.on('close', () => {
+                console.log('[P2P] 与房主的连接已断开');
+                if (this.onToast) this.onToast('与房主的连接已断开', 3000);
             });
 
             conn.on('error', (err) => {
@@ -185,27 +281,52 @@ class P2PManager {
             });
         });
 
-        // 超时保护 (10s)
+        // Bug修复：超时只判断 !connected，不判断 !this.hostConn
+        // 之前的 !connected && !this.hostConn 会因 hostConn 已赋值而永不触发错误
         setTimeout(() => {
-            if (!connected && !this.hostConn) {
+            if (!connected) {
                 if (onError) onError('连接超时，请确认房间号正确或重试');
             }
-        }, 10000);
+        }, 12000);
 
         this.peer.on('error', (err) => {
             console.error('[P2P] PeerJS error:', err);
-            if (onError) onError('网络建立失败，请检查网络或重试');
+            if (!connected && onError) onError('网络建立失败，请检查网络或重试');
         });
     }
 
-    /**
-     * 客户端收到房主的数据消息
-     */
+    /* ====================================================================
+       客户端断线后尝试重连
+       ==================================================================== */
+    _attemptClientReconnect() {
+        if (!this.roomId || !this.nickname) return;
+        const savedSession = this.loadSession();
+        if (!savedSession) return;
+
+        this.joinRoom(
+            this.roomId,
+            this.nickname,
+            () => {
+                if (this.onToast) this.onToast('✅ 已重新连接到房间！');
+                // 重连成功后请求最新状态
+                if (this.hostConn && this.hostConn.open) {
+                    this.hostConn.send({ type: 'JOIN_REQ', nickname: this.nickname, isRejoin: true });
+                }
+            },
+            (err) => {
+                if (this.onToast) this.onToast(`重连失败：${err}`, 4000);
+            }
+        );
+    }
+
+    /* ====================================================================
+       数据收发
+       ==================================================================== */
     handleDataFromHost(data) {
-        if (data.type === 'PING') return; // 心跳包直接忽略
+        if (data.type === 'PING') return;
         if (data.type === 'WELCOME') {
             this.myPlayerIndex = data.playerIndex;
-            console.log('[P2P] 得到房主分配的槽位:', this.myPlayerIndex);
+            console.log('[P2P] 分配槽位:', this.myPlayerIndex);
             if (data.lobbyData && this.onLobbySync) {
                 this.onLobbySync(data.lobbyData);
             }
@@ -226,58 +347,34 @@ class P2PManager {
         }
     }
 
-    /**
-     * 房主收到客户端发来的指令操作
-     */
     handleDataFromClient(conn, data) {
-        if (data.type === 'PING') return; // 心跳包直接忽略
+        if (data.type === 'PING') return;
         if (data.type === 'JOIN_REQ') {
-            // JOIN_REQ 携带了昵称，现在才通知上层
             const idx = conn._assignedIndex;
             if (idx !== undefined && this.onPlayerJoined) {
-                this.onPlayerJoined(idx, data.nickname);
+                this.onPlayerJoined(idx, data.nickname, !!data.isRejoin);
             }
         } else if (data.type === 'CLIENT_ACTION') {
-            // 将客户端玩家的操作转发给本地游戏主机引擎
             if (window.GameEngine) {
                 window.GameEngine.handlePlayerAction(data.playerIndex, data.action, data.payload);
             }
         }
     }
 
-    /**
-     * 广播快捷聊天短语给所有人
-     */
-    broadcastChatPhrase(senderIndex, text) {
-        const packet = {
-            type: 'CHAT_PHRASE',
-            senderIndex: senderIndex,
-            text: text
-        };
-        this.connections.forEach(conn => {
-            if (conn && conn.open) {
-                conn.send(packet);
-            }
-        });
-    }
-
-    /**
-     * 房主广播全量游戏状态给所有接入的玩家
-     */
+    /* ====================================================================
+       广播：同时保存会话
+       ==================================================================== */
     broadcastState(gameState) {
         if (!this.isHost && !this.isAiMode) return;
 
-        // 本地主玩家直接更新
+        // 持久化会话与游戏状态
+        this.saveSession(gameState);
+
         if (this.onStateUpdate) {
             this.onStateUpdate(gameState);
         }
 
-        // 广播给从节点玩家
-        const packet = {
-            type: 'STATE_SYNC',
-            gameState: gameState
-        };
-
+        const packet = { type: 'STATE_SYNC', gameState };
         this.connections.forEach(conn => {
             if (conn && conn.open) {
                 conn.send(packet);
@@ -285,12 +382,15 @@ class P2PManager {
         });
     }
 
-    /**
-     * 客户端发送操作指令给房主
-     */
+    broadcastChatPhrase(senderIndex, text) {
+        const packet = { type: 'CHAT_PHRASE', senderIndex, text };
+        this.connections.forEach(conn => {
+            if (conn && conn.open) conn.send(packet);
+        });
+    }
+
     sendActionToHost(action, payload) {
         if (this.isHost || this.isAiMode) {
-            // 本地处理
             if (window.GameEngine) {
                 window.GameEngine.handlePlayerAction(this.myPlayerIndex, action, payload);
             }
@@ -298,21 +398,15 @@ class P2PManager {
             this.hostConn.send({
                 type: 'CLIENT_ACTION',
                 playerIndex: this.myPlayerIndex,
-                action: action,
-                payload: payload
+                action,
+                payload
             });
         }
     }
 
-    /**
-     * 房主广播大厅就绪列表给所有客户端
-     */
     broadcastLobbySync(lobbyData) {
         if (!this.isHost && !this.isAiMode) return;
-        const packet = {
-            type: 'LOBBY_SYNC',
-            lobbyData: lobbyData
-        };
+        const packet = { type: 'LOBBY_SYNC', lobbyData };
         this.connections.forEach(conn => {
             if (conn && conn.open) {
                 try { conn.send(packet); } catch(e) {}

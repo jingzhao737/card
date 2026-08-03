@@ -32,22 +32,143 @@ class GameEngineController {
     init() {
         UIRenderer.init();
 
-        // 每次进入/刷新网页时，全自动随机分配一次全新的热梗/B站弹幕昵称
+        // 优先使用上次保存的昵称，没有再随机生成
         const nickInput = document.getElementById('nicknameInput');
         if (nickInput) {
-            const freshNick = this.generateUniqueNickname();
-            nickInput.value = freshNick;
-            localStorage.setItem('youjing_doudizhu_nickname', freshNick);
+            const savedNick = localStorage.getItem('youjing_doudizhu_nickname');
+            const nick = savedNick || this.generateUniqueNickname();
+            nickInput.value = nick;
+            localStorage.setItem('youjing_doudizhu_nickname', nick);
         }
 
         this.bindLobbyEvents();
-        this.checkUrlRoomParam();
 
         // 监听网络层的全量状态同步与大厅同步事件
         NetworkManager.onStateUpdate = (state) => this.onReceiveStateUpdate(state);
-        NetworkManager.onPlayerJoined = (slotIndex, nickname) => this.onPlayerJoined(slotIndex, nickname);
-        NetworkManager.onLobbySync = (lobbyData) => this.onReceiveLobbySync(lobbyData);
-        NetworkManager.onToast = (msg) => UIRenderer.showToast(msg);
+        NetworkManager.onPlayerJoined = (slotIndex, nickname, isRejoin) => this.onPlayerJoined(slotIndex, nickname, isRejoin);
+        NetworkManager.onLobbySync   = (lobbyData) => this.onReceiveLobbySync(lobbyData);
+        NetworkManager.onToast       = (msg) => UIRenderer.showToast(msg);
+
+        // 先检查是否有上次未完成的会话（断线/切 App 后回来）
+        // 如果有，优先恢复；否则再走正常邀请链接流程
+        const restored = this.checkSavedSession();
+        if (!restored) {
+            this.checkUrlRoomParam();
+        }
+    }
+
+    /* ====================================================================
+       会话恢复：检测 sessionStorage 中的旧会话并尝试重连
+       ==================================================================== */
+    checkSavedSession() {
+        const session = NetworkManager.loadSession();
+        // 只在游戏进行中的会话才恢复（BIDDING/PLAYING）
+        if (!session || !['BIDDING', 'PLAYING'].includes(session.phase)) return false;
+
+        console.log('[Session] 检测到旧会话:', session);
+
+        // 显示重连横幅
+        this._showRejoinBanner(session);
+        return true;
+    }
+
+    _showRejoinBanner(session) {
+        // 复用 quickJoinBanner 或动态创建一个重连横幅
+        let banner = document.getElementById('rejoinBanner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'rejoinBanner';
+            banner.style.cssText = [
+                'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+                'background:linear-gradient(135deg,#1a1a2e,#16213e)',
+                'border-bottom:2px solid rgba(201,146,42,0.6)',
+                'color:#fff', 'padding:14px 20px',
+                'display:flex', 'align-items:center', 'justify-content:space-between',
+                'gap:12px', 'font-size:0.9rem', 'box-shadow:0 4px 20px rgba(0,0,0,0.5)'
+            ].join(';');
+            document.body.appendChild(banner);
+        }
+
+        const roleText = session.isHost ? '房主' : '玩家';
+        banner.innerHTML = `
+            <span>🔄 检测到上次的游戏（房间 <b>${session.roomId}</b>，你是<b>${roleText}</b>）</span>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+                <button id="btnRejoinConfirm" style="background:#c9921a;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700">重新加入</button>
+                <button id="btnRejoinCancel" style="background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer">不了</button>
+            </div>
+        `;
+
+        document.getElementById('btnRejoinConfirm').addEventListener('click', () => {
+            banner.remove();
+            if (session.isHost) {
+                this._rejoinAsHost(session);
+            } else {
+                this._rejoinAsClient(session);
+            }
+        });
+
+        document.getElementById('btnRejoinCancel').addEventListener('click', () => {
+            NetworkManager.clearSession();
+            banner.remove();
+            // 清除会话后再走正常邀请链接流程
+            this.checkUrlRoomParam();
+        });
+
+        // 5秒内没操作，自动尝试重连
+        this._rejoinTimer = setTimeout(() => {
+            if (document.getElementById('rejoinBanner')) {
+                banner.remove();
+                if (session.isHost) {
+                    this._rejoinAsHost(session);
+                } else {
+                    this._rejoinAsClient(session);
+                }
+            }
+        }, 5000);
+    }
+
+    _rejoinAsHost(session) {
+        const nickname = session.nickname || localStorage.getItem('youjing_doudizhu_nickname') || '房主';
+        UIRenderer.showToast('正在恢复房间，请稍候...', 4000);
+
+        NetworkManager.createRoom(nickname, (roomId) => {
+            this.setupWaitingScreen(roomId);
+
+            // 恢复上次保存的游戏状态（如果有且游戏已开始）
+            const savedState = NetworkManager.loadSavedGameState();
+            if (savedState && savedState.phase === 'PLAYING') {
+                UIRenderer.showToast('✅ 房间已恢复！等待玩家重新加入...', 4000);
+                // 稍等玩家重连后恢复状态广播
+                setTimeout(() => {
+                    this.gameState = savedState;
+                    // 保留房主玩家信息
+                    this.gameState.players[0].name = nickname;
+                    NetworkManager.broadcastState(this.gameState);
+                }, 2000);
+            } else {
+                UIRenderer.showToast('✅ 房间已恢复！', 3000);
+            }
+        }, session.roomId);
+    }
+
+    _rejoinAsClient(session) {
+        const nickname = session.nickname || localStorage.getItem('youjing_doudizhu_nickname') || '玩家';
+        UIRenderer.showToast('正在重新加入房间...', 4000);
+
+        // 填充房间号并触发加入流程
+        const joinInput = document.getElementById('joinRoomInput');
+        if (joinInput) joinInput.value = session.roomId;
+
+        NetworkManager.myPlayerIndex = session.playerIndex;
+        NetworkManager.joinRoom(session.roomId, nickname, () => {
+            this.enterRoomAsClient(session.roomId);
+            UIRenderer.showToast('✅ 已重新加入房间！', 3000);
+        }, (err) => {
+            UIRenderer.showToast(`重连失败：${err}，请手动加入房间`, 4000);
+            NetworkManager.clearSession();
+            // 降级：自动填写房间号让用户手动点击
+            if (joinInput) joinInput.value = session.roomId;
+        });
     }
 
     /**
@@ -560,6 +681,8 @@ class GameEngineController {
      * 重新回到初始大厅
      */
     resetToLobby() {
+        // 先清除会话，防止回大厅后又弹出重连提示
+        NetworkManager.clearSession();
         // 先销毁 P2P 连接，避免对方看到悬空连接且避免 Peer ID 冲突
         try {
             if (NetworkManager.peer && !NetworkManager.peer.destroyed) {
