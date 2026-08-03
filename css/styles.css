@@ -3073,3 +3073,163 @@ body, html {
     background: linear-gradient(135deg, #ffd700, #f59e0b);
 }
 
+/* ============================================================
+   顶部用户状态组件 & Auth / 战绩 Modal 样式
+   ============================================================ */
+.user-header-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 20px;
+    padding: 3px 12px 3px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.user-header-badge:hover {
+    background: rgba(255, 215, 0, 0.18);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+.user-avatar-text {
+    font-size: 1.2rem;
+}
+.user-header-info {
+    display: flex;
+    flex-direction: column;
+}
+.user-header-nick {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+}
+.user-header-score {
+    font-size: 0.65rem;
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* Auth 选项卡 */
+.auth-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.auth-tab.active {
+    background: linear-gradient(135deg, #c9921a, #e2a820);
+    color: #000;
+}
+
+/* 个人战绩名片 Hero */
+.user-profile-hero {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.15), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(201, 146, 42, 0.4);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.profile-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.profile-avatar-big {
+    font-size: 2.4rem;
+    background: rgba(0, 0, 0, 0.4);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffd700;
+}
+.profile-names {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.profile-nick {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #fff;
+}
+.profile-email {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.profile-stat-box {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+}
+.stat-val {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #ffd700;
+    font-family: var(--font-num);
+}
+.stat-lbl {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* 排行榜 Item */
+.lb-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+.lb-rank {
+    font-size: 1.1rem;
+    font-weight: 900;
+    font-family: var(--font-num);
+    width: 28px;
+}
+.lb-rank.top1 { color: #ffd700; }
+.lb-rank.top2 { color: #e2e8f0; }
+.lb-rank.top3 { color: #b45309; }
+.lb-nick {
+    font-weight: 700;
+    color: #fff;
+    flex: 1;
+    font-size: 0.88rem;
+    padding: 0 10px;
+}
+.lb-score {
+    font-weight: 900;
+    color: #ffd700;
+    font-family: var(--font-num);
+    font-size: 0.95rem;
+}
+

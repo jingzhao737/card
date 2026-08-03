@@ -16,9 +16,10 @@
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <!-- QRCode Generator for instant mobile joining -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Firebase Realtime Database Cloud Engine -->
+    <!-- Firebase Realtime Database & Auth Cloud Engine -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div id="app" class="game-container">
@@ -40,6 +41,15 @@
             </div>
 
             <div class="header-controls">
+                <!-- 全网排行榜按钮 -->
+                <button class="btn-icon" id="btnOpenLeaderboard" title="全网排行榜">
+                    <i class="fa-solid fa-trophy" style="color:#ffd700;"></i>
+                </button>
+                <!-- 个人账号 / 登录入口组件 -->
+                <div class="user-header-badge" id="userHeaderBadge" title="个人战绩与账号设置">
+                    <i class="fa-solid fa-circle-user" style="font-size:1.2rem;color:#ffd700;"></i>
+                    <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
+                </div>
                 <button class="btn-icon" id="btnToggleSound" title="切换音效">
                     <i class="fa-solid fa-volume-high" id="soundIcon"></i>
                 </button>
@@ -401,6 +411,7 @@
     <!-- 游戏脚本载入 -->
     <script src="js/rules.js"></script>
     <script src="js/audio.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/p2p.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
@@ -542,6 +553,113 @@
             </div>
             <div class="ct-body" id="publicRoomsListContainer" style="max-height: 420px; overflow-y: auto; padding: 14px 16px;">
                 <!-- 动态填充房间列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 账号登录 / 注册弹窗 -->
+    <div id="authModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner" style="max-width: 440px;">
+            <div class="ct-header">
+                <span class="ct-title" id="authModalTitle"><i class="fa-solid fa-user-lock"></i> 账号登录 / 注册</span>
+                <button class="ct-close" id="btnCloseAuthModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body" style="padding: 16px 20px;">
+                <!-- Auth Tabs -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="tabLogin">账号登录</button>
+                    <button class="auth-tab" id="tabRegister">注册新账号 / QQ邮箱</button>
+                </div>
+
+                <!-- 登录 Form -->
+                <form id="formLogin" class="auth-form-body">
+                    <div class="nickname-section">
+                        <label class="input-label">账号 / QQ 邮箱</label>
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="text" id="loginAccount" placeholder="输入 QQ 号、邮箱或用户名" required>
+                        </div>
+                    </div>
+                    <div class="nickname-section" style="margin-top:10px;">
+                        <label class="input-label">密码</label>
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-key input-icon"></i>
+                            <input type="password" id="loginPassword" placeholder="输入密码" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-join-action" style="width:100%;margin-top:16px;height:44px;">
+                        <i class="fa-solid fa-right-to-bracket"></i> 登录战局
+                    </button>
+                </form>
+
+                <!-- 注册 Form (默认隐藏) -->
+                <form id="formRegister" class="auth-form-body" style="display:none;">
+                    <div class="nickname-section">
+                        <label class="input-label">QQ 邮箱 / 登录账号</label>
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="text" id="regAccount" placeholder="如 12345678 或 123456@qq.com" required>
+                        </div>
+                    </div>
+                    <div class="nickname-section" style="margin-top:10px;">
+                        <label class="input-label">设置密码 (至少6位)</label>
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="regPassword" placeholder="至少 6 位密码" required>
+                        </div>
+                    </div>
+                    <div class="nickname-section" style="margin-top:10px;">
+                        <label class="input-label">游戏昵称</label>
+                        <div class="nickname-input-wrapper">
+                            <i class="fa-solid fa-id-card input-icon"></i>
+                            <input type="text" id="regNickname" placeholder="设置你的斗地主专属昵称" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-join-action" style="width:100%;margin-top:16px;height:44px;background:linear-gradient(135deg,#34d399,#059669);color:#fff;">
+                        <i class="fa-solid fa-user-plus"></i> 创建账号
+                    </button>
+                </form>
+
+                <div class="divider" style="margin:16px 0 12px;"><span>快捷登录</span></div>
+
+                <div style="display:flex;gap:10px;">
+                    <button type="button" class="btn-secondary" id="btnWechatLogin" style="flex:1;background:rgba(7,193,96,0.15);border-color:rgba(7,193,96,0.5);color:#07c160;font-weight:700;">
+                        <i class="fa-brands fa-weixin"></i> 微信快捷登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人战绩 & 全网排行榜弹窗 -->
+    <div id="statsModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner" style="max-width: 520px;">
+            <div class="ct-header">
+                <span class="ct-title" id="statsModalTitle"><i class="fa-solid fa-trophy"></i> 战绩名片与排行榜</span>
+                <button class="ct-close" id="btnCloseStatsModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body" style="padding: 16px 20px;">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="tabMyStats">我的战绩名片</button>
+                    <button class="auth-tab" id="tabLeaderboard">全网高手榜 Top 10</button>
+                </div>
+
+                <!-- 个人战绩 View -->
+                <div id="viewMyStats" style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="user-profile-hero" id="userProfileHero">
+                        <!-- 动态填充名片 -->
+                    </div>
+                    <button class="btn-secondary" id="btnLogout" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#f87171;font-weight:700;margin-top:8px;">
+                        <i class="fa-solid fa-power-off"></i> 退出登录
+                    </button>
+                </div>
+
+                <!-- 全网排行榜 View -->
+                <div id="viewLeaderboard" style="display:none;max-height:360px;overflow-y:auto;">
+                    <div id="leaderboardListContainer">
+                        <!-- 动态排行榜 -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

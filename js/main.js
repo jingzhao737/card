@@ -358,6 +358,130 @@ class GameEngineController {
         document.getElementById('btnCopyInviteUrl').addEventListener('click', () => this.copyInviteUrl());
         document.getElementById('btnCopyLink').addEventListener('click', () => this.copyInviteUrl());
 
+        // ====== 账号认证 & 全网排行榜事件绑定 ======
+        const userHeaderBadge  = document.getElementById('userHeaderBadge');
+        const btnLeaderboard   = document.getElementById('btnOpenLeaderboard');
+        const authModal        = document.getElementById('authModal');
+        const statsModal       = document.getElementById('statsModal');
+        const btnCloseAuth     = document.getElementById('btnCloseAuthModal');
+        const btnCloseStats    = document.getElementById('btnCloseStatsModal');
+
+        // 打开登录/战绩弹窗
+        if (userHeaderBadge) {
+            userHeaderBadge.addEventListener('click', () => {
+                if (AuthEngine.user && AuthEngine.userData) {
+                    this.openStatsModal('MY_STATS');
+                } else {
+                    if (authModal) authModal.style.display = 'flex';
+                }
+            });
+        }
+
+        if (btnLeaderboard) {
+            btnLeaderboard.addEventListener('click', () => {
+                this.openStatsModal('LEADERBOARD');
+            });
+        }
+
+        if (btnCloseAuth && authModal) btnCloseAuth.addEventListener('click', () => authModal.style.display = 'none');
+        if (btnCloseStats && statsModal) btnCloseStats.addEventListener('click', () => statsModal.style.display = 'none');
+
+        // Auth 弹窗选项卡
+        const tabLogin    = document.getElementById('tabLogin');
+        const tabRegister = document.getElementById('tabRegister');
+        const formLogin   = document.getElementById('formLogin');
+        const formRegister= document.getElementById('formRegister');
+
+        if (tabLogin && tabRegister) {
+            tabLogin.addEventListener('click', () => {
+                tabLogin.classList.add('active');
+                tabRegister.classList.remove('active');
+                if (formLogin) formLogin.style.display = 'block';
+                if (formRegister) formRegister.style.display = 'none';
+            });
+            tabRegister.addEventListener('click', () => {
+                tabRegister.classList.add('active');
+                tabLogin.classList.remove('active');
+                if (formRegister) formRegister.style.display = 'block';
+                if (formLogin) formLogin.style.display = 'none';
+            });
+        }
+
+        // 登录提交
+        if (formLogin) {
+            formLogin.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const acc = document.getElementById('loginAccount').value;
+                const pwd = document.getElementById('loginPassword').value;
+                AuthEngine.loginWithEmail(acc, pwd, (data) => {
+                    if (authModal) authModal.style.display = 'none';
+                    UIRenderer.showToast(`🎉 欢迎回来，${data.nickname}！`);
+                }, (errMsg) => {
+                    UIRenderer.showToast(`❌ ${errMsg}`);
+                });
+            });
+        }
+
+        // 注册提交
+        if (formRegister) {
+            formRegister.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const acc  = document.getElementById('regAccount').value;
+                const pwd  = document.getElementById('regPassword').value;
+                const nick = document.getElementById('regNickname').value;
+                AuthEngine.registerWithEmail(acc, pwd, nick, (data) => {
+                    if (authModal) authModal.style.display = 'none';
+                    UIRenderer.showToast(`🎉 注册成功！欢迎入住游鲸斗地主，${data.nickname}！`);
+                }, (errMsg) => {
+                    UIRenderer.showToast(`❌ ${errMsg}`);
+                });
+            });
+        }
+
+        // 微信快捷登录
+        const btnWechat = document.getElementById('btnWechatLogin');
+        if (btnWechat) {
+            btnWechat.addEventListener('click', () => {
+                AuthEngine.loginWeChatQuick((data) => {
+                    if (authModal) authModal.style.display = 'none';
+                    UIRenderer.showToast(`💚 微信快捷登录成功！欢迎，${data.nickname}`);
+                }, (err) => UIRenderer.showToast(`❌ ${err}`));
+            });
+        }
+
+        // 退出登录
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                AuthEngine.logout(() => {
+                    if (statsModal) statsModal.style.display = 'none';
+                    UIRenderer.showToast('已退出登录');
+                });
+            });
+        }
+
+        // 战绩 Modal 选项卡
+        const tabMyStats     = document.getElementById('tabMyStats');
+        const tabLeaderboard = document.getElementById('tabLeaderboard');
+        const viewMyStats    = document.getElementById('viewMyStats');
+        const viewLeaderboard= document.getElementById('viewLeaderboard');
+
+        if (tabMyStats && tabLeaderboard) {
+            tabMyStats.addEventListener('click', () => {
+                tabMyStats.classList.add('active');
+                tabLeaderboard.classList.remove('active');
+                if (viewMyStats) viewMyStats.style.display = 'flex';
+                if (viewLeaderboard) viewLeaderboard.style.display = 'none';
+            });
+            tabLeaderboard.addEventListener('click', () => {
+                tabLeaderboard.classList.add('active');
+                tabMyStats.classList.remove('active');
+                if (viewLeaderboard) viewLeaderboard.style.display = 'block';
+                if (viewMyStats) viewMyStats.style.display = 'none';
+                this.renderLeaderboard();
+            });
+        }
+
         // 补齐机器人开局
         document.getElementById('btnStartWithAi').addEventListener('click', () => {
             this.fillAiAndStart();
@@ -553,6 +677,98 @@ class GameEngineController {
         // ====== 房主保活机制 ======
         // 房主浏览器 = 游戏服务器，一旦挂起所有人断线，需要尽力阻止挂起
         this._activateHostKeepAlive();
+    }
+
+    /**
+     * 打开个人战绩名片与排行榜弹窗
+     */
+    openStatsModal(activeTab) {
+        const statsModal = document.getElementById('statsModal');
+        if (!statsModal) return;
+        statsModal.style.display = 'flex';
+
+        const data = AuthEngine.userData || {
+            nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
+            email: '游客账号（尚未绑定）',
+            avatar: '🤠',
+            coins: 1000,
+            score: 1000,
+            totalGames: 0,
+            wins: 0
+        };
+
+        const total   = data.totalGames || 0;
+        const wins    = data.wins || 0;
+        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0%';
+
+        const hero = document.getElementById('userProfileHero');
+        if (hero) {
+            hero.innerHTML = `
+                <div class="profile-top">
+                    <div class="profile-avatar-big">${data.avatar || '🤠'}</div>
+                    <div class="profile-names">
+                        <div class="profile-nick">${data.nickname}</div>
+                        <div class="profile-email">${data.email || '游客账号'}</div>
+                    </div>
+                </div>
+                <div class="profile-grid">
+                    <div class="profile-stat-box">
+                        <div class="stat-val">💰 ${data.coins || 1000}</div>
+                        <div class="stat-lbl">金币资产</div>
+                    </div>
+                    <div class="profile-stat-box">
+                        <div class="stat-val">🏆 ${data.score || 1000}</div>
+                        <div class="stat-lbl">天梯积分</div>
+                    </div>
+                    <div class="profile-stat-box">
+                        <div class="stat-val">${winRate}</div>
+                        <div class="stat-lbl">总胜率 (${wins}/${total})</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const tabStats = document.getElementById('tabMyStats');
+        const tabLb    = document.getElementById('tabLeaderboard');
+        if (activeTab === 'LEADERBOARD' && tabLb) {
+            tabLb.click();
+        } else if (tabStats) {
+            tabStats.click();
+        }
+    }
+
+    /**
+     * 渲染全网高手排行榜 Top 10
+     */
+    renderLeaderboard() {
+        const container = document.getElementById('leaderboardListContainer');
+        if (!container) return;
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 加载高手排行榜...</div>';
+
+        AuthEngine.fetchLeaderboard(list => {
+            container.innerHTML = '';
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;">暂无上榜高手，快去开局拿首胜吧！</div>';
+                return;
+            }
+
+            list.forEach((user, idx) => {
+                const rank = idx + 1;
+                let rankClass = '';
+                if (rank === 1) rankClass = 'top1';
+                if (rank === 2) rankClass = 'top2';
+                if (rank === 3) rankClass = 'top3';
+
+                const item = document.createElement('div');
+                item.className = 'lb-item';
+                item.innerHTML = `
+                    <div class="lb-rank ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+                    <div class="lb-nick">${user.avatar || '🤠'} ${user.nickname}</div>
+                    <div class="lb-score">🏆 ${user.score || 1000} 分</div>
+                `;
+                container.appendChild(item);
+            });
+        });
     }
 
     /**
@@ -1500,6 +1716,15 @@ class GameEngineController {
                 this.gameState.phase = 'GAMEOVER';
                 this.gameState.winnerIndex = playerIndex;
                 NetworkManager.broadcastState(this.gameState);
+
+                // 战绩结算与天梯积分更新
+                if (typeof AuthEngine !== 'undefined') {
+                    const myIdx = NetworkManager.myPlayerIndex;
+                    const winnerRole = this.gameState.players[playerIndex].role;
+                    const myRole = (this.gameState.players[myIdx]) ? this.gameState.players[myIdx].role : 'FARMER';
+                    const isWin = (playerIndex === myIdx) || (winnerRole === 'FARMER' && myRole === 'FARMER');
+                    AuthEngine.updateStats(isWin, myRole, 0, this.gameState.multiplier || 1);
+                }
                 return;
             }
         }
