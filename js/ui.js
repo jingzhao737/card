@@ -628,9 +628,11 @@ const UIRenderer = {
         container.innerHTML = '';
 
         if (!cards || cards.length === 0) {
-            container.innerHTML = '<span class="empty-hand-tag">🎉 牌已出完</span>';
+            container.innerHTML = '';
+            container.style.display = 'none';
             return;
         }
+        container.style.display = 'flex';
 
         // 像正常手牌一样按点数从大到小降序排列，并带层级叠压
         const sortedCards = [...cards].sort((a, b) => b.rank - a.rank);
