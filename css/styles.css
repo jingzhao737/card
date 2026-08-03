@@ -695,6 +695,7 @@ body.theme-gomoku .overlay-screen {
     font-family: var(--font-num);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
     backface-visibility: hidden;
+    overflow: hidden; /* 裁剪右下角艺术放大的印章图案 */
 }
 
 .joker-vertical-label {
@@ -708,6 +709,8 @@ body.theme-gomoku .overlay-screen {
     font-family: 'Outfit', -apple-system, sans-serif;
     margin-left: 1px;
     margin-top: 1px;
+    position: relative;
+    z-index: 2;
 }
 
 .joker-vertical-label span {
@@ -722,15 +725,23 @@ body.theme-gomoku .overlay-screen {
     color: #0f172a;
 }
 
-.joker-center-graphic {
+.joker-bottom-graphic {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 34px;
+    height: 34px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2px;
+    align-items: flex-end;
+    justify-content: flex-end;
+    pointer-events: none;
+    z-index: 1;
 }
 
-.joker-svg {
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+.joker-bottom-graphic .joker-svg {
+    width: 34px;
+    height: 34px;
+    filter: drop-shadow(-1px -1px 2px rgba(0, 0, 0, 0.15));
 }
 
 /* 大王 (Red Joker - 2.5D X/Y/Z 轴立体向左侧倾斜) */
