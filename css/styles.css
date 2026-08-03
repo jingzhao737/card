@@ -62,11 +62,11 @@ body, html {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    /* 高清晰豪华赌场绿绒布底 + 明显提花暗纹 + 绒布织物纹理 */
-    background-color: #071c12;
+    /* 尊贵深海夜空绀蓝提花外屏底 (Deep Midnight Sapphire) */
+    background-color: #0b1329;
     background-image:
-        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(28, 105, 62, 0.85) 0%, rgba(12, 50, 30, 0.95) 60%, #04120b 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23ffffff' stroke-width='0.75' stroke-opacity='0.11'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.4' stroke-opacity='0.08'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(30, 58, 138, 0.88) 0%, rgba(15, 23, 42, 0.95) 60%, #030712 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%2360a5fa' stroke-width='0.75' stroke-opacity='0.15'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.4' stroke-opacity='0.12'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='2' cy='2' r='0.8' fill='%23ffffff' fill-opacity='0.07'/%3E%3Ccircle cx='8' cy='8' r='0.7' fill='%23ffffff' fill-opacity='0.06'/%3E%3C/svg%3E");
     background-size: cover, 36px 36px, 12px 12px;
     position: relative;
