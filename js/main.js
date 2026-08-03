@@ -872,6 +872,73 @@ class GameEngineController {
     }
 
     /**
+     * 进入等待界面 (Host视角)
+     */
+    setupWaitingScreen(roomId) {
+        document.getElementById('lobbyScreen').classList.remove('active');
+        document.getElementById('lobbyScreen').style.display = 'none';
+        document.getElementById('waitingScreen').style.display = 'flex';
+        document.getElementById('waitingScreen').classList.add('active');
+
+        const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+        if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
+
+        // 生成真实访问 URL
+        let origin = window.location.origin;
+        if (!origin || origin === 'null') origin = window.location.protocol + '//' + window.location.host;
+
+        const shareUrl = `${origin}${window.location.pathname}?room=${roomId}`;
+        const inviteInput = document.getElementById('inviteUrlInput');
+        if (inviteInput) inviteInput.value = shareUrl;
+
+        const displayRoom = document.getElementById('displayRoomId');
+        if (displayRoom) displayRoom.textContent = roomId;
+
+        const roomInfoBar = document.getElementById('roomInfoBar');
+        if (roomInfoBar) roomInfoBar.style.display = 'flex';
+
+        // 生成二维码
+        const qrContainer = document.getElementById('qrcode');
+        if (qrContainer) {
+            qrContainer.innerHTML = '';
+            if (window.QRCode) {
+                new QRCode(qrContainer, {
+                    text: shareUrl,
+                    width: 100,
+                    height: 100
+                });
+            }
+        }
+
+        // 初始化房主 slot0
+        const nick = NetworkManager.nickname || '房主';
+        const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
+        this.gameState.players[0].name = nick;
+        this.gameState.players[0].avatar = currentAvatar;
+        this.gameState.players[0].isAi = false;
+
+        const slotName0 = document.getElementById('slotName0');
+        const slotAvatar0 = document.getElementById('slotAvatar0');
+        if (slotName0) slotName0.textContent = `${nick} (房主)`;
+        if (slotAvatar0) slotAvatar0.textContent = currentAvatar;
+
+        // 立即展示空位为 AI 机器人
+        this._fillSlotWithAi(1);
+        this._fillSlotWithAi(2);
+
+        // 房主始终可以直接开始
+        const btnStart = document.getElementById('btnStartGame');
+        const btnAi = document.getElementById('btnStartWithAi');
+        if (btnStart) btnStart.style.display = 'block';
+        if (btnAi) btnAi.style.display = 'none';
+
+        this.broadcastLobbyState();
+
+        // 激活房主保活机制
+        this._activateHostKeepAlive();
+    }
+
+    /**
      * 房主保活：Screen Wake Lock + 静音 Web Audio 防后台挂起
      */
     _activateHostKeepAlive() {
