@@ -3832,23 +3832,23 @@ body:has(#lobbyScreen.active) .app-header,
 }
 
 /* ==========================================================================
-   全新设计 — 组局等待与好友邀请大厅 (Waiting Room Redesign)
+   克制奢华 — 组局等待与好友邀请大厅 (Restrained Luxury Waiting Room)
    ========================================================================== */
 
 .waiting-card-hero {
-    background: radial-gradient(circle at 50% 0%, #2c1219, #14070a 85%);
-    border: 1px solid rgba(245, 158, 11, 0.45);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.95), 0 0 30px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 235, 150, 0.2);
-    border-radius: 16px;
+    background: linear-gradient(180deg, #180c0e 0%, #0e0608 100%);
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(201, 146, 42, 0.08);
+    border-radius: 4px;
     width: 94%;
     max-width: 520px;
-    padding: 22px 24px;
+    padding: 20px 22px;
     color: #fff;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     text-align: left;
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(12px);
 }
 
 .waiting-header-bar {
@@ -3856,11 +3856,10 @@ body:has(#lobbyScreen.active) .app-header,
     justify-content: space-between;
     align-items: center;
     background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 0.88rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 146, 42, 0.18);
+    border-radius: 4px;
+    padding: 9px 14px;
+    font-size: 0.86rem;
 }
 
 .room-id-pill {
@@ -3875,96 +3874,80 @@ body:has(#lobbyScreen.active) .app-header,
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: #cbd5e1;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
     padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .status-dot.green {
-    width: 8px;
-    height: 8px;
-    background: #34d399;
+    width: 7px;
+    height: 7px;
+    background: #e2a820;
     border-radius: 50%;
-    box-shadow: 0 0 10px #34d399;
-    animation: pulseGlow 2s infinite ease-in-out;
-}
-
-@keyframes pulseGlow {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
+    box-shadow: 0 0 6px rgba(226, 168, 32, 0.5);
 }
 
 .invite-action-card {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(0, 0, 0, 0.45));
-    border: 1px dashed rgba(255, 215, 0, 0.45);
-    border-radius: 12px;
-    padding: 16px 18px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 146, 42, 0.18);
+    border-radius: 4px;
+    padding: 14px 16px;
     text-align: left;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .invite-card-title {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
     font-weight: 800;
-    color: #ffd700;
+    color: #e2a820;
     display: flex;
     align-items: center;
     gap: 8px;
-    letter-spacing: 0.5px;
-}
-
-.invite-card-sub {
-    font-size: 0.78rem;
-    color: #cbd5e1;
-    margin-top: 5px;
-    margin-bottom: 12px;
-    line-height: 1.4;
+    letter-spacing: 0.3px;
 }
 
 .share-box-redesign {
     display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-top: 10px;
 }
 
 .share-box-redesign input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.65);
-    border: 1px solid rgba(255, 215, 0, 0.35);
-    border-radius: 8px;
-    color: #ffd700;
-    padding: 10px 14px;
-    font-size: 0.84rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    border-radius: 3px;
+    color: #e2a820;
+    padding: 8px 12px;
+    font-size: 0.82rem;
     font-family: monospace;
     letter-spacing: 0.5px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
-/* 带有极简金色亮光质感的【复制组局链接】按钮 */
-.btn-copy-gold {
-    background: linear-gradient(135deg, #c9921a 0%, #a87412 100%);
-    border: 1px solid rgba(255, 215, 0, 0.4);
+/* 统一克制奢华 · 哑光香槟金主按钮 */
+.btn-copy-gold, .btn-start-game-gold {
+    background: linear-gradient(135deg, #c9921a 0%, #a07418 100%);
+    border: 1px solid rgba(255, 215, 0, 0.35);
     color: #000;
     font-weight: 800;
     padding: 0 16px;
-    border-radius: 4px;
+    border-radius: 3px;
     font-size: 0.84rem;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(201, 146, 42, 0.25);
+    box-shadow: 0 4px 14px rgba(201, 146, 42, 0.2);
     transition: all 0.2s ease;
 }
 
-.btn-copy-gold:hover {
-    background: linear-gradient(135deg, #dfa524 0%, #b88219 100%);
-    box-shadow: 0 6px 18px rgba(223, 165, 36, 0.35);
+.btn-copy-gold:hover, .btn-start-game-gold:hover {
+    background: linear-gradient(135deg, #d8a124 0%, #b3831d 100%);
+    box-shadow: 0 6px 18px rgba(216, 161, 36, 0.3);
     transform: translateY(-1px);
 }
 
-.btn-copy-gold:active {
+.btn-copy-gold:active, .btn-start-game-gold:active {
     transform: translateY(1px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
@@ -3976,17 +3959,16 @@ body:has(#lobbyScreen.active) .app-header,
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 14px;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .qr-canvas-box {
     background: #fff;
     padding: 5px;
-    border-radius: 4px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .qr-canvas-box img, .qr-canvas-box canvas {
@@ -4000,18 +3982,18 @@ body:has(#lobbyScreen.active) .app-header,
     font-weight: 700;
 }
 
-/* 玩家席位卡片 极简名片风 */
+/* 玩家席位卡片 克制极简名片风 */
 .slots-grid-redesign {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin: 4px 0;
+    margin: 2px 0;
 }
 
 .player-slot-card {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 3px;
     padding: 12px 8px;
     display: flex;
     flex-direction: column;
@@ -4020,41 +4002,41 @@ body:has(#lobbyScreen.active) .app-header,
     gap: 6px;
     text-align: center;
     position: relative;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
 }
 
 .player-slot-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 215, 0, 0.3);
+    border-color: rgba(201, 146, 42, 0.28);
 }
 
 .player-slot-card.host {
-    background: linear-gradient(180deg, rgba(201, 146, 42, 0.14) 0%, rgba(0, 0, 0, 0.45) 100%);
-    border: 1px solid rgba(201, 146, 42, 0.32);
-    box-shadow: 0 4px 18px rgba(201, 146, 42, 0.15);
+    background: rgba(201, 146, 42, 0.08);
+    border: 1px solid rgba(201, 146, 42, 0.25);
+    box-shadow: 0 4px 16px rgba(201, 146, 42, 0.12);
 }
 
 .slot-avatar-circle {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 146, 42, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.65rem;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .player-slot-card.host .slot-avatar-circle {
-    border-color: rgba(255, 215, 0, 0.6);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 10px rgba(201, 146, 42, 0.3);
+    border-color: rgba(201, 146, 42, 0.5);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(201, 146, 42, 0.2);
 }
 
 .slot-name-text {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #f8fafc;
     white-space: nowrap;
@@ -4067,16 +4049,16 @@ body:has(#lobbyScreen.active) .app-header,
     font-size: 0.68rem;
     font-weight: 600;
     color: #94a3b8;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 2px 8px;
     border-radius: 3px;
 }
 
 .slot-status-pill.ready {
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.12);
-    border-color: rgba(52, 211, 153, 0.3);
+    color: #e2a820;
+    background: rgba(201, 146, 42, 0.1);
+    border-color: rgba(201, 146, 42, 0.22);
     font-weight: 700;
 }
 
@@ -4088,71 +4070,49 @@ body:has(#lobbyScreen.active) .app-header,
     margin-top: 4px;
 }
 
-/* 【立即开始斗地主】—— 极简高定翡翠绿按钮 */
+/* 【立即开始斗地主】—— 克制金色全宽主按钮 */
 .btn-start-game-gold {
     width: 100%;
     height: 42px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border: 1px solid rgba(167, 243, 208, 0.4);
-    color: #fff;
-    font-size: 0.92rem;
-    font-weight: 800;
-    border-radius: 4px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-    transition: all 0.2s ease;
 }
 
-.btn-start-game-gold:hover {
-    transform: translateY(-1px);
-    background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
-}
-
-.btn-start-game-gold:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-}
-
-/* 【补齐机器人并立即开局】—— 极简蓝按钮 */
+/* 【补齐机器人并立即开局】—— 极简暗金次级按钮 */
 .btn-start-ai-sub {
     width: 100%;
     height: 42px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    border: 1px solid rgba(191, 219, 254, 0.4);
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 800;
-    border-radius: 4px;
+    background: rgba(201, 146, 42, 0.12);
+    border: 1px solid rgba(201, 146, 42, 0.28);
+    color: #ffd700;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: 3px;
     cursor: pointer;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
     transition: all 0.2s ease;
 }
 
 .btn-start-ai-sub:hover {
     transform: translateY(-1px);
-    background: linear-gradient(135deg, #60a5fa 0%, #1d4ed8 100%);
-    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
+    background: rgba(201, 146, 42, 0.2);
+    border-color: rgba(201, 146, 42, 0.4);
 }
 
 .btn-cancel-lobby {
     width: 100%;
     height: 40px;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: #94a3b8;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     font-weight: 700;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .btn-cancel-lobby:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.2);
     color: #f1f5f9;
 }
 
