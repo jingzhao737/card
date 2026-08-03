@@ -950,9 +950,37 @@ class GameEngineController {
         // 2. 静音 Web Audio 振荡器保活
         this._startAudioKeepAlive();
 
-        // 移除旧的房主前台警告（现已改用 Firebase 实时云端数据库，房主切出/锁屏不再影响其他人）
+        // 移除旧的房主前台警告
         const oldWarn = document.getElementById('hostStayWarning');
         if (oldWarn) oldWarn.remove();
+    }
+
+    async _requestWakeLock() {
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+            try {
+                this._wakeLockObj = await navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.log('[WakeLock] 屏幕常亮申请被忽略:', err);
+            }
+        }
+    }
+
+    _startAudioKeepAlive() {
+        try {
+            if (!this._audioKeepAliveCtx) {
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtxClass) return;
+                this._audioKeepAliveCtx = new AudioCtxClass();
+                const osc = this._audioKeepAliveCtx.createOscillator();
+                const gain = this._audioKeepAliveCtx.createGain();
+                gain.gain.value = 0.0001; // 静音保活
+                osc.connect(gain);
+                gain.connect(this._audioKeepAliveCtx.destination);
+                osc.start();
+            }
+        } catch (e) {
+            console.log('[AudioKeepAlive] 静音保活忽略:', e);
+        }
     }
 
     /**
