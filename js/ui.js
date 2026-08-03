@@ -172,7 +172,6 @@ const UIRenderer = {
 
                 toyBtn.style.transform = `translateY(-50%) scale(${scale})`;
                 toyBtn.style.background = `radial-gradient(circle at 35% 35%, rgb(255, ${Math.min(255, gbVal + 30)}, ${Math.min(255, gbVal + 30)}) 0%, rgb(239, ${gbVal}, ${gbVal}) 55%, rgb(${Math.max(10, gbVal - 40)}, 0, 0) 100%)`;
-                toyBtn.style.borderColor = `rgba(255, ${gbVal}, ${gbVal}, 0.85)`;
                 toyBtn.style.boxShadow = `0 0 ${glowRadius}px rgba(239, 68, 68, ${0.35 + this._toyClicks * 0.08}), inset -2px -2px 4px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.7)`;
             }
         });

@@ -3779,7 +3779,8 @@ body, html {
     font-size: 14px;
     line-height: 1;
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%);
-    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    border: none;
+    outline: none;
     border-radius: 50%;
     cursor: pointer;
     box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.25), inset 2px 2px 4px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(0, 0, 0, 0.3);
