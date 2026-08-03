@@ -1501,9 +1501,12 @@ class GameEngineController {
             document.getElementById('waitingScreen').style.display = 'none';
             document.getElementById('gameOverModal').style.display = 'none';
             document.getElementById('gameTable').style.display = 'grid';
-            document.getElementById('btnLeaveRoom').style.display = 'inline-flex';
+            const btnLeave = document.getElementById('btnLeaveRoom');
+            if (btnLeave) btnLeave.style.display = 'inline-flex';
             const btnGoHomeTop = document.getElementById('btnGoHomeTop');
             if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
+            const menuLeave = document.getElementById('menuBtnLeaveRoom');
+            if (menuLeave) menuLeave.style.display = 'flex';
         }
 
         // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时
