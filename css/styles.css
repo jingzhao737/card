@@ -1438,9 +1438,10 @@ body, html {
 }
 
 .role-identity-badge.farmer {
-    background: linear-gradient(135deg, #0a3a1a 0%, #062010 100%);
-    color: #34d399;
-    border: 1px solid rgba(52,211,153,0.3);
+    background: linear-gradient(135deg, #072a40 0%, #031726 100%);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
 }
 
 .player-name {
@@ -2248,6 +2249,12 @@ body, html {
     background: rgba(255, 215, 0, 0.2);
     color: var(--accent-gold);
     border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+.role-badge.farmer {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
 .score-row .plus {
