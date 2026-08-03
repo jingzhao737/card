@@ -110,7 +110,7 @@ class AuthManager {
         }).then(() => {
             this.updateUserHeaderUI();
             if (typeof UIRenderer !== 'undefined') {
-                UIRenderer.showToast(`🎁 检测到今日活跃，已自动发放今日福利：+100 因币！(累计: ${newYinCoins})`, 4000);
+                UIRenderer.showToast(`🎁 检测到今日活跃，已自动发放今日福利：+100 知因币！(累计: ${newYinCoins})`, 4000);
             }
         }).catch(() => {});
     }
@@ -512,12 +512,12 @@ class AuthManager {
                     <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
                     <div class="user-header-info">
                         <span class="user-header-nick">${this.userData.nickname}</span>
-                        <span class="user-header-score">🔮 ${currentYin} 因币</span>
+                        <span class="user-header-score">🔮 ${currentYin} 知因币</span>
                     </div>
                 `;
             }
             if (lUserNick) lUserNick.textContent = `${this.userData.avatar || '🤠'} ${this.userData.nickname}`;
-            if (lUserSub)  lUserSub.textContent  = `账号: ${this.userData.email || '已绑定'} | 🔮 资产: ${currentYin} 因币`;
+            if (lUserSub)  lUserSub.textContent  = `🔮 知因币: ${currentYin}`;
             if (lBtnAuth)  lBtnAuth.textContent  = '个人信息';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-id-card-clip auth-avatar-icon';
 
@@ -534,8 +534,8 @@ class AuthManager {
                     <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
                 `;
             }
-            if (lUserNick) lUserNick.textContent = '未登录 (当前为游客)';
-            if (lUserSub)  lUserSub.textContent  = '注册立领 1000 因币，每天登录自动发 100 因币！';
+            if (lUserNick) lUserNick.textContent = '未登录 (游客)';
+            if (lUserSub)  lUserSub.textContent  = '🔮 知因币: 0';
             if (lBtnAuth)  lBtnAuth.textContent  = '登录 / 注册';
             if (lAuthIcon) lAuthIcon.className   = 'fa-solid fa-circle-user auth-avatar-icon';
 

@@ -819,7 +819,7 @@ class GameEngineController {
                 <div class="profile-grid">
                     <div class="profile-stat-box">
                         <div class="stat-val" style="color:#ffd700;">🔮 ${currentYin}</div>
-                        <div class="stat-lbl">因币资产</div>
+                        <div class="stat-lbl">知因币资产</div>
                     </div>
                     <div class="profile-stat-box">
                         <div class="stat-val">${winRate}</div>
@@ -832,7 +832,7 @@ class GameEngineController {
                 </div>
 
                 <div style="margin-top:10px;text-align:center;font-size:0.76rem;color:#94a3b8;background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);">
-                    <i class="fa-solid fa-gift" style="color:#34d399;"></i> 每日打开网页活跃自动发放 100 因币福利 (0点刷新)
+                    <i class="fa-solid fa-gift" style="color:#34d399;"></i> 每日打开网页活跃自动发放 100 知因币福利 (0点刷新)
                 </div>
             `;
 
