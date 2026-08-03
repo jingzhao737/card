@@ -538,6 +538,43 @@ class GameEngineController {
             });
         }
 
+        // 更换外观与皮肤工坊 Modal 绑定
+        const appearanceModal = document.getElementById('appearanceModal');
+        const btnLobbyAppearance = document.getElementById('btnLobbyAppearance');
+        const btnStatsAppearance = document.getElementById('btnStatsAppearance');
+        const btnCloseAppearanceModal = document.getElementById('btnCloseAppearanceModal');
+
+        const openAppearance = () => {
+            if (appearanceModal) appearanceModal.style.display = 'flex';
+        };
+
+        if (btnLobbyAppearance) btnLobbyAppearance.addEventListener('click', openAppearance);
+        if (btnStatsAppearance) btnStatsAppearance.addEventListener('click', openAppearance);
+        if (btnCloseAppearanceModal) {
+            btnCloseAppearanceModal.addEventListener('click', () => {
+                if (appearanceModal) appearanceModal.style.display = 'none';
+            });
+        }
+
+        // 皮肤 Tabs 切换
+        const tabSkinTheme = document.getElementById('tabSkinTheme');
+        const tabSkinAvatar = document.getElementById('tabSkinAvatar');
+        const tabSkinGlow = document.getElementById('tabSkinGlow');
+        const viewSkinTheme = document.getElementById('viewSkinTheme');
+        const viewSkinAvatar = document.getElementById('viewSkinAvatar');
+        const viewSkinGlow = document.getElementById('viewSkinGlow');
+
+        const switchSkinTab = (activeTab, activeView) => {
+            [tabSkinTheme, tabSkinAvatar, tabSkinGlow].forEach(t => { if (t) t.classList.remove('active'); });
+            [viewSkinTheme, viewSkinAvatar, viewSkinGlow].forEach(v => { if (v) v.style.display = 'none'; });
+            if (activeTab) activeTab.classList.add('active');
+            if (activeView) activeView.style.display = 'grid';
+        };
+
+        if (tabSkinTheme)  tabSkinTheme.addEventListener('click', () => switchSkinTab(tabSkinTheme, viewSkinTheme));
+        if (tabSkinAvatar) tabSkinAvatar.addEventListener('click', () => switchSkinTab(tabSkinAvatar, viewSkinAvatar));
+        if (tabSkinGlow)   tabSkinGlow.addEventListener('click', () => switchSkinTab(tabSkinGlow, viewSkinGlow));
+
         // 战绩 Modal 选项卡
         const tabMyStats     = document.getElementById('tabMyStats');
         const tabLeaderboard = document.getElementById('tabLeaderboard');

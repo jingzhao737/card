@@ -117,7 +117,10 @@
                                 <div class="auth-banner-sub" id="lobbyUserSub">登录保存战绩名片、天梯积分与金币系统</div>
                             </div>
                         </div>
-                        <button class="btn-auth-action" id="btnLobbyAuth" type="button">登录 / 注册</button>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <button class="btn-auth-action" id="btnLobbyAuth" type="button">登录 / 注册</button>
+                            <button class="btn-auth-action btn-appearance" id="btnLobbyAppearance" type="button" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);"><i class="fa-solid fa-palette"></i> 更换外观</button>
+                        </div>
                     </div>
 
                     <!-- 玩家名片框 -->
@@ -706,7 +709,10 @@
                     <div class="user-profile-hero" id="userProfileHero">
                         <!-- 动态填充名片 -->
                     </div>
-                    <button class="btn-secondary" id="btnLogout" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#f87171;font-weight:700;margin-top:8px;">
+                    <button class="btn-mode primary" id="btnStatsAppearance" style="margin-top:4px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;">
+                        <i class="fa-solid fa-palette"></i> 更换外观 / 皮肤商城
+                    </button>
+                    <button class="btn-secondary" id="btnLogout" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#f87171;font-weight:700;margin-top:4px;">
                         <i class="fa-solid fa-power-off"></i> 退出登录
                     </button>
                 </div>
@@ -715,6 +721,93 @@
                 <div id="viewLeaderboard" style="display:none;max-height:360px;overflow-y:auto;">
                     <div id="leaderboardListContainer">
                         <!-- 动态排行榜 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 更换外观与皮肤商城弹窗 (Appearance & Skins Modal) -->
+    <div id="appearanceModal" class="card-type-modal" style="display:none;">
+        <div class="card-type-inner" style="max-width: 520px;">
+            <div class="ct-header">
+                <span class="ct-title"><i class="fa-solid fa-palette"></i> 个性化外观与皮肤工坊</span>
+                <button class="ct-close" id="btnCloseAppearanceModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body" style="padding: 16px 20px;">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="tabSkinTheme">🎨 名片底色主题</button>
+                    <button class="auth-tab" id="tabSkinAvatar">🤠 头像与挂件</button>
+                    <button class="auth-tab" id="tabSkinGlow">⚡ 出牌回合光效</button>
+                </div>
+
+                <!-- Tab 1: 名片底色主题 (Profile Card Theme Skin) -->
+                <div id="viewSkinTheme" class="skin-grid-container">
+                    <div class="skin-card active" data-skin="default">
+                        <div class="skin-preview skin-bg-default">经典黑金暗纹</div>
+                        <div class="skin-info">
+                            <span class="skin-title">经典黑金暗纹</span>
+                            <span class="skin-status">当前已装备</span>
+                        </div>
+                    </div>
+                    <div class="skin-card" data-skin="emerald">
+                        <div class="skin-preview skin-bg-emerald">帝王绿织锦</div>
+                        <div class="skin-info">
+                            <span class="skin-title">帝王绿织锦</span>
+                            <span class="skin-status">敬请期待</span>
+                        </div>
+                    </div>
+                    <div class="skin-card" data-skin="cyber">
+                        <div class="skin-preview skin-bg-cyber">赛博朋克霓虹</div>
+                        <div class="skin-info">
+                            <span class="skin-title">赛博朋克</span>
+                            <span class="skin-status">敬请期待</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: 头像挂件 (Avatar & Frame) -->
+                <div id="viewSkinAvatar" class="skin-grid-container" style="display:none;">
+                    <div class="skin-card active" data-avatar="🤠">
+                        <div class="avatar-skin-item">🤠</div>
+                        <span class="skin-title">牛仔帽子</span>
+                    </div>
+                    <div class="skin-card" data-avatar="👑">
+                        <div class="avatar-skin-item">👑</div>
+                        <span class="skin-title">黄金皇冠</span>
+                    </div>
+                    <div class="skin-card" data-avatar="😎">
+                        <div class="avatar-skin-item">😎</div>
+                        <span class="skin-title">酷炫墨镜</span>
+                    </div>
+                    <div class="skin-card" data-avatar="⚡">
+                        <div class="avatar-skin-item">⚡</div>
+                        <span class="skin-title">闪电极客</span>
+                    </div>
+                </div>
+
+                <!-- Tab 3: 出牌回合光效 (Turn Active Glow Effect) -->
+                <div id="viewSkinGlow" class="skin-grid-container" style="display:none;">
+                    <div class="skin-card active" data-glow="gold">
+                        <div class="skin-glow-preview glow-gold">璀璨黑金</div>
+                        <div class="skin-info">
+                            <span class="skin-title">璀璨黑金 (默认)</span>
+                            <span class="skin-status">当前已装备</span>
+                        </div>
+                    </div>
+                    <div class="skin-card" data-glow="fire">
+                        <div class="skin-glow-preview glow-fire">烈焰神圣</div>
+                        <div class="skin-info">
+                            <span class="skin-title">烈焰光效</span>
+                            <span class="skin-status">敬请期待</span>
+                        </div>
+                    </div>
+                    <div class="skin-card" data-glow="lightning">
+                        <div class="skin-glow-preview glow-lightning">雷霆紫电</div>
+                        <div class="skin-info">
+                            <span class="skin-title">雷霆光效</span>
+                            <span class="skin-status">敬请期待</span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -475,14 +475,18 @@ class AuthManager {
             return;
         }
 
-        this.db.ref('users').orderByChild('yinCoins').limitToLast(10).once('value').then(snap => {
+        this.db.ref('users').orderByChild('yinCoins').limitToLast(15).once('value').then(snap => {
             const map = snap.val() || {};
             const list = [];
             Object.keys(map).forEach(key => {
-                list.push(map[key]);
+                const u = map[key];
+                // 排除测试账号 09966 (accountKey: '09966_qq_com' / uid: 9966 / email: '09966@qq.com') 上榜
+                if (u && u.accountKey !== '09966_qq_com' && u.uid !== 9966 && u.email !== '09966@qq.com') {
+                    list.push(u);
+                }
             });
             list.sort((a, b) => (b.yinCoins || 0) - (a.yinCoins || 0));
-            if (callback) callback(list);
+            if (callback) callback(list.slice(0, 10));
         }).catch(err => {
             console.error('[Auth] 排行榜加载失败:', err);
             if (callback) callback([]);
