@@ -508,27 +508,28 @@ const UIRenderer = {
 
         // 根据出牌方位与张数，动态计算张数过多（如长顺子）时的紧凑叠牌 margin-right，防止撑大画面结构
         const isMobile = window.innerWidth <= 768;
+        const winW = window.innerWidth || document.documentElement.clientWidth || 375;
         const count = cards.length;
 
         let cardW = 86;
         let defaultStep = 54; // 86 - 32
-        let maxContainerW = isMobile ? 220 : 400;
+        let maxContainerW = 360;
 
         if (targetAreaId === 'playedSelf') {
             cardW = isMobile ? 40 : 86;
             defaultStep = isMobile ? 22 : 54;
-            maxContainerW = isMobile ? 210 : 380;
+            maxContainerW = isMobile ? Math.max(150, winW - 120) : 380;
         } else {
             cardW = isMobile ? 34 : 48;
             defaultStep = isMobile ? 18 : 24;
-            maxContainerW = isMobile ? 120 : 200;
+            maxContainerW = isMobile ? Math.max(90, Math.floor((winW - 140) / 2)) : 200;
         }
 
         let actualStep = defaultStep;
         if (count > 1) {
             const needW = cardW + (count - 1) * defaultStep;
             if (needW > maxContainerW) {
-                actualStep = Math.max(isMobile ? 10 : 16, Math.floor((maxContainerW - cardW) / (count - 1)));
+                actualStep = Math.max(isMobile ? 8 : 12, Math.floor((maxContainerW - cardW) / (count - 1)));
             }
         }
         const calculatedMarginRight = `-${cardW - actualStep}px`;
