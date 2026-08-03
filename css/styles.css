@@ -3663,11 +3663,24 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(16, 185, 129, 0.12) !important;
 }
 
-/* 游鲸五子棋专属：经典温润榧木/棋盘木质大厅 Header */
-.hero-lobby-card.theme-emerald .lobby-header {
+/* 游鲸五子棋专属：经典温润榧木/棋盘木质大厅 Header (左右对齐版) */
+.hero-lobby-card.theme-emerald .lobby-header.gomoku-wood-header {
     background: linear-gradient(180deg, #d49c53 0%, #b87b32 60%, #9e6423 100%) !important;
     border-bottom: 2px solid #5a320c !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 22px !important;
+    text-align: left !important;
+}
+
+.brand-hero-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
 }
 
 .hero-lobby-card.theme-emerald .brand-title {
@@ -3675,11 +3688,15 @@ body.theme-gomoku .overlay-screen {
     background: none !important;
     -webkit-text-fill-color: #2b1103 !important;
     text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    font-size: 1.3rem !important;
+    letter-spacing: 1px !important;
 }
 
 .hero-lobby-card.theme-emerald .brand-subtitle {
     color: #5c300c !important;
     font-weight: 900 !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 1px !important;
 }
 
 .hero-lobby-card.theme-emerald .badge-tag.green {
@@ -3687,6 +3704,55 @@ body.theme-gomoku .overlay-screen {
     border-color: rgba(74, 36, 8, 0.45) !important;
     color: #2b1103 !important;
     font-weight: 800 !important;
+    margin-top: 2px;
+}
+
+/* 顶部右侧悬浮双子 3D 艺术装饰 (黑白交错双棋子) */
+.gomoku-stones-decoration {
+    position: relative;
+    width: 60px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.mini-stone {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    position: absolute;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mini-stone.black-stone {
+    left: 2px;
+    top: 4px;
+    background: radial-gradient(circle at 35% 35%, #4b5563 0%, #111827 70%, #000000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.65), inset -2px -2px 4px rgba(0, 0, 0, 0.9);
+    z-index: 1;
+}
+
+.mini-stone.white-stone {
+    right: 2px;
+    bottom: 4px;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.45), inset -2px -2px 4px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+.gomoku-stones-decoration:hover .black-stone {
+    transform: translate(-3px, -2px) rotate(-10deg) scale(1.06);
+    box-shadow: 4px 7px 16px rgba(0, 0, 0, 0.75);
+}
+
+.gomoku-stones-decoration:hover .white-stone {
+    transform: translate(3px, 2px) rotate(10deg) scale(1.06);
+    box-shadow: 4px 7px 16px rgba(0, 0, 0, 0.55);
 }
 
 .auth-banner-card.emerald-auth {
