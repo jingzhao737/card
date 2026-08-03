@@ -3650,9 +3650,10 @@ body:has(#lobbyScreen.active) .app-header,
     color: #f1f5f9;
 }
 .auth-banner-sub {
-    font-size: 0.76rem;
-    font-weight: 800;
-    color: #ffd700;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #a07840;
+    letter-spacing: 0.2px;
 }
 .auth-banner-actions {
     display: flex;
