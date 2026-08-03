@@ -3767,7 +3767,7 @@ body, html {
 /* 我方 ID 右侧打发时间解闷气球小按钮 (默认10px微型深灰偏黑小点，第1次点击变大到标准24px纯白球，之后逐级变大变红，啪的爆裂重置) */
 .btn-boredom-toy {
     position: absolute;
-    right: -20px;
+    right: -48px;
     top: 50%;
     transform: translateY(-50%);
     display: inline-flex;
