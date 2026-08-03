@@ -2076,6 +2076,7 @@ body, html {
 /* 结算屏 */
 .gameover-card {
     max-width: 460px;
+    margin-top: 40px; /* 下移至居中舒适视野 */
 }
 
 .gameover-header h2 {
@@ -2270,6 +2271,7 @@ body, html {
     position: relative;
     z-index: 120;
     pointer-events: auto;
+    margin-top: 65px; /* 从偏顶部下移到桌面正中舒适视野区 */
 }
 
 .victory-content-wrap {
