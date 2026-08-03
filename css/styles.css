@@ -62,13 +62,13 @@ body, html {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    /* 豪华赌场绒布底 + 扑克菱形提花暗纹 + 绒布磨砂微粒 */
-    background-color: #06190f;
+    /* 高清晰豪华赌场绿绒布底 + 明显提花暗纹 + 绒布织物纹理 */
+    background-color: #071c12;
     background-image:
-        radial-gradient(ellipse 80% 60% at 50% 42%, rgba(42, 136, 84, 0.65) 0%, rgba(16, 62, 38, 0.9) 65%, #05150c 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 0 L32 16 L16 32 L0 16 Z' fill='none' stroke='%23ffffff' stroke-width='0.4' stroke-opacity='0.045'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23ffffff' fill-opacity='0.025'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='2' cy='3' r='0.7' fill='%23ffffff' fill-opacity='0.035'/%3E%3Ccircle cx='10' cy='7' r='0.6' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='14' cy='13' r='0.8' fill='%23ffffff' fill-opacity='0.025'/%3E%3Ccircle cx='6' cy='11' r='0.5' fill='%23ffffff' fill-opacity='0.035'/%3E%3C/svg%3E");
-    background-size: cover, 32px 32px, 16px 16px;
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(28, 105, 62, 0.85) 0%, rgba(12, 50, 30, 0.95) 60%, #04120b 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23ffffff' stroke-width='0.75' stroke-opacity='0.11'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.4' stroke-opacity='0.08'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='2' cy='2' r='0.8' fill='%23ffffff' fill-opacity='0.07'/%3E%3Ccircle cx='8' cy='8' r='0.7' fill='%23ffffff' fill-opacity='0.06'/%3E%3C/svg%3E");
+    background-size: cover, 36px 36px, 12px 12px;
     position: relative;
 }
 
@@ -1229,10 +1229,22 @@ body, html {
     max-width: 100vw;
     box-sizing: border-box;
     overflow: hidden !important;
-    /* 桌面中央真实赌场绒布高光与四周沉淀边缘 */
+    /* 桌面中央真实赌场聚光灯高光与沉淀阴影 */
     background:
-        radial-gradient(ellipse 70% 50% at 50% 42%, rgba(45, 145, 88, 0.4) 0%, rgba(20, 75, 46, 0.2) 65%, transparent 100%);
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.65), inset 0 0 15px rgba(255, 215, 0, 0.05);
+        radial-gradient(ellipse 75% 55% at 50% 45%, rgba(34, 138, 80, 0.55) 0%, rgba(12, 52, 31, 0.35) 65%, transparent 100%);
+    box-shadow: inset 0 0 65px rgba(0, 0, 0, 0.75), inset 0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+/* 经典赌场桌面黄金虚线绒布跑道圈 (Felt Oval Inset Ring) */
+.game-table::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border: 2px dashed rgba(255, 215, 0, 0.18);
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 0;
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4);
 }
 
 /* 顶中底牌与倍数：整体下移 */
