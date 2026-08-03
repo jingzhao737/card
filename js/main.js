@@ -851,7 +851,7 @@ class GameEngineController {
 
                 <div class="profile-grid" style="margin-top:10px;">
                     <div class="profile-stat-box">
-                        <div class="stat-val" style="color:#ffd700;">🔮 ${currentYin}</div>
+                        <div class="stat-val" style="color:#ffd700;">🪙 ${currentYin}</div>
                         <div class="stat-lbl">知因币</div>
                     </div>
                     <div class="profile-stat-box">
@@ -1085,7 +1085,7 @@ class GameEngineController {
                 item.innerHTML = `
                     <div class="lb-rank ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
                     <div class="lb-nick">${user.avatar || '🤠'} ${cleanNick}</div>
-                    <div class="lb-score">🔮 ${user.yinCoins !== undefined ? user.yinCoins : 1000} 因币</div>
+                    <div class="lb-score">🪙 ${user.yinCoins !== undefined ? user.yinCoins : 1000} 知因币</div>
                 `;
                 container.appendChild(item);
             });

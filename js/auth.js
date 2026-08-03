@@ -524,13 +524,13 @@ class AuthManager {
                     <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
                     <div class="user-header-info">
                         <span class="user-header-nick">${this.userData.nickname}</span>
-                        <span class="user-header-score">🔮 ${currentYin} 知因币</span>
+                        <span class="user-header-score">🪙 ${currentYin} 知因币</span>
                     </div>
                 `;
             }
             if (lAuthAvatar) lAuthAvatar.textContent = this.userData.avatar || '🤠';
             if (lUserNick)   lUserNick.textContent   = this.userData.nickname;
-            if (lUserSub)    lUserSub.textContent    = `🔮 知因币: ${currentYin}`;
+            if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (lBtnAuth)    lBtnAuth.textContent    = '个人信息';
 
             // 登录后隐去随机昵称区块，避免误导
@@ -548,7 +548,7 @@ class AuthManager {
             }
             if (lAuthAvatar) lAuthAvatar.textContent = '👤';
             if (lUserNick)   lUserNick.textContent   = '未登录 (游客)';
-            if (lUserSub)    lUserSub.textContent    = '🔮 知因币: 0';
+            if (lUserSub)    lUserSub.textContent    = '🪙 知因币: 0';
             if (lBtnAuth)    lBtnAuth.textContent    = '登录 / 注册';
 
             // 游客模式显示随机昵称区块
