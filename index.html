@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=3.9">
+    <link rel="stylesheet" href="css/styles.css?v=4.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,12 +122,38 @@
                     </div>
                     <div class="doudizhu-cards-decoration" title="点击促发王炸：大王 & 小王">
                         <div class="mini-poker-card big-joker" title="大王 (Red Joker)">
-                            <span class="poker-corner">J</span>
-                            <span class="poker-icon">👑</span>
+                            <div class="joker-vertical-label red">JOKER</div>
+                            <div class="joker-center-graphic">
+                                <svg class="joker-svg" viewBox="0 0 24 24" width="20" height="20">
+                                    <path d="M12 2L15 8L21 5L18 12L22 17L15 16L12 22L9 16L2 17L6 12L3 5L9 8L12 2Z" fill="url(#redJokerGrad)" stroke="#b91c1c" stroke-width="0.5"/>
+                                    <circle cx="12" cy="2" r="1.5" fill="#ffd700"/>
+                                    <circle cx="21" cy="5" r="1.5" fill="#ffd700"/>
+                                    <circle cx="3" cy="5" r="1.5" fill="#ffd700"/>
+                                    <defs>
+                                        <linearGradient id="redJokerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#ef4444"/>
+                                            <stop offset="100%" stop-color="#991b1b"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
                         </div>
                         <div class="mini-poker-card small-joker" title="小王 (Black Joker)">
-                            <span class="poker-corner">J</span>
-                            <span class="poker-icon">🃏</span>
+                            <div class="joker-vertical-label black">JOKER</div>
+                            <div class="joker-center-graphic">
+                                <svg class="joker-svg" viewBox="0 0 24 24" width="20" height="20">
+                                    <path d="M12 2L15 8L21 5L18 12L22 17L15 16L12 22L9 16L2 17L6 12L3 5L9 8L12 2Z" fill="url(#blackJokerGrad)" stroke="#0f172a" stroke-width="0.5"/>
+                                    <circle cx="12" cy="2" r="1.5" fill="#cbd5e1"/>
+                                    <circle cx="21" cy="5" r="1.5" fill="#cbd5e1"/>
+                                    <circle cx="3" cy="5" r="1.5" fill="#cbd5e1"/>
+                                    <defs>
+                                        <linearGradient id="blackJokerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#475569"/>
+                                            <stop offset="100%" stop-color="#0f172a"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>

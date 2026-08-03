@@ -683,18 +683,46 @@ body.theme-gomoku .overlay-screen {
 .mini-poker-card {
     width: 44px;
     height: 60px;
-    border-radius: 5px;
+    border-radius: 2.5px !important; /* 微小精细纸牌圆角 */
     position: absolute;
     background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 5px;
+    padding: 3px 4px;
     box-sizing: border-box;
     font-family: var(--font-num);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
     backface-visibility: hidden;
+}
+
+.joker-vertical-label {
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    align-self: flex-start;
+    font-family: 'Outfit', -apple-system, sans-serif;
+}
+
+.joker-vertical-label.red {
+    color: #dc2626;
+}
+
+.joker-vertical-label.black {
+    color: #0f172a;
+}
+
+.joker-center-graphic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.joker-svg {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
 }
 
 /* 大王 (Red Joker - 2.5D X/Y/Z 轴立体向左侧倾斜) */
@@ -703,23 +731,9 @@ body.theme-gomoku .overlay-screen {
     top: -2px;
     transform: perspective(500px) rotateX(14deg) rotateY(-18deg) rotateZ(-8deg) translateZ(12px);
     background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
-    border: 1.5px solid #dc2626;
+    border: 1.2px solid #dc2626;
     box-shadow: 6px 12px 20px rgba(0, 0, 0, 0.65), inset -1px -1px 2px rgba(255, 255, 255, 0.9), 0 0 10px rgba(220, 38, 38, 0.25);
     z-index: 2;
-}
-
-.mini-poker-card.big-joker .poker-corner {
-    color: #dc2626;
-    font-weight: 900;
-    font-size: 0.84rem;
-    line-height: 1;
-    align-self: flex-start;
-}
-
-.mini-poker-card.big-joker .poker-icon {
-    font-size: 1.35rem;
-    line-height: 1;
-    margin-bottom: 2px;
 }
 
 /* 小王 (Black Joker - 2.5D X/Y/Z 轴立体向右侧压感倾斜) */
@@ -728,23 +742,9 @@ body.theme-gomoku .overlay-screen {
     bottom: -2px;
     transform: perspective(500px) rotateX(16deg) rotateY(16deg) rotateZ(10deg) translateZ(0px);
     background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
-    border: 1.5px solid #1e293b;
+    border: 1.2px solid #1e293b;
     box-shadow: 5px 10px 18px rgba(0, 0, 0, 0.55), inset -1px -1px 2px rgba(255, 255, 255, 0.9);
     z-index: 1;
-}
-
-.mini-poker-card.small-joker .poker-corner {
-    color: #0f172a;
-    font-weight: 900;
-    font-size: 0.84rem;
-    line-height: 1;
-    align-self: flex-start;
-}
-
-.mini-poker-card.small-joker .poker-icon {
-    font-size: 1.3rem;
-    line-height: 1;
-    margin-bottom: 2px;
 }
 
 /* 点击促发 2.5D 视角动态弹跳 */
