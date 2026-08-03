@@ -4260,6 +4260,9 @@ body:has(#lobbyScreen.active) .app-header,
     align-items: center;
     justify-content: center;
     padding: 10px;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
 }
 
 .gomoku-container {

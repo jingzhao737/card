@@ -427,6 +427,40 @@ class GameEngineController {
             }, { passive: true });
         }
 
+        // 创建五子棋在线对局
+        const btnCreateGomokuRoom = document.getElementById('btnCreateGomokuRoom');
+        if (btnCreateGomokuRoom) {
+            btnCreateGomokuRoom.addEventListener('click', () => {
+                const nickname = getNickname();
+                NetworkManager.createRoom(nickname, (roomId) => {
+                    UIRenderer.showToast(`✅ 五子棋在线房间创建成功：#${roomId}`);
+                    this.startGomokuAiMode();
+                }, (err) => {
+                    UIRenderer.showToast(err || '创建五子棋房间失败');
+                }, 'GOMOKU');
+            });
+        }
+
+        // 输入 6 位房间号加入五子棋对局
+        const btnJoinGomoku = document.getElementById('btnJoinGomoku');
+        const joinGomokuInput = document.getElementById('joinGomokuInput');
+        if (btnJoinGomoku && joinGomokuInput) {
+            btnJoinGomoku.addEventListener('click', () => {
+                const roomId = joinGomokuInput.value.trim();
+                if (!roomId || roomId.length !== 6) {
+                    UIRenderer.showToast('⚠️ 请输入正确的 6 位五子棋房间号');
+                    return;
+                }
+                const nickname = getNickname();
+                NetworkManager.joinRoom(roomId, nickname, () => {
+                    UIRenderer.showToast(`✅ 成功进入五子棋房间 #${roomId}`);
+                    this.startGomokuAiMode();
+                }, (err) => {
+                    UIRenderer.showToast(err || '加入五子棋房间失败');
+                });
+            });
+        }
+
         // 五子棋单机 AI 按钮绑定
         const btnPlayGomokuAi = document.getElementById('btnPlayGomokuAi');
         if (btnPlayGomokuAi) {
@@ -460,7 +494,11 @@ class GameEngineController {
 
         if (btnGomokuExit) {
             btnGomokuExit.addEventListener('click', () => {
-                document.getElementById('gomokuGameScreen').style.display = 'none';
+                const gomokuScr = document.getElementById('gomokuGameScreen');
+                if (gomokuScr) {
+                    gomokuScr.style.display = 'none';
+                    gomokuScr.classList.remove('active');
+                }
                 this.resetToLobby();
             });
         }
@@ -1241,8 +1279,14 @@ class GameEngineController {
     startGomokuAiMode() {
         const lobbyScr = document.getElementById('lobbyScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
-        if (lobbyScr) lobbyScr.style.display = 'none';
-        if (gomokuScr) gomokuScr.style.display = 'flex';
+        if (lobbyScr) {
+            lobbyScr.style.display = 'none';
+            lobbyScr.classList.remove('active');
+        }
+        if (gomokuScr) {
+            gomokuScr.style.display = 'flex';
+            gomokuScr.classList.add('active');
+        }
         this.updateHeaderVisibility();
 
         const nick = (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
@@ -1253,6 +1297,7 @@ class GameEngineController {
 
         window.gomokuEngine.reset(true, 1); // 玩家先手执黑
         this.initGomokuUI();
+        this.renderGomokuBoard();
         this.updateGomokuStatusUI('黑方落子中 (你)');
         UIRenderer.showToast('🟢 游鲸五子棋对局开始！你是先手黑棋');
     }

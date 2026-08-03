@@ -302,7 +302,7 @@ class P2PManager {
     /* ====================================================================
        创建房间 (作为 Host) - Firebase 云端版 (带连接异常捕获与超时保护)
        ==================================================================== */
-    createRoom(nickname, onReady, roomIdOverride) {
+    createRoom(nickname, onReady, roomIdOverride, gameType = 'DOUDIZHU') {
         this.roomId = roomIdOverride || this.generateRoomId();
         this.isHost = true;
         this.myPlayerIndex = 0;
@@ -324,8 +324,12 @@ class P2PManager {
             const finalNick = this._ensureUniqueNickname(nickname, [], 0);
             const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
 
+            const isGomoku = gameType === 'GOMOKU';
             const initialLobby = {
-                players: [
+                players: isGomoku ? [
+                    { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
+                    { name: 'AI 棋圣', avatar: '🤖', isAi: true, isHost: false }
+                ] : [
                     { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
                     { name: 'AI-1', avatar: '🤖', isAi: true, isHost: false },
                     { name: 'AI-2', avatar: '🤖', isAi: true, isHost: false }
@@ -335,6 +339,7 @@ class P2PManager {
             const now = Date.now();
             const roomPayload = {
                 roomId: this.roomId,
+                gameType: gameType,
                 created: firebase.database.ServerValue.TIMESTAMP,
                 lastHumanActivity: now, // 规则 2：记录真人初始活动时间
                 hostSid: this.sessionId,
