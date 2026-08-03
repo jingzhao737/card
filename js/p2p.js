@@ -381,7 +381,11 @@ class P2PManager {
 
             }).catch(err => {
                 console.error('[CloudEngine] 创建房间失败:', err);
-                if (this.onToast) this.onToast(`创建云端房间失败: ${err.message}`, 4000);
+                const isPermission = err.code === 'PERMISSION_DENIED' || (err.message || '').includes('PERMISSION_DENIED');
+                const msg = isPermission
+                    ? '❌ 数据库权限被拒绝，请在 Firebase Console → Realtime Database → 规则 中将读写权限改为 true'
+                    : `创建云端房间失败: ${err.message}`;
+                if (this.onToast) this.onToast(msg, 6000);
             });
         });
     }

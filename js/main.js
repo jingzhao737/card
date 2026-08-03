@@ -259,8 +259,9 @@ class GameEngineController {
             return val;
         };
 
-        // 创建房间
-        document.getElementById('btnCreateRoom').addEventListener('click', () => {
+        // 创建房间 (null-safe)
+        const _btnCreateRoom = document.getElementById('btnCreateRoom');
+        if (_btnCreateRoom) _btnCreateRoom.addEventListener('click', () => {
             const nickname = getNickname();
             NetworkManager.createRoom(nickname, (roomId) => {
                 this.setupWaitingScreen(roomId);
@@ -288,14 +289,15 @@ class GameEngineController {
             });
         }
 
-        document.getElementById('btnJoinRoom').addEventListener('click', () => {
-            const roomId = document.getElementById('joinRoomInput').value.trim();
+        // 加入房间 (null-safe)
+        const _btnJoinRoom = document.getElementById('btnJoinRoom');
+        if (_btnJoinRoom) _btnJoinRoom.addEventListener('click', () => {
+            const roomId = (document.getElementById('joinRoomInput') || {}).value?.trim() || '';
             const nickname = getNickname();
             if (!roomId) {
                 UIRenderer.showToast('请输入有效的 6 位房间号');
                 return;
             }
-
             NetworkManager.joinRoom(roomId, nickname, () => {
                 this.enterRoomAsClient(roomId);
             }, (errMsg) => {
@@ -303,8 +305,9 @@ class GameEngineController {
             });
         });
 
-        // 单机练习模式 (对战机器人)
-        document.getElementById('btnPlayAi').addEventListener('click', () => {
+        // 单机练习模式 (null-safe)
+        const _btnPlayAi = document.getElementById('btnPlayAi');
+        if (_btnPlayAi) _btnPlayAi.addEventListener('click', () => {
             const nickname = getNickname();
             this.startAiGame(nickname);
         });
