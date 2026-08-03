@@ -702,13 +702,13 @@ body.theme-gomoku .overlay-screen {
     display: flex;
     flex-direction: column;
     align-items: center;
-    line-height: 0.82;
-    font-size: 0.44rem;
+    line-height: 0.84;
+    font-size: 0.52rem; /* 电脑端放大 JOKER 竖排字标 */
     font-weight: 900;
     align-self: flex-start;
     font-family: 'Outfit', -apple-system, sans-serif;
-    margin-left: 1px;
-    margin-top: 1px;
+    margin-left: 2px;
+    margin-top: 2px;
     position: relative;
     z-index: 2;
 }
@@ -729,8 +729,8 @@ body.theme-gomoku .overlay-screen {
     position: absolute;
     right: -4px;
     bottom: -4px;
-    width: 34px;
-    height: 34px;
+    width: 38px; /* 电脑端放大右下角矢量图案 */
+    height: 38px;
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
@@ -739,9 +739,29 @@ body.theme-gomoku .overlay-screen {
 }
 
 .joker-bottom-graphic .joker-svg {
-    width: 34px;
-    height: 34px;
+    width: 38px; /* 电脑端放大右下角矢量图案 */
+    height: 38px;
     filter: drop-shadow(-1px -1px 2px rgba(0, 0, 0, 0.15));
+}
+
+/* 电脑对局内大牌面大小王专属放大调优 */
+.card .joker-vertical-label {
+    font-size: 0.54rem;
+    line-height: 0.85;
+    margin-left: 3px;
+    margin-top: 3px;
+}
+
+.card .joker-bottom-graphic {
+    width: 42px;
+    height: 42px;
+    right: -4px;
+    bottom: -4px;
+}
+
+.card .joker-bottom-graphic .joker-svg {
+    width: 42px;
+    height: 42px;
 }
 
 /* 大王 (Red Joker - 2.5D X/Y/Z 轴立体向左侧倾斜) */
@@ -3371,24 +3391,39 @@ body.theme-gomoku .overlay-screen {
         transform: translateY(calc(var(--stack-y, 0px) + var(--jitter-y, 0px) - 8px)) rotate(var(--jitter-rot, 0deg)) !important;
     }
 
-    .card-top-left.joker-vertical {
-        top: 2px;
-        left: 3px;
-        font-size: 0.56rem;
-        line-height: 0.8;
-    }
-
+    /* 手机端手牌点数、花色与图案适度缩小，精细优雅 */
     .card .card-value {
-        font-size: 0.95rem;
+        font-size: 0.8rem !important;
         font-weight: 900;
+        line-height: 1;
     }
 
     .card .card-suit {
-        font-size: 0.72rem;
+        font-size: 0.6rem !important;
+        line-height: 1;
     }
 
     .card .card-center-symbol {
-        font-size: 1.35rem;
+        font-size: 1.1rem !important;
+    }
+
+    .card .joker-vertical-label {
+        font-size: 0.38rem !important;
+        line-height: 0.78 !important;
+        margin-left: 1px !important;
+        margin-top: 1px !important;
+    }
+
+    .card .joker-bottom-graphic {
+        width: 26px !important;
+        height: 26px !important;
+        right: -3px !important;
+        bottom: -3px !important;
+    }
+
+    .card .joker-bottom-graphic .joker-svg {
+        width: 26px !important;
+        height: 26px !important;
     }
 
     /* 手机端自己打出的牌：更清晰优雅显示 (40px x 56px) */
