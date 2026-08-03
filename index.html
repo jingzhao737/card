@@ -41,21 +41,47 @@
             </div>
 
             <div class="header-controls">
-                <!-- 全网排行榜按钮 -->
-                <button class="btn-icon" id="btnOpenLeaderboard" title="全网排行榜">
-                    <i class="fa-solid fa-trophy" style="color:#ffd700;"></i>
-                </button>
-                <!-- 个人账号 / 登录入口组件 -->
+                <!-- 快捷个人账号 / 战绩入口 -->
                 <div class="user-header-badge" id="userHeaderBadge" title="个人战绩与账号设置">
-                    <i class="fa-solid fa-circle-user" style="font-size:1.2rem;color:#ffd700;"></i>
-                    <span style="font-size:0.8rem;font-weight:700;color:#fff;">登录 / 注册</span>
+                    <i class="fa-solid fa-circle-user" style="font-size:1.1rem;color:#ffd700;"></i>
+                    <span style="font-size:0.78rem;font-weight:700;color:#fff;">登录 / 注册</span>
                 </div>
-                <button class="btn-icon" id="btnToggleSound" title="切换音效">
-                    <i class="fa-solid fa-volume-high" id="soundIcon"></i>
-                </button>
-                <button class="btn-icon danger" id="btnLeaveRoom" style="display: none;" title="离开房间">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
+
+                <!-- 统一功能下拉菜单按钮 -->
+                <div class="nav-menu-container" style="position: relative;">
+                    <button class="btn-icon btn-nav-menu" id="btnNavMenu" title="功能菜单">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <!-- 下拉浮动菜单 -->
+                    <div class="nav-dropdown-menu" id="navMenuDropdown" style="display: none;">
+                        <div class="menu-item" id="menuBtnStats">
+                            <i class="fa-solid fa-id-card-clip" style="color:#ffd700;"></i>
+                            <span>个人信息 & 资产</span>
+                        </div>
+                        <div class="menu-item" id="menuBtnLeaderboard">
+                            <i class="fa-solid fa-trophy" style="color:#f59e0b;"></i>
+                            <span>全网排行榜</span>
+                        </div>
+                        <div class="menu-item" id="menuBtnCardHelp">
+                            <i class="fa-solid fa-circle-question" style="color:#38bdf8;"></i>
+                            <span>牌型规则说明</span>
+                        </div>
+                        <div class="menu-item" id="menuBtnToggleSound">
+                            <i class="fa-solid fa-volume-high" id="menuSoundIcon" style="color:#34d399;"></i>
+                            <span id="menuSoundText">音效已开启</span>
+                        </div>
+                        <div class="menu-item danger" id="menuBtnLeaveRoom" style="display: none;">
+                            <i class="fa-solid fa-right-from-bracket" style="color:#ef4444;"></i>
+                            <span>退出 / 离开房间</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 兼容备用隐藏节点 -->
+                <button class="btn-icon" id="btnOpenLeaderboard" style="display:none;"></button>
+                <button class="btn-icon" id="btnToggleSound" style="display:none;"><i class="fa-solid fa-volume-high" id="soundIcon"></i></button>
+                <button class="btn-icon danger" id="btnLeaveRoom" style="display:none;"></button>
             </div>
         </header>
 

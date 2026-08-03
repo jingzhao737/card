@@ -394,6 +394,67 @@ class GameEngineController {
             });
         }
 
+        // ====== 顶部统一功能下拉菜单 ======
+        const btnNavMenu       = document.getElementById('btnNavMenu');
+        const navMenuDropdown  = document.getElementById('navMenuDropdown');
+        const menuBtnStats     = document.getElementById('menuBtnStats');
+        const menuBtnLb        = document.getElementById('menuBtnLeaderboard');
+        const menuBtnHelp      = document.getElementById('menuBtnCardHelp');
+        const menuBtnSound     = document.getElementById('menuBtnToggleSound');
+        const menuBtnLeave     = document.getElementById('menuBtnLeaveRoom');
+
+        if (btnNavMenu && navMenuDropdown) {
+            btnNavMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navMenuDropdown.style.display = navMenuDropdown.style.display === 'none' ? 'flex' : 'none';
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.nav-menu-container')) {
+                    navMenuDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        if (menuBtnStats) {
+            menuBtnStats.addEventListener('click', () => {
+                if (navMenuDropdown) navMenuDropdown.style.display = 'none';
+                handleOpenAuthOrStats();
+            });
+        }
+        if (menuBtnLb) {
+            menuBtnLb.addEventListener('click', () => {
+                if (navMenuDropdown) navMenuDropdown.style.display = 'none';
+                this.openStatsModal('LEADERBOARD');
+            });
+        }
+        if (menuBtnHelp) {
+            menuBtnHelp.addEventListener('click', () => {
+                if (navMenuDropdown) navMenuDropdown.style.display = 'none';
+                const modal = document.getElementById('cardTypeModal');
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+        if (menuBtnSound) {
+            menuBtnSound.addEventListener('click', () => {
+                const isEnabled = SoundEngine.toggleSound();
+                const soundIcon = document.getElementById('soundIcon');
+                const menuSoundIcon = document.getElementById('menuSoundIcon');
+                const menuSoundText = document.getElementById('menuSoundText');
+
+                if (soundIcon) soundIcon.className = isEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+                if (menuSoundIcon) menuSoundIcon.className = isEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+                if (menuSoundText) menuSoundText.textContent = isEnabled ? '音效已开启' : '音效已静音';
+
+                UIRenderer.showToast(isEnabled ? '音效已开启' : '音效已静音');
+            });
+        }
+        if (menuBtnLeave) {
+            menuBtnLeave.addEventListener('click', () => {
+                if (navMenuDropdown) navMenuDropdown.style.display = 'none';
+                this.resetToLobby();
+            });
+        }
+
         if (btnCloseAuth && authModal) btnCloseAuth.addEventListener('click', () => authModal.style.display = 'none');
         if (btnCloseStats && statsModal) btnCloseStats.addEventListener('click', () => statsModal.style.display = 'none');
 
@@ -900,6 +961,9 @@ class GameEngineController {
         const roomInfoBar = document.getElementById('roomInfoBar');
         if (roomInfoBar) roomInfoBar.style.display = 'flex';
 
+        const menuLeaveBtn = document.getElementById('menuBtnLeaveRoom');
+        if (menuLeaveBtn) menuLeaveBtn.style.display = 'flex';
+
         // 生成二维码
         const qrContainer = document.getElementById('qrcode');
         if (qrContainer) {
@@ -1027,6 +1091,8 @@ class GameEngineController {
         if (btnStart) btnStart.style.display = 'none';
         if (btnAiBtn) btnAiBtn.style.display = 'none';
         if (btnGoHome) btnGoHome.style.display = 'inline-flex';
+        const menuLeaveBtn2 = document.getElementById('menuBtnLeaveRoom');
+        if (menuLeaveBtn2) menuLeaveBtn2.style.display = 'flex';
 
         UIRenderer.showToast('已进入房间，等待房主开始游戏...');
     }
@@ -1224,6 +1290,8 @@ class GameEngineController {
         if (roomInfoBar)   roomInfoBar.style.display = 'none';
         if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
         if (btnGoHomeTop)  btnGoHomeTop.style.display = 'none';
+        const menuLeaveBtn3 = document.getElementById('menuBtnLeaveRoom');
+        if (menuLeaveBtn3) menuLeaveBtn3.style.display = 'none';
 
         if (lobbyScreen) {
             lobbyScreen.style.display = 'flex';
@@ -1252,6 +1320,8 @@ class GameEngineController {
         document.getElementById('gameTable').style.display = 'grid';
         const _btnLeave = document.getElementById('btnLeaveRoom');
         if (_btnLeave) _btnLeave.style.display = 'inline-flex';
+        const menuLeaveBtn4 = document.getElementById('menuBtnLeaveRoom');
+        if (menuLeaveBtn4) menuLeaveBtn4.style.display = 'flex';
 
         // Bug 修复：清除上一局残留的回合倒计时 interval，防止上局 timer 继续触发 handleTurnTimeout
         if (this.turnTimerInterval) {
