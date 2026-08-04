@@ -2697,8 +2697,12 @@ class GameEngineController {
         overlay.style.display = 'flex';
         overlay.classList.add('active');
 
-        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardSort === 'function') {
-            SoundEngine.playCardSort();
+        if (typeof SoundEngine !== 'undefined') {
+            if (typeof SoundEngine.playMahjongShuffle === 'function') {
+                SoundEngine.playMahjongShuffle();
+            } else if (typeof SoundEngine.playCardSort === 'function') {
+                SoundEngine.playCardSort();
+            }
         }
 
         const seats = ['bottom', 'right', 'top', 'left'];

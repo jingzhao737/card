@@ -12,6 +12,8 @@ class AudioSynth {
         this.isStoneBufferLoading = false;
         this.mahjongTileBuffer = null;
         this.isMahjongBufferLoading = false;
+        this.mahjongShuffleBuffer = null;
+        this.isMahjongShuffleBufferLoading = false;
         this.mobileAudioUnlocked = false;
     }
 
@@ -35,6 +37,9 @@ class AudioSynth {
             if (!this.mahjongTileBuffer && !this.isMahjongBufferLoading) {
                 this.loadMahjongTileBuffer();
             }
+            if (!this.mahjongShuffleBuffer && !this.isMahjongShuffleBufferLoading) {
+                this.loadMahjongShuffleBuffer();
+            }
         }
     }
 
@@ -48,7 +53,7 @@ class AudioSynth {
         }
 
         // 解封 HTML5 Audio 标签 (iOS Safari 关键静音触发解封)
-        ['audioCardFlip', 'audioStoneDrop', 'audioMahjongTile'].forEach(id => {
+        ['audioCardFlip', 'audioStoneDrop', 'audioMahjongTile', 'audioMahjongShuffle'].forEach(id => {
             const el = document.getElementById(id);
             if (el && !this.mobileAudioUnlocked) {
                 try {
@@ -118,6 +123,24 @@ class AudioSynth {
             }
         } catch (e) {
             this.isMahjongBufferLoading = 'failed';
+        }
+    }
+
+    async loadMahjongShuffleBuffer() {
+        if (this.mahjongShuffleBuffer || this.isMahjongShuffleBufferLoading) return;
+        this.isMahjongShuffleBufferLoading = true;
+        try {
+            const response = await fetch('sound/mahjong-shuffle.wav');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.mahjongShuffleBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            } else {
+                this.isMahjongShuffleBufferLoading = 'failed';
+            }
+        } catch (e) {
+            this.isMahjongShuffleBufferLoading = 'failed';
         }
     }
 
@@ -802,6 +825,58 @@ class AudioSynth {
         // 备用方案 2: 动态 Audio 实例
         try {
             const audio = new Audio('sound/mahjangclack-1.wav');
+            audio.volume = 0.95;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+            }
+        } catch (e) {}
+    }
+
+    /**
+     * 播放开局麻将洗牌/搓牌音效 (sound/mahjong-shuffle.wav)
+     */
+    playMahjongShuffle() {
+        if (!this.enabled) return;
+        try {
+            this.init();
+        } catch (e) {}
+
+        // 优先使用 Web Audio API 解码 Buffer
+        if (this.ctx && this.mahjongShuffleBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.mahjongShuffleBuffer;
+                source.playbackRate.value = 1.0;
+
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 0.95;
+
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+
+                source.start(0);
+                return;
+            } catch (e) {}
+        }
+
+        // 备用方案 1: HTML5 Audio DOM 节点
+        const el = document.getElementById('audioMahjongShuffle');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 0.95;
+                const p = clone.play();
+                if (p !== undefined) {
+                    p.then(() => {}).catch(() => {});
+                }
+                return;
+            } catch (e) {}
+        }
+
+        // 备用方案 2: 动态 Audio 实例
+        try {
+            const audio = new Audio('sound/mahjong-shuffle.wav');
             audio.volume = 0.95;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
