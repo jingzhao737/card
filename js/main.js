@@ -1186,105 +1186,155 @@ class GameEngineController {
     }
 
     /**
-     * 渲染个人简略战绩与最近10场对局记录 (无头像、无资产等冗余信息)
+     * 渲染个人详细战绩 (隔离区分斗地主战绩与五子棋独立战绩)
      */
-    renderDetailedStatsView() {
+    renderDetailedStatsView(selectedGameType = null) {
         const container = document.getElementById('userDetailedStatsHero');
         if (!container) return;
 
+        // 如果未指定，根据当前大厅 Tab 或界面自动决定初始视图
+        const currentMode = selectedGameType || (this.activeGameType === 'GOMOKU' ? 'GOMOKU' : 'DOUDIZHU');
+
         const data = AuthEngine.userData || {
-            nickname: localStorage.getItem('youjing_doudizhu_nickname') || '游客玩家',
             totalGames: 0,
             wins: 0,
             landlordWins: 0,
             farmerWins: 0,
-            matchHistory: []
+            matchHistory: [],
+            gomokuStats: { totalGames: 0, wins: 0, losses: 0, draws: 0, matchHistory: [] }
         };
 
-        const total = data.totalGames || 0;
-        const wins = data.wins || 0;
-        const losses = Math.max(0, total - wins);
-        const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
-        const landlordWins = data.landlordWins || 0;
-        const farmerWins = data.farmerWins || 0;
+        const isGomoku = currentMode === 'GOMOKU';
 
-        // 生成或读取最近10场对局历史
-        let historyList = Array.isArray(data.matchHistory) && data.matchHistory.length > 0 ? data.matchHistory : [];
-        if (historyList.length === 0 && total > 0) {
-            for (let i = 0; i < Math.min(total, 10); i++) {
-                const isW = i < wins;
-                historyList.push({
-                    id: Date.now() - i * 600000,
-                    isWin: isW,
-                    role: i % 2 === 0 ? '资本家' : '牛马',
-                    multiplier: (i % 3 + 1) * 2,
-                    time: `${String(18 - (i % 10)).padStart(2, '0')}:${String(10 + i * 5).padStart(2, '0')}`
-                });
-            }
-        }
+        // 战绩选择切换按钮 Bar
+        const selectorHtml = `
+            <div style="display:flex;gap:8px;margin-bottom:12px;width:100%;">
+                <button id="btnStatsTabDoudizhu" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s;border:1px solid ${!isGomoku ? '#e2a820' : 'rgba(255,255,255,0.1)'};background:${!isGomoku ? 'rgba(226,168,32,0.2)' : 'rgba(0,0,0,0.3)'};color:${!isGomoku ? '#ffd700' : '#94a3b8'};">
+                    <i class="fa-solid fa-cards"></i> 斗地主战绩
+                </button>
+                <button id="btnStatsTabGomoku" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s;border:1px solid ${isGomoku ? '#34d399' : 'rgba(255,255,255,0.1)'};background:${isGomoku ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.3)'};color:${isGomoku ? '#34d399' : '#94a3b8'};">
+                    <i class="fa-solid fa-chess-board"></i> 五子棋战绩
+                </button>
+            </div>
+        `;
 
-        const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
-            const isWin = m.isWin;
-            const resStyle = isWin ? 'color:#00e676;background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.3);' : 'color:#ff2a2a;background:rgba(255,42,42,0.12);border-color:rgba(255,42,42,0.3);';
-            const roleBadge = m.role;
-            return `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-weight:800;padding:1px 6px;border-radius:3px;border:1px solid;${resStyle}">
-                            ${isWin ? '胜利' : '失败'}
-                        </span>
-                        <span style="color:#e2e8f0;font-weight:700;">${roleBadge}</span>
+        let contentHtml = '';
+
+        if (!isGomoku) {
+            // 🃏 斗地主战绩渲染
+            const total = data.totalGames || 0;
+            const wins = data.wins || 0;
+            const losses = Math.max(0, total - wins);
+            const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
+            const landlordWins = data.landlordWins || 0;
+            const farmerWins = data.farmerWins || 0;
+
+            let historyList = Array.isArray(data.matchHistory) ? data.matchHistory : [];
+            const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
+                const isWin = m.isWin;
+                const resStyle = isWin ? 'color:#00e676;background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.3);' : 'color:#ff2a2a;background:rgba(255,42,42,0.12);border-color:rgba(255,42,42,0.3);';
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:800;padding:1px 6px;border-radius:3px;border:1px solid;${resStyle}">
+                                ${isWin ? '胜利' : '失败'}
+                            </span>
+                            <span style="color:#e2e8f0;font-weight:700;">${m.role || '斗地主'}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:0.74rem;">
+                            <span>${m.multiplier || 2}倍局</span>
+                            <span>${m.time || '12:00'}</span>
+                        </div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:0.74rem;">
-                        <span>${m.multiplier || 2}倍局</span>
-                        <span>${m.time || '12:00'}</span>
+                `;
+            }).join('') : `<div style="text-align:center;color:#94a3b8;padding:24px 10px;font-size:0.78rem;">暂无斗地主对局记录</div>`;
+
+            contentHtml = `
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ffffff;">${winRate}</div><div class="stat-lbl">斗地主胜率</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#00e676;">${wins} 胜</div><div class="stat-lbl">胜场次数</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ff2a2a;">${losses} 败</div><div class="stat-lbl">败场次数</div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:6px;">
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ffffff;">${total}</div><div class="stat-lbl">总对局数</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ffffff;">${landlordWins}</div><div class="stat-lbl">资本家胜场</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ffffff;">${farmerWins}</div><div class="stat-lbl">牛马胜场</div></div>
+                </div>
+                <div style="margin-top:10px;">
+                    <div style="font-size:0.78rem;font-weight:800;color:#ffd700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> 最近 10 场斗地主战报
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;padding-right:2px;">
+                        ${historyHtml}
                     </div>
                 </div>
             `;
-        }).join('') : `<div style="text-align:center;color:#94a3b8;padding:24px 10px;font-size:0.78rem;">暂无最近对局记录，快去完成第一局游戏吧！</div>`;
+        } else {
+            // 🟢 五子棋战绩渲染
+            const gStats = data.gomokuStats || { totalGames: 0, wins: 0, losses: 0, draws: 0, matchHistory: [] };
+            const total = gStats.totalGames || 0;
+            const wins = gStats.wins || 0;
+            const losses = gStats.losses || 0;
+            const draws = gStats.draws || 0;
+            const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
 
-        container.innerHTML = `
-            <!-- 顶部极简数据网格 (无头像、无资产) -->
-            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffffff;">${winRate}</div>
-                    <div class="stat-lbl">综合胜率</div>
-                </div>
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#00e676;">${wins} 胜</div>
-                    <div class="stat-lbl">胜场次数</div>
-                </div>
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ff2a2a;">${losses} 败</div>
-                    <div class="stat-lbl">败场次数</div>
-                </div>
-            </div>
+            let historyList = Array.isArray(gStats.matchHistory) ? gStats.matchHistory : [];
+            const historyHtml = historyList.length > 0 ? historyList.slice(0, 10).map((m) => {
+                const isWin = m.isWin;
+                const isDraw = m.isDraw;
+                let resStyle = 'color:#00e676;background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.3);';
+                let tagText = '胜利';
+                if (isDraw) {
+                    resStyle = 'color:#fbbf24;background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);';
+                    tagText = '平局';
+                } else if (!isWin) {
+                    resStyle = 'color:#ff2a2a;background:rgba(255,42,42,0.12);border-color:rgba(255,42,42,0.3);';
+                    tagText = '失败';
+                }
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-size:0.78rem;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:800;padding:1px 6px;border-radius:3px;border:1px solid;${resStyle}">
+                                ${tagText}
+                            </span>
+                            <span style="color:#e2e8f0;font-weight:700;">${m.role || '五子棋'}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:0.74rem;">
+                            <span>${m.time || '12:00'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('') : `<div style="text-align:center;color:#34d399;padding:24px 10px;font-size:0.78rem;">暂无五子棋对局记录，快去棋盘切磋一局吧！</div>`;
 
-            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:2px;">
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffffff;">${total}</div>
-                    <div class="stat-lbl">总对局数</div>
+            contentHtml = `
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#34d399;">${winRate}</div><div class="stat-lbl">五子棋胜率</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#00e676;">${wins} 胜</div><div class="stat-lbl">胜场次数</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ff2a2a;">${losses} 败</div><div class="stat-lbl">败场次数</div></div>
                 </div>
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffffff;">${landlordWins}</div>
-                    <div class="stat-lbl">资本家胜场</div>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-top:6px;">
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#ffffff;">${total}</div><div class="stat-lbl">总对局数</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#fbbf24;">${draws} 平</div><div class="stat-lbl">平局次数</div></div>
+                    <div class="profile-stat-box"><div class="stat-val" style="color:#34d399;">${wins}</div><div class="stat-lbl">五子连珠</div></div>
                 </div>
-                <div class="profile-stat-box">
-                    <div class="stat-val" style="color:#ffffff;">${farmerWins}</div>
-                    <div class="stat-lbl">牛马胜场</div>
+                <div style="margin-top:10px;">
+                    <div style="font-size:0.78rem;font-weight:800;color:#34d399;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> 最近 10 场五子棋战报
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;padding-right:2px;">
+                        ${historyHtml}
+                    </div>
                 </div>
-            </div>
+            `;
+        }
 
-            <!-- 下方下滑滚动展示：最近 10 场对局基础记录 -->
-            <div style="margin-top:10px;">
-                <div style="font-size:0.78rem;font-weight:800;color:#ffd700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-                    <i class="fa-solid fa-clock-rotate-left"></i> 最近 10 场对局记录
-                </div>
-                <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding-right:2px;">
-                    ${historyHtml}
-                </div>
-            </div>
-        `;
+        container.innerHTML = selectorHtml + contentHtml;
+
+        // 绑定战绩类型 Tab 切换
+        const btnDoudizhu = document.getElementById('btnStatsTabDoudizhu');
+        const btnGomoku   = document.getElementById('btnStatsTabGomoku');
+        if (btnDoudizhu) btnDoudizhu.addEventListener('click', () => this.renderDetailedStatsView('DOUDIZHU'));
+        if (btnGomoku)   btnGomoku.addEventListener('click', () => this.renderDetailedStatsView('GOMOKU'));
     }
 
     /**
@@ -1761,6 +1811,18 @@ class GameEngineController {
 
         UIRenderer.showToast(msg);
         this.updateGomokuStatusUI(winner === 0 ? '平局 · 请点击【重来一局】' : (winner === 1 ? '黑方胜 · 请点击【重来一局】' : '白方胜 · 请点击【重来一局】'));
+
+        // 独立保存五子棋战绩记录 (区分胜、负、平局)
+        const myColor = window.gomokuEngine ? window.gomokuEngine.playerColor : 1;
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.recordGomokuMatchResult) {
+            if (winner === 0) {
+                AuthEngine.recordGomokuMatchResult(false, true); // 平局
+            } else if (winner === myColor) {
+                AuthEngine.recordGomokuMatchResult(true, false); // 胜利
+            } else {
+                AuthEngine.recordGomokuMatchResult(false, false); // 失败
+            }
+        }
 
         // 对局结束：隐藏悔棋按键，开启【重来一局】按键
         const btnUndo = document.getElementById('btnGomokuUndo');

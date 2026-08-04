@@ -478,6 +478,53 @@ class AuthManager {
         });
     }
 
+    /**
+     * 独立记录五子棋战绩 (胜、负、平，与斗地主战绩隔离)
+     */
+    recordGomokuMatchResult(isWin, isDraw = false) {
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const accountKey = this.userData.accountKey;
+
+        const currentGomoku = this.userData.gomokuStats || {
+            totalGames: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            matchHistory: []
+        };
+
+        const newTotal = (currentGomoku.totalGames || 0) + 1;
+        const newWins = (currentGomoku.wins || 0) + (isWin ? 1 : 0);
+        const newDraws = (currentGomoku.draws || 0) + (isDraw ? 1 : 0);
+        const newLosses = (currentGomoku.losses || 0) + (!isWin && !isDraw ? 1 : 0);
+
+        let roleText = isWin ? '五子连珠' : (isDraw ? '盘满平局' : '败局');
+        const historyItem = {
+            id: Date.now(),
+            gameType: 'GOMOKU',
+            isWin: isWin,
+            isDraw: isDraw,
+            role: roleText,
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        const currentHistory = Array.isArray(currentGomoku.matchHistory) ? currentGomoku.matchHistory : [];
+        const newHistory = [historyItem, ...currentHistory].slice(0, 10);
+
+        const newGomokuStats = {
+            totalGames: newTotal,
+            wins: newWins,
+            losses: newLosses,
+            draws: newDraws,
+            matchHistory: newHistory
+        };
+
+        this.db.ref('users/' + accountKey + '/gomokuStats').set(newGomokuStats).then(() => {
+            if (!this.userData.gomokuStats) this.userData.gomokuStats = {};
+            Object.assign(this.userData.gomokuStats, newGomokuStats);
+        }).catch(() => {});
+    }
+
     /* ====================================================================
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
