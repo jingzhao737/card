@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=8.2">
+    <link rel="stylesheet" href="css/styles.css?v=9.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,7 +104,10 @@
                     <i class="fa-solid fa-layer-group"></i> 游鲸斗地主
                 </button>
                 <button class="game-nav-btn" id="btnNavGomoku">
-                    <i class="fa-solid fa-chess-board"></i> 游鲸五子棋 <span class="nav-new-pill">NEW</span>
+                    <i class="fa-solid fa-chess-board"></i> 游鲸五子棋
+                </button>
+                <button class="game-nav-btn btn-mahjong-nav" id="btnNavMahjong">
+                    <i class="fa-solid fa-square-full"></i> 游鲸麻将 <span class="nav-new-pill jade">NEW</span>
                 </button>
             </div>
 
@@ -353,6 +356,168 @@
 
                 <div class="lobby-footer">
                     <span><i class="fa-solid fa-chess"></i> 墨绿棋盘 · 智力博弈</span>
+                </div>
+            </div>
+
+            <!-- 游鲸麻将 专属桃木翠绿主大厅卡片 (Peachwood + Jade Emerald Theme) -->
+            <div class="lobby-card hero-lobby-card theme-mahjong" id="mahjongLobbyCard" style="display:none;">
+                <div class="lobby-header peachwood-header">
+                    <div class="brand-hero-left">
+                        <div class="brand-text">
+                            <h1 class="brand-title">游鲸麻将</h1>
+                            <p class="brand-subtitle">MAHJONG MASTER 雀神对决</p>
+                        </div>
+                        <div class="hero-tags">
+                            <span class="badge-tag jade"><i class="fa-solid fa-square-full"></i> 桃木金边 · 翠绿高洁</span>
+                        </div>
+                    </div>
+                    <div class="mahjong-tiles-decoration" title="经典国粹：东风 / 红中 / 发财">
+                        <div class="mini-mahjong-tile ivory-jade">🀀</div>
+                        <div class="mini-mahjong-tile ivory-jade">🀄</div>
+                        <div class="mini-mahjong-tile ivory-jade">🀅</div>
+                    </div>
+                </div>
+
+                <div class="lobby-form">
+                    <!-- 账号登录/注册 快捷卡片横幅 -->
+                    <div class="auth-banner-card mahjong-auth" id="mahjongAuthBanner">
+                        <div class="auth-banner-left">
+                            <div class="auth-avatar-badge" id="mahjongAuthAvatar">🤠</div>
+                            <div class="auth-banner-info">
+                                <div class="auth-banner-nick" id="mahjongUserNick">未登录 (游客)</div>
+                                <div class="auth-banner-sub" id="mahjongUserSub">🪙 知因币: 0</div>
+                            </div>
+                        </div>
+                        <div class="auth-banner-actions">
+                            <button class="btn-auth-action jade" id="btnMahjongAuth" type="button">个人信息</button>
+                        </div>
+                    </div>
+
+                    <!-- 模式选择区 -->
+                    <div class="mode-selection">
+                        <!-- 创建麻将房间 -->
+                        <button class="mode-card primary-card mahjong-theme" id="btnCreateMahjongRoom">
+                            <div class="card-icon-wrap jade">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>创建麻将对局</span>
+                                    <span class="pill-badge jade">房主</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
+                        <!-- 输入房间号加入麻将 -->
+                        <div class="mode-card join-card mahjong-join">
+                            <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入 6 位麻将房间号</div>
+                            <div class="join-input-row">
+                                <input type="text" id="joinMahjongInput" placeholder="6 位房间号" maxlength="6">
+                                <button class="btn-join-action jade" id="btnJoinMahjong">进入雀局 <i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="divider mahjong-divider"><span>单人切磋</span></div>
+
+                        <!-- 单机 AI 雀神切磋 -->
+                        <button class="mode-card ai-card mahjong-ai" id="btnPlayMahjongAi">
+                            <div class="card-icon-wrap jade">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>AI 雀王练习</span>
+                                    <span class="pill-badge jade">智胜切磋</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lobby-footer">
+                    <span><i class="fa-solid fa-square-full"></i> 桃木沉香 · 翠绿国粹</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游鲸麻将 专属桃木翠绿雀局室 (Mahjong Game Screen) -->
+        <div id="mahjongGameScreen" class="overlay-screen mahjong-screen-wrap" style="display: none;">
+            <div class="mahjong-container">
+                <!-- 顶部对局玩家与回合信息 Area -->
+                <div class="mahjong-header-area">
+                    <!-- 置顶对局状态指示胶囊 -->
+                    <div class="mahjong-turn-status top-status" id="mahjongTurnStatus">
+                        <span class="status-dot jade"></span>
+                        <span id="mahjongTurnText">🀄 东风圈 · 你的回合</span>
+                    </div>
+
+                    <!-- 玩家 VS 信息 Bar (左侧是我方，右侧是对方/AI) -->
+                    <div class="mahjong-header-bar">
+                        <!-- 我方玩家卡片 -->
+                        <div class="mahjong-player-pill left-me turn-active" id="mahjongPlayerLeft">
+                            <div class="player-pill-top">
+                                <div class="mini-mahjong-badge" id="mAvatarLeft">🀄</div>
+                                <span class="p-role" id="mRoleLeft">东家 (1000分)</span>
+                            </div>
+                            <div class="player-pill-name" id="mNameLeft">我方玩家</div>
+                        </div>
+
+                        <!-- 中央 VS 标识 -->
+                        <div class="mahjong-vs-badge">VS</div>
+
+                        <!-- 对方玩家卡片 (对方/AI) -->
+                        <div class="mahjong-player-pill right-opp" id="mahjongPlayerRight">
+                            <div class="player-pill-top right">
+                                <span class="p-role" id="mRoleRight">南家 (1000分)</span>
+                                <div class="mini-mahjong-badge" id="mAvatarRight">🀄</div>
+                            </div>
+                            <div class="player-pill-name align-right" id="mNameRight">AI 雀王</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 桃木外框 + 翠绿绒面 雀神桌台容器 -->
+                <div class="mahjong-table-wrapper">
+                    <!-- 雀桌中央 3D 局风罗盘 (东/南/西/北) -->
+                    <div class="mahjong-compass-center" id="mahjongCompassContainer">
+                        <div class="compass-wind active">东</div>
+                        <div class="compass-wind">南</div>
+                        <div class="compass-wind">西</div>
+                        <div class="compass-wind">北</div>
+                    </div>
+
+                    <!-- 弃牌堆区 -->
+                    <div class="mahjong-discard-area" id="mahjongDiscardArea">
+                        <!-- 动态渲染双方弃牌 -->
+                    </div>
+
+                    <!-- 玩家手牌区 (3D 象牙白面 + 翡翠绿背) -->
+                    <div class="mahjong-hand-wrapper">
+                        <div class="mahjong-hand-container" id="mahjongHandTilesContainer">
+                            <!-- 动态渲染手牌 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部麻将动作控制栏 (碰 / 吃 / 杠 / 胡 / 过 / 重来一局) -->
+                <div class="mahjong-actions-bar">
+                    <button class="btn-mahjong-action action-pong" id="btnMahjongPong" style="display:none;">
+                        🀄 碰
+                    </button>
+                    <button class="btn-mahjong-action action-kong" id="btnMahjongKong" style="display:none;">
+                        🀄 杠
+                    </button>
+                    <button class="btn-mahjong-action action-hu" id="btnMahjongHu" style="display:none;">
+                        🎉 胡牌！
+                    </button>
+                    <button class="btn-mahjong-action action-pass" id="btnMahjongPass" style="display:none;">
+                        过
+                    </button>
+                    <button class="btn-mahjong-action rematch" id="btnMahjongRematch" style="display:none;">
+                        <i class="fa-solid fa-rotate-right"></i> 重来一局
+                    </button>
                 </div>
             </div>
         </div>
@@ -1076,6 +1241,7 @@
     <script src="js/auth.js"></script>
     <script src="js/p2p.js"></script>
     <script src="js/gomoku.js"></script>
+    <script src="js/mahjong.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
