@@ -4554,7 +4554,32 @@ body.theme-gomoku .overlay-screen {
     gap: 12px;
 }
 
-/* 顶部对局玩家与回合 Bar (Redesigned Modern Glassmorphism Bar) */
+/* 顶部对局玩家与回合 Header Area */
+.gomoku-header-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 1. 置顶对局状态指示胶囊 */
+.gomoku-turn-status.top-status {
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    border-radius: 16px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #34d399;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+}
+
+/* 2. 玩家 VS 对决 Bar (全屏宽度充分利用) */
 .gomoku-header-bar {
     width: 100%;
     display: flex;
@@ -4568,10 +4593,21 @@ body.theme-gomoku .overlay-screen {
     padding: 8px 12px;
     box-sizing: border-box;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    gap: 8px;
+    gap: 10px;
 }
 
-/* 玩家卡片 (纵向分层，ID 独立占一行) */
+/* 中央 VS 标识 */
+.gomoku-vs-badge {
+    font-size: 0.85rem;
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(52, 211, 153, 0.6);
+    text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* 玩家卡片 (宽屏扩展，ID 独立一行完全展示) */
 .gomoku-player-pill {
     flex: 1;
     display: flex;
@@ -4582,7 +4618,7 @@ body.theme-gomoku .overlay-screen {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
     transition: all 0.25s ease;
-    max-width: 38%;
+    max-width: 46%;
     min-width: 0;
 }
 
@@ -4623,16 +4659,16 @@ body.theme-gomoku .overlay-screen {
     border: none;
 }
 
-/* 玩家 ID / 昵称 (独立单行，字号精简且不换行) */
+/* 玩家 ID / 昵称 (充足空间展示) */
 .player-pill-name {
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: 0.8rem;
+    font-weight: 800;
     color: #f1f5f9;
     width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.2;
+    line-height: 1.25;
 }
 
 .player-pill-name.align-right {
@@ -4643,23 +4679,6 @@ body.theme-gomoku .overlay-screen {
     font-size: 0.64rem;
     font-weight: 600;
     color: #94a3b8;
-    white-space: nowrap;
-}
-
-/* 中央对局回合指示胶囊 */
-.gomoku-turn-status {
-    background: rgba(16, 185, 129, 0.18);
-    border: 1px solid rgba(52, 211, 153, 0.45);
-    border-radius: 16px;
-    padding: 5px 12px;
-    font-size: 0.76rem;
-    font-weight: 800;
-    color: #34d399;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
     white-space: nowrap;
 }
 
