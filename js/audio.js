@@ -104,14 +104,14 @@ class AudioSynth {
     }
 
     /**
-     * 五子棋落子音效：播放真实放置棋子 mp3 音频，并辅以微随机音效
+     * 五子棋落子音效：放大大音量，并为每次落子加入极度丰富的声音与速度动态变化
      * @param {boolean} isWhite - 是否为白棋
      */
     playStoneDrop(isWhite = false) {
         if (!this.enabled) return;
         this.init();
 
-        // 1. 优先使用 Web Audio API 解码的真实音频 Buffer 播放 (微随机音调 jitter)
+        // 1. 优先使用 Web Audio API 解码的真实音频 Buffer 播放
         if (this.ctx && this.stoneDropBuffer) {
             if (this.ctx.state === 'suspended') {
                 this.ctx.resume();
@@ -121,11 +121,15 @@ class AudioSynth {
                 const gain = this.ctx.createGain();
                 source.buffer = this.stoneDropBuffer;
 
-                // 微调音高 (白棋稍脆高音，黑棋较稳沉)，微随机 ±5%
-                const pitchJitter = 0.95 + Math.random() * 0.1;
-                source.playbackRate.value = (isWhite ? 1.04 : 0.98) * pitchJitter;
+                // 速度与音高丰富随机抖动 (速度范围 0.88x - 1.22x, 每颗子绝不重样)
+                const speedVar = 0.88 + Math.random() * 0.34; // 速度 0.88 ~ 1.22 随机变化
+                const colorTone = isWhite ? 1.06 : 0.95;       // 白棋清脆、黑棋沉稳
+                source.playbackRate.value = colorTone * speedVar;
 
-                gain.gain.value = 0.9;
+                // 音量加大 (提升至 1.75 强劲音量，带 ±0.25 动态力度震荡)
+                const dynamicVolume = 1.75 + (Math.random() * 0.5 - 0.25);
+                gain.gain.value = dynamicVolume;
+
                 source.connect(gain);
                 gain.connect(this.ctx.destination);
                 source.start(0);
@@ -135,24 +139,26 @@ class AudioSynth {
             }
         }
 
-        // 2. 次选：HTML5 Audio 标签 DOM 播放
+        // 2. 次选：HTML5 Audio 标签 DOM 播放 (最大音量 1.0)
         const htmlAudio = document.getElementById('audioStoneDrop');
         if (htmlAudio) {
             try {
                 htmlAudio.currentTime = 0;
-                htmlAudio.volume = 0.85;
+                htmlAudio.volume = 1.0;
+                htmlAudio.playbackRate = 0.9 + Math.random() * 0.25;
                 htmlAudio.play().catch(() => {});
                 return;
             } catch (e) {}
         }
 
-        // 3. 兜底：合成器物理清脆碰撞声
+        // 3. 兜底：合成器物理清脆碰撞声 (同步增大音量与速度变化)
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        const pitchMod = 0.88 + Math.random() * 0.24;
-        const startFreq = (isWhite ? 960 : 720) * pitchMod;
-        const endFreq = (isWhite ? 220 : 150) * pitchMod;
-        const duration = 0.045 + Math.random() * 0.015;
+        const speedVar = 0.88 + Math.random() * 0.34;
+        const pitchMod = (isWhite ? 1.1 : 0.9) * speedVar;
+        const startFreq = 850 * pitchMod;
+        const endFreq = 180 * pitchMod;
+        const duration = (0.045 + Math.random() * 0.02) / speedVar;
 
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -162,7 +168,7 @@ class AudioSynth {
         osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
 
         gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(0.32, now + 0.002);
+        gain.gain.linearRampToValueAtTime(0.65, now + 0.002);
         gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
         osc.connect(gain);
