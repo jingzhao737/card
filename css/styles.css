@@ -6011,12 +6011,14 @@ body.theme-mahjong #lobbyScreen {
         max-height: 34px !important;
     }
     .mahjong-tiles-bottom {
-        gap: 1.5px !important;
+        gap: 1.2px !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
     }
     .mahjong-tile-card {
-        width: calc((100% - 16px) / 14.2) !important;
-        max-width: 28px !important;
-        min-width: 18px !important;
+        width: calc((100% - 20px) / 14.3) !important;
+        max-width: 25px !important;
+        min-width: 16px !important;
         aspect-ratio: 1 / 1.34 !important;
         height: auto !important;
     }
