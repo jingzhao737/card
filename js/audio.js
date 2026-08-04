@@ -8,6 +8,8 @@ class AudioSynth {
         this.enabled = true;
         this.cardFlipBuffer = null;
         this.isBufferLoading = false;
+        this.stoneDropBuffer = null;
+        this.isStoneBufferLoading = false;
         this.mobileAudioUnlocked = false;
     }
 
@@ -21,8 +23,13 @@ class AudioSynth {
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
         }
-        if (this.ctx && !this.cardFlipBuffer && !this.isBufferLoading) {
-            this.loadCardFlipBuffer();
+        if (this.ctx) {
+            if (!this.cardFlipBuffer && !this.isBufferLoading) {
+                this.loadCardFlipBuffer();
+            }
+            if (!this.stoneDropBuffer && !this.isStoneBufferLoading) {
+                this.loadStoneDropBuffer();
+            }
         }
     }
 
@@ -36,23 +43,23 @@ class AudioSynth {
         }
 
         // 解封 HTML5 Audio 标签 (iOS Safari 关键静音触发解封)
-        const el = document.getElementById('audioCardFlip');
-        if (el && !this.mobileAudioUnlocked) {
-            this.mobileAudioUnlocked = true;
-            try {
-                el.volume = 0.001;
-                const p = el.play();
-                if (p !== undefined) {
-                    p.then(() => {
-                        el.pause();
-                        el.currentTime = 0;
-                        el.volume = 0.85;
-                    }).catch(() => {
-                        this.mobileAudioUnlocked = false;
-                    });
-                }
-            } catch (e) {}
-        }
+        ['audioCardFlip', 'audioStoneDrop'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !this.mobileAudioUnlocked) {
+                try {
+                    el.volume = 0.001;
+                    const p = el.play();
+                    if (p !== undefined) {
+                        p.then(() => {
+                            el.pause();
+                            el.currentTime = 0;
+                            el.volume = 0.85;
+                        }).catch(() => {});
+                    }
+                } catch (e) {}
+            }
+        });
+        this.mobileAudioUnlocked = true;
     }
 
     async loadCardFlipBuffer() {
@@ -73,33 +80,80 @@ class AudioSynth {
         }
     }
 
+    async loadStoneDropBuffer() {
+        if (this.stoneDropBuffer || this.isStoneBufferLoading) return;
+        this.isStoneBufferLoading = true;
+        try {
+            const response = await fetch('sound/placing-a-piece.mp3');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.stoneDropBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            }
+        } catch (e) {
+            // 静默容错
+        } finally {
+            this.isStoneBufferLoading = false;
+        }
+    }
+
     toggleSound() {
         this.enabled = !this.enabled;
         return this.enabled;
     }
 
     /**
-     * 五子棋落子音效：真实物理木纹与玉石/棋子微随机音效 (Varied Organic Stone Clack)
-     * @param {boolean} isWhite - 是否为白棋 (白棋更高脆，黑棋更沉稳)
+     * 五子棋落子音效：播放真实放置棋子 mp3 音频，并辅以微随机音效
+     * @param {boolean} isWhite - 是否为白棋
      */
     playStoneDrop(isWhite = false) {
         if (!this.enabled) return;
         this.init();
-        if (!this.ctx) return;
-        if (this.ctx.state === 'suspended') {
-            this.ctx.resume();
+
+        // 1. 优先使用 Web Audio API 解码的真实音频 Buffer 播放 (微随机音调 jitter)
+        if (this.ctx && this.stoneDropBuffer) {
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+            try {
+                const source = this.ctx.createBufferSource();
+                const gain = this.ctx.createGain();
+                source.buffer = this.stoneDropBuffer;
+
+                // 微调音高 (白棋稍脆高音，黑棋较稳沉)，微随机 ±5%
+                const pitchJitter = 0.95 + Math.random() * 0.1;
+                source.playbackRate.value = (isWhite ? 1.04 : 0.98) * pitchJitter;
+
+                gain.gain.value = 0.9;
+                source.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start(0);
+                return;
+            } catch (e) {
+                // 回退下述方案
+            }
         }
 
-        const now = this.ctx.currentTime;
-        // 微随机音高抖动 (±12%)，确保绝不机械重复！
-        const pitchMod = 0.88 + Math.random() * 0.24;
+        // 2. 次选：HTML5 Audio 标签 DOM 播放
+        const htmlAudio = document.getElementById('audioStoneDrop');
+        if (htmlAudio) {
+            try {
+                htmlAudio.currentTime = 0;
+                htmlAudio.volume = 0.85;
+                htmlAudio.play().catch(() => {});
+                return;
+            } catch (e) {}
+        }
 
-        // 黑子较低沉稳，白子较清脆
+        // 3. 兜底：合成器物理清脆碰撞声
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const pitchMod = 0.88 + Math.random() * 0.24;
         const startFreq = (isWhite ? 960 : 720) * pitchMod;
         const endFreq = (isWhite ? 220 : 150) * pitchMod;
-        const duration = 0.045 + Math.random() * 0.015; // 45ms - 60ms 自然衰减
+        const duration = 0.045 + Math.random() * 0.015;
 
-        // 主冲击波 (Impact Transient)
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
@@ -107,34 +161,12 @@ class AudioSynth {
         osc.frequency.setValueAtTime(startFreq, now);
         osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
 
-        const volume = 0.32 + Math.random() * 0.1;
         gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(volume, now + 0.002);
+        gain.gain.linearRampToValueAtTime(0.32, now + 0.002);
         gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-
-        // 35% 概率触发极微弱的二次余震落座声 (Secondary Tap Bounce)
-        if (Math.random() < 0.35) {
-            const tapTime = now + 0.022 + Math.random() * 0.008;
-            const tapOsc = this.ctx.createOscillator();
-            const tapGain = this.ctx.createGain();
-
-            tapOsc.type = 'triangle';
-            tapOsc.frequency.setValueAtTime(startFreq * 0.6, tapTime);
-            tapOsc.frequency.exponentialRampToValueAtTime(100, tapTime + 0.02);
-
-            tapGain.gain.setValueAtTime(0.08, tapTime);
-            tapGain.gain.exponentialRampToValueAtTime(0.001, tapTime + 0.02);
-
-            tapOsc.connect(tapGain);
-            tapGain.connect(this.ctx.destination);
-
-            tapOsc.start(tapTime);
-            tapOsc.stop(tapTime + 0.025);
-        }
-
         osc.start(now);
         osc.stop(now + duration + 0.01);
     }
