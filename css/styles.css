@@ -6120,47 +6120,145 @@ body.theme-mahjong #lobbyScreen {
 .m-face.bing-9 .d-4, .m-face.bing-9 .d-5, .m-face.bing-9 .d-6 { background: #dc2626; }
 .m-face.bing-9 .d-7, .m-face.bing-9 .d-8, .m-face.bing-9 .d-9 { background: #16a34a; }
 
-/* 3. 条/索牌 */
+/* 3. 条/索牌 (1-9条：固定严格不换行与规整列/网格布局) */
 .m-face.tiao {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap !important;
     align-items: center;
     justify-content: center;
-    gap: 1px 2px;
-    width: 84%;
-    height: 84%;
+    width: 86%;
+    height: 86%;
+    margin: auto;
 }
+
 .m-face.tiao-1 {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.m-face.tiao-1 .sparrow {
-    font-size: 1.05rem;
-    line-height: 1;
-    color: #15803d !important;
-    font-weight: 900;
-    filter: invert(30%) sepia(95%) saturate(700%) hue-rotate(95deg) brightness(85%) contrast(125%) drop-shadow(0 1px 1.5px rgba(0,0,0,0.6)) !important;
+.sparrow-svg {
+    width: 84%;
+    height: 84%;
+    filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.4));
 }
+
 .m-face.tiao .bar {
     width: 2.8px;
-    height: 9.5px;
-    background: linear-gradient(180deg, #15803d 0%, #166534 100%);
+    height: 10px;
+    background: linear-gradient(180deg, #16a34a 0%, #15803d 60%, #166534 100%);
     border-radius: 1px;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.4);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 0.5px 1px rgba(0,0,0,0.3);
+    flex-shrink: 0;
 }
-.m-face.tiao-2 .bar { height: 12px; }
-.m-face.tiao-2 .b-1 { background: #15803d; }
-.m-face.tiao-2 .b-2 { background: #b91c1c; }
-.m-face.tiao-3 .bar { height: 9.5px; }
-.m-face.tiao-3 .b-1 { background: #2563eb; }
-.m-face.tiao-3 .b-2 { background: #15803d; }
-.m-face.tiao-3 .b-3 { background: #b91c1c; }
-.m-face.tiao-4 .bar, .m-face.tiao-5 .bar, .m-face.tiao-6 .bar, .m-face.tiao-7 .bar, .m-face.tiao-8 .bar, .m-face.tiao-9 .bar {
-    height: 8px;
-    width: 2.5px;
+
+/* 2索：2条纵杆并立 (绿/红) */
+.m-face.tiao-2 {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
 }
-.m-face.tiao-5 .b-3 { background: #b91c1c; }
+.m-face.tiao-2 .bar { height: 13px; }
+.m-face.tiao-2 .b-1 { background: linear-gradient(180deg, #16a34a, #15803d); }
+.m-face.tiao-2 .b-2 { background: linear-gradient(180deg, #dc2626, #b91c1c); }
+
+/* 3索：3条纵杆紧挨并立 (蓝/绿/红 - 绝对不换行 nowrap) */
+.m-face.tiao-3 {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+}
+.m-face.tiao-3 .bar { height: 11px; }
+.m-face.tiao-3 .b-1 { background: linear-gradient(180deg, #2563eb, #1d4ed8); }
+.m-face.tiao-3 .b-2 { background: linear-gradient(180deg, #16a34a, #15803d); }
+.m-face.tiao-3 .b-3 { background: linear-gradient(180deg, #dc2626, #b91c1c); }
+
+/* 4索：2x2 网格 */
+.m-face.tiao-4 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px 4px;
+    align-items: center;
+    justify-items: center;
+}
+.m-face.tiao-4 .bar { height: 8px; }
+.m-face.tiao-4 .b-1, .m-face.tiao-4 .b-4 { background: linear-gradient(180deg, #16a34a, #15803d); }
+.m-face.tiao-4 .b-2, .m-face.tiao-4 .b-3 { background: linear-gradient(180deg, #dc2626, #b91c1c); }
+
+/* 5索：4角 + 1中心红杆 */
+.m-face.tiao-5 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px 4px;
+    align-items: center;
+    justify-items: center;
+    position: relative;
+}
+.m-face.tiao-5 .bar { height: 8px; background: linear-gradient(180deg, #16a34a, #15803d); }
+.m-face.tiao-5 .b-3 {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(180deg, #dc2626, #b91c1c);
+    height: 8.5px;
+}
+
+/* 6索：2列 x 3行 网格 */
+.m-face.tiao-6 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 1.5px 4px;
+    align-items: center;
+    justify-items: center;
+}
+.m-face.tiao-6 .bar { height: 6.5px; }
+.m-face.tiao-6 .b-1, .m-face.tiao-6 .b-2, .m-face.tiao-6 .b-3 { background: linear-gradient(180deg, #16a34a, #15803d); }
+.m-face.tiao-6 .b-4, .m-face.tiao-6 .b-5, .m-face.tiao-6 .b-6 { background: linear-gradient(180deg, #dc2626, #b91c1c); }
+
+/* 7索：上 3 杆 + 下 4 杆 */
+.m-face.tiao-7 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5px;
+    align-items: center;
+    justify-content: center;
+}
+.m-face.tiao-7 .t7-top { display: flex; gap: 2px; }
+.m-face.tiao-7 .t7-bot { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px 3px; }
+.m-face.tiao-7 .bar { height: 6px; }
+
+/* 8索：2列 x 4行 网格 */
+.m-face.tiao-8 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1px 3.5px;
+    align-items: center;
+    justify-items: center;
+}
+.m-face.tiao-8 .bar { height: 5.5px; background: linear-gradient(180deg, #16a34a, #15803d); }
+
+/* 9索：3列 x 3行 网格 */
+.m-face.tiao-9 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 1px 2px;
+    align-items: center;
+    justify-items: center;
+}
+.m-face.tiao-9 .bar { height: 6px; }
+.m-face.tiao-9 .b-1, .m-face.tiao-9 .b-2, .m-face.tiao-9 .b-3 { background: linear-gradient(180deg, #2563eb, #1d4ed8); }
+.m-face.tiao-9 .b-4, .m-face.tiao-9 .b-5, .m-face.tiao-9 .b-6 { background: linear-gradient(180deg, #dc2626, #b91c1c); }
+.m-face.tiao-9 .b-7, .m-face.tiao-9 .b-8, .m-face.tiao-9 .b-9 { background: linear-gradient(180deg, #16a34a, #15803d); }
 
 /* 4. 字牌 (红中、发财、白板、风牌) */
 .m-face.honor {

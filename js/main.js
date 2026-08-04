@@ -2505,7 +2505,23 @@ class GameEngineController {
         // 4. 条/索牌 (1-9条)
         if (type === '条' || type === '索') {
             if (num === 1) {
-                return `<div class="m-face tiao tiao-1"><div class="sparrow">🀐</div></div>`;
+                return `
+                    <div class="m-face tiao tiao-1">
+                        <svg class="sparrow-svg" viewBox="0 0 36 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 4C14.5 4 12 6.5 12 10.5C12 12.5 13 14.5 15 15.5C12 16.5 8 20.5 8 27C8 35 13 41 18 41C23 41 28 35 28 27C28 20.5 24 16.5 21 15.5C23 14.5 24 12.5 24 10.5C24 6.5 21.5 4 18 4Z" fill="#15803d"/>
+                            <circle cx="15.5" cy="9.5" r="1.5" fill="#fef08a"/>
+                            <path d="M18 16V37" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
+                            <path d="M12 23.5C15 25.5 21 25.5 24 23.5" stroke="#f59e0b" stroke-width="1.8"/>
+                            <path d="M10.5 30C14.5 32.5 21.5 32.5 25.5 30" stroke="#2563eb" stroke-width="1.8"/>
+                        </svg>
+                    </div>`;
+            }
+            if (num === 7) {
+                return `
+                    <div class="m-face tiao tiao-7">
+                        <div class="t7-top"><span class="bar b-1"></span><span class="bar b-2"></span><span class="bar b-3"></span></div>
+                        <div class="t7-bot"><span class="bar b-4"></span><span class="bar b-5"></span><span class="bar b-6"></span><span class="bar b-7"></span></div>
+                    </div>`;
             }
             let bars = '';
             for (let i = 1; i <= num; i++) {
