@@ -5828,14 +5828,29 @@ body.theme-mahjong #lobbyScreen {
     box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
 }
 
-/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸，绝对不渗透至 PC 端 */
+/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台左右加宽展开 */
 @media (max-width: 768px) {
+    .mahjong-screen-wrap {
+        padding: 4px !important;
+        padding-top: max(65px, env(safe-area-inset-top)) !important;
+    }
+    .mahjong-table-vertical-container {
+        max-width: 100% !important;
+        padding: 6px 4px !important;
+    }
+    .vertical-mahjong-table {
+        max-width: 100% !important;
+        width: 98% !important;
+        aspect-ratio: 1 / 1.22 !important;
+        border-width: 4.5px !important;
+        border-radius: 14px !important;
+    }
     .mahjong-tiles-bottom {
-        gap: 1px !important;
+        gap: 1.5px !important;
     }
     .mahjong-tile-card {
         width: calc((100% - 16px) / 14.2) !important;
-        max-width: 25px !important;
+        max-width: 28px !important;
         min-width: 18px !important;
         aspect-ratio: 1 / 1.34 !important;
         height: auto !important;
