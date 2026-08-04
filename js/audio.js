@@ -10,6 +10,8 @@ class AudioSynth {
         this.isBufferLoading = false;
         this.stoneDropBuffer = null;
         this.isStoneBufferLoading = false;
+        this.mahjongTileBuffer = null;
+        this.isMahjongBufferLoading = false;
         this.mobileAudioUnlocked = false;
     }
 
@@ -30,6 +32,9 @@ class AudioSynth {
             if (!this.stoneDropBuffer && !this.isStoneBufferLoading) {
                 this.loadStoneDropBuffer();
             }
+            if (!this.mahjongTileBuffer && !this.isMahjongBufferLoading) {
+                this.loadMahjongTileBuffer();
+            }
         }
     }
 
@@ -43,7 +48,7 @@ class AudioSynth {
         }
 
         // 解封 HTML5 Audio 标签 (iOS Safari 关键静音触发解封)
-        ['audioCardFlip', 'audioStoneDrop'].forEach(id => {
+        ['audioCardFlip', 'audioStoneDrop', 'audioMahjongTile'].forEach(id => {
             const el = document.getElementById(id);
             if (el && !this.mobileAudioUnlocked) {
                 try {
@@ -95,6 +100,24 @@ class AudioSynth {
             // 静默容错
         } finally {
             this.isStoneBufferLoading = false;
+        }
+    }
+
+    async loadMahjongTileBuffer() {
+        if (this.mahjongTileBuffer || this.isMahjongBufferLoading) return;
+        this.isMahjongBufferLoading = true;
+        try {
+            const response = await fetch('sound/mahjangclack-1.wav');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.mahjongTileBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            }
+        } catch (e) {
+            // 静默容错
+        } finally {
+            this.isMahjongBufferLoading = false;
         }
     }
 
@@ -730,73 +753,56 @@ class AudioSynth {
     }
 
     /**
-     * 播放国粹麻将清脆出牌/落牌碰撞音效 (Mahjong Clatter Sound)
-     * 模拟高密度玉石麻将牌落地产生的清脆回响与卡哒声 (Crisp Jade Impact + Metallic Resonant Resonance)
+     * 播放真实国粹麻将牌落牌碰撞音效 (sound/mahjangclack-1.wav)
+     * 优先使用 Web Audio API 解码 Buffer (0延迟、100%免疫阻断)，备用使用 HTML5 Audio 节点与合成器
      */
     playMahjongTile() {
         if (!this.enabled) return;
         this.init();
-        if (!this.ctx) return;
 
-        const now = this.ctx.currentTime;
+        // 优先使用 Web Audio API 解码 Buffer (0 延迟、100% 免疫阻断)
+        if (this.ctx && this.mahjongTileBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.mahjongTileBuffer;
+                source.playbackRate.value = 1.0;
 
-        // 1. 麻将主撞击音调 (1450Hz 清脆高音)
-        const osc1 = this.ctx.createOscillator();
-        const gain1 = this.ctx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(1450, now);
-        osc1.frequency.exponentialRampToValueAtTime(520, now + 0.04);
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 0.95;
 
-        gain1.gain.setValueAtTime(0.001, now);
-        gain1.gain.linearRampToValueAtTime(0.35, now + 0.002);
-        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
 
-        osc1.connect(gain1);
-        gain1.connect(this.ctx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.04);
-
-        // 2. 玉石余震回响 (2800Hz 极硬脆响)
-        const osc2 = this.ctx.createOscillator();
-        const gain2 = this.ctx.createGain();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(2850, now + 0.003);
-        osc2.frequency.exponentialRampToValueAtTime(890, now + 0.035);
-
-        gain2.gain.setValueAtTime(0.001, now + 0.003);
-        gain2.gain.linearRampToValueAtTime(0.22, now + 0.005);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-
-        osc2.connect(gain2);
-        gain2.connect(this.ctx.destination);
-        osc2.start(now + 0.003);
-        osc2.stop(now + 0.035);
-
-        // 3. 麻将牌面摩擦物理噪点
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.02);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+                source.start(0);
+                return;
+            } catch (e) {
+                // 回退
+            }
         }
 
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
+        // 备用方案 1: HTML5 Audio DOM 节点
+        const el = document.getElementById('audioMahjongTile');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 0.95;
+                const p = clone.play();
+                if (p !== undefined) {
+                    p.then(() => {}).catch(() => {});
+                }
+                return;
+            } catch (e) {}
+        }
 
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(3200, now);
-        filter.Q.value = 3.0;
-
-        const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.001, now);
-        noiseGain.gain.linearRampToValueAtTime(0.18, now + 0.002);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-
-        noise.connect(filter);
-        filter.connect(noiseGain);
-        noiseGain.connect(this.ctx.destination);
-        noise.start(now);
+        // 备用方案 2: 动态 Audio 实例
+        try {
+            const audio = new Audio('sound/mahjangclack-1.wav');
+            audio.volume = 0.95;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+            }
+        } catch (e) {}
     }
 }
 
