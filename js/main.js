@@ -3104,19 +3104,41 @@ class GameEngineController {
             if (fanListEl) fanListEl.textContent = '· 对方胡牌';
         }
 
-        // 💰 结算麻将【知因币】 (带 PVE 25% 比例和零分保底)
-        if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins && winnerIdx !== -1) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
-            const ratio = isPve ? 0.25 : 1.0;
-            const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
-            const baseAmount = 100 * fanCount;
+        // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报
+        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+        const ratio = isPve ? 0.25 : 1.0;
+        const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
+        const baseAmount = 100 * fanCount;
+        const winAmount = Math.ceil(baseAmount * ratio);
+        const loseAmount = Math.ceil((baseAmount / 3) * ratio);
 
+        const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
+        const windNames = ['东', '南', '西', '北'];
+
+        // 动态渲染 4 家知因币结算数额
+        for (let i = 0; i < 4; i++) {
+            const rowEl = document.getElementById(`scoreRow${i}`);
+            if (rowEl) {
+                const relIdx = (mySlot + i) % 4;
+                const p = seatPlayers[relIdx];
+                const pName = p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `玩家${relIdx + 1}`;
+                const wTag = `(${windNames[relIdx]}风)`;
+
+                if (winnerIdx === -1) {
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff" style="color:#94a3b8;">0 知因币</span>`;
+                } else if (relIdx === winnerIdx) {
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff positive">+${winAmount} 知因币</span>`;
+                } else {
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff negative">-${loseAmount} 知因币</span>`;
+                }
+            }
+        }
+
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins && winnerIdx !== -1) {
             if (winnerIdx === mySlot) {
-                const winCoins = Math.ceil(baseAmount * ratio);
-                AuthEngine.updateCoins(winCoins, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
+                AuthEngine.updateCoins(winAmount, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
             } else {
-                const loseCoins = -Math.ceil((baseAmount / 3) * ratio);
-                AuthEngine.updateCoins(loseCoins, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
+                AuthEngine.updateCoins(-loseAmount, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
             }
         }
 
