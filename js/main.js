@@ -329,12 +329,13 @@ class GameEngineController {
             this.startAiGame(nickname);
         });
 
-        // 在线公共房间大厅 (斗地主 & 五子棋)
-        const btnPublicRooms       = document.getElementById('btnPublicRooms');
-        const btnPublicGomokuRooms = document.getElementById('btnPublicGomokuRooms');
-        const publicModal          = document.getElementById('publicRoomsModal');
-        const closePublic          = document.getElementById('btnClosePublicRooms');
-        const refreshPublic        = document.getElementById('btnRefreshPublicRooms');
+        // 在线公共房间大厅 (斗地主 & 五子棋 & 游鲸麻将)
+        const btnPublicRooms        = document.getElementById('btnPublicRooms');
+        const btnPublicGomokuRooms  = document.getElementById('btnPublicGomokuRooms');
+        const btnPublicMahjongRooms = document.getElementById('btnPublicMahjongRooms');
+        const publicModal           = document.getElementById('publicRoomsModal');
+        const closePublic           = document.getElementById('btnClosePublicRooms');
+        const refreshPublic         = document.getElementById('btnRefreshPublicRooms');
 
         let currentPublicGameType = 'DOUDIZHU';
 
@@ -350,6 +351,13 @@ class GameEngineController {
                 currentPublicGameType = 'GOMOKU';
                 publicModal.style.display = 'flex';
                 this.refreshPublicRoomsList('GOMOKU');
+            });
+        }
+        if (btnPublicMahjongRooms && publicModal) {
+            btnPublicMahjongRooms.addEventListener('click', () => {
+                currentPublicGameType = 'MAHJONG';
+                publicModal.style.display = 'flex';
+                this.refreshPublicRoomsList('MAHJONG');
             });
         }
         if (publicModal) {
@@ -2650,15 +2658,21 @@ class GameEngineController {
         const container = document.getElementById('publicRoomsListContainer');
         if (!container) return;
 
-        const isGomoku = gameType === 'GOMOKU';
+        const isMahjong = gameType === 'MAHJONG';
+        const isGomoku  = gameType === 'GOMOKU';
+        const totalSeats = isMahjong ? 4 : (isGomoku ? 2 : 3);
+        const gameName   = isMahjong ? '游鲸麻将' : (isGomoku ? '五子棋' : '斗地主');
+
         const modalTitle = document.querySelector('#publicRoomsModal .ct-title');
         if (modalTitle) {
-            modalTitle.innerHTML = isGomoku ?
+            modalTitle.innerHTML = isMahjong ?
+                '<i class="fa-solid fa-square-full" style="color:#34d399;"></i> 在线游鲸麻将大厅' :
+                (isGomoku ?
                 '<i class="fa-solid fa-chess-board" style="color:#34d399;"></i> 在线五子棋对局大厅' :
-                '<i class="fa-solid fa-list-check" style="color:#e2a820;"></i> 在线房间大厅';
+                '<i class="fa-solid fa-list-check" style="color:#e2a820;"></i> 在线房间大厅');
         }
 
-        container.innerHTML = `<div style="text-align:center;color:${isGomoku ? '#34d399' : '#94a3b8'};padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取${isGomoku ? '五子棋' : '斗地主'}在线房间...</div>`;
+        container.innerHTML = `<div style="text-align:center;color:${isMahjong || isGomoku ? '#34d399' : '#94a3b8'};padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取${gameName}在线房间...</div>`;
 
         NetworkManager.fetchPublicRooms((rooms) => {
             container.innerHTML = '';
@@ -2667,8 +2681,8 @@ class GameEngineController {
                 container.innerHTML = `
                     <div style="text-align:center;color:#94a3b8;padding:36px 10px;font-size:0.88rem;">
                         <i class="fa-solid fa-ghost" style="font-size:2rem;margin-bottom:10px;color:#a07840;display:block;"></i>
-                        <div>当前暂无活跃公开房间</div>
-                        <div style="font-size:0.75rem;margin-top:6px;color:#64748b;">快去点击【创建房间】建立第一个对局吧！</div>
+                        <div>当前暂无活跃 ${gameName} 公开房间</div>
+                        <div style="font-size:0.75rem;margin-top:6px;color:#64748b;">快去点击【创建${gameName}对局】建立第一个房间吧！</div>
                     </div>
                 `;
                 return;
@@ -2682,13 +2696,13 @@ class GameEngineController {
 
                 let phaseText = '🟢 等待开局';
                 let phaseClass = 'waiting';
-                if (phase === 'BIDDING') { phaseText = '🟡 抢地主中'; phaseClass = 'bidding'; }
-                if (phase === 'PLAYING') { phaseText = '🔴 打牌进行中'; phaseClass = 'playing'; }
+                if (phase === 'BIDDING') { phaseText = isMahjong ? '🟡 摸牌起手' : '🟡 抢地主中'; phaseClass = 'bidding'; }
+                if (phase === 'PLAYING') { phaseText = isMahjong ? '🀄 雀局进行中' : (isGomoku ? '♟️ 棋局进行中' : '🔴 打牌进行中'); phaseClass = 'playing'; }
                 if (phase === 'GAMEOVER') { phaseText = '🎉 对局刚结束'; phaseClass = 'waiting'; }
 
                 // 计算真人数量与 AI 数量
                 const humanPlayers = players.filter(p => p && !p.isAi && p.name);
-                const aiCount = 3 - humanPlayers.length;
+                const aiCount = totalSeats - humanPlayers.length;
 
                 // 渲染玩家列表标签
                 let playersHtml = players.map((p, idx) => {
