@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=10.1">
+    <link rel="stylesheet" href="css/styles.css?v=11.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -463,79 +463,83 @@
             </div>
         </div>
 
-        <!-- 🀄 游鲸麻将 专属 4 人围桌正宗麻将桌台 (Real 4-Player Mahjong Table Screen) -->
+        <!-- 🀄 游鲸麻将 专属 4 人竖屏全景桌台 (Vertical Mobile 4-Player Mahjong Table Screen) -->
         <div id="mahjongGameScreen" class="overlay-screen mahjong-screen-wrap" style="display: none;">
-            <div class="mahjong-table-square-container">
-                <!-- 顶部对局状态指示 -->
-                <div class="mahjong-turn-status top-status" id="mahjongTurnStatus">
-                    <span class="status-dot jade"></span>
-                    <span id="mahjongTurnText">🀄 东风圈 · 你的回合</span>
+            <div class="mahjong-table-vertical-container">
+                <!-- 顶部对局状态指示与按键 -->
+                <div class="mahjong-top-bar">
+                    <button class="btn-mahjong-nav-back" id="btnMahjongBackLobby"><i class="fa-solid fa-arrow-left"></i> 大厅</button>
+                    <div class="mahjong-turn-status top-status" id="mahjongTurnStatus">
+                        <span class="status-dot jade"></span>
+                        <span id="mahjongTurnText">🀄 东风圈 · 你的回合</span>
+                    </div>
+                    <button class="btn-mahjong-nav-rematch" id="btnMahjongRematch"><i class="fa-solid fa-rotate-right"></i> 重来</button>
                 </div>
 
-                <!-- 🀄 四方围桌主体 (Square 4-Player Felt Table) -->
-                <div class="square-mahjong-table">
+                <!-- 🀄 竖屏全景绒面麻将桌 (Vertical Mobile Felt Table) -->
+                <div class="vertical-mahjong-table">
 
                     <!-- 1. 北家 (Top / 对家 / AI-2) -->
                     <div class="table-player-seat seat-top" id="mahjongSeatTop">
-                        <div class="player-avatar-badge">🤖</div>
-                        <div class="player-info-box">
+                        <div class="seat-user-pill">
+                            <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameTop">AI 北家</span>
                             <span class="p-score" id="mScoreTop">1000分</span>
                         </div>
-                        <!-- 北家立牌 (背面) -->
-                        <div class="mahjong-tiles-top" id="mahjongTilesTop"></div>
+                        <!-- 北家立牌 (13张背面盖牌) -->
+                        <div class="standing-tiles-row top-row" id="mahjongTilesTop"></div>
                     </div>
 
                     <!-- 2. 西家 (Left / 左家 / AI-3) -->
                     <div class="table-player-seat seat-left" id="mahjongSeatLeft">
-                        <div class="player-avatar-badge">🤖</div>
-                        <div class="player-info-box">
+                        <div class="seat-user-pill vertical">
+                            <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameLeft">AI 西家</span>
-                            <span class="p-score" id="mScoreLeft">1000分</span>
                         </div>
-                        <!-- 西家立牌 (侧立背面) -->
-                        <div class="mahjong-tiles-left" id="mahjongTilesLeft"></div>
+                        <!-- 西家立牌 (13张侧立盖牌) -->
+                        <div class="standing-tiles-col left-col" id="mahjongTilesLeft"></div>
                     </div>
 
                     <!-- 3. 东家 (Right / 右家 / AI-1) -->
                     <div class="table-player-seat seat-right" id="mahjongSeatRight">
-                        <div class="player-avatar-badge">🤖</div>
-                        <div class="player-info-box">
+                        <div class="seat-user-pill vertical">
+                            <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameRight">AI 东家</span>
-                            <span class="p-score" id="mScoreRight">1000分</span>
                         </div>
-                        <!-- 东家立牌 (侧立背面) -->
-                        <div class="mahjong-tiles-right" id="mahjongTilesRight"></div>
+                        <!-- 东家立牌 (13张侧立盖牌) -->
+                        <div class="standing-tiles-col right-col" id="mahjongTilesRight"></div>
                     </div>
 
                     <!-- 4. 4 方弃牌堆与中央 3D 局风罗盘 -->
                     <div class="table-center-zone">
+                        <!-- 中央 4 方弃牌桌中区 -->
                         <div class="mahjong-discards-4p">
-                            <div class="discard-row row-top" id="discardsTop"></div>
-                            <div class="discard-col col-left" id="discardsLeft"></div>
-                            <div class="discard-col col-right" id="discardsRight"></div>
-                            <div class="discard-row row-bottom" id="discardsBottom"></div>
+                            <div class="discard-grid grid-top" id="discardsTop"></div>
+                            <div class="discard-grid grid-left" id="discardsLeft"></div>
+                            <div class="discard-grid grid-right" id="discardsRight"></div>
+                            <div class="discard-grid grid-bottom" id="discardsBottom"></div>
                         </div>
 
-                        <!-- 中央 3D 局风罗盘 (东南西北 + 倒计时) -->
+                        <!-- 中央 3D 局风罗盘 (东南西北 + 15s 倒计时) -->
                         <div class="mahjong-compass-center" id="mahjongCompassContainer">
+                            <div class="compass-wind wind-n" id="windNorth">北</div>
+                            <div class="compass-wind wind-w" id="windWest">西</div>
                             <div class="compass-wind wind-e" id="windEast">东</div>
                             <div class="compass-wind wind-s active" id="windSouth">南</div>
-                            <div class="compass-wind wind-w" id="windWest">西</div>
-                            <div class="compass-wind wind-n" id="windNorth">北</div>
                             <div class="compass-timer" id="mahjongTimer">15</div>
                         </div>
                     </div>
 
-                    <!-- 5. 南家 (Bottom / 我方) -->
+                    <!-- 5. 南家 (Bottom / 我方) - 极其沉底避让视线 -->
                     <div class="table-player-seat seat-bottom" id="mahjongSeatBottom">
-                        <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
-                        <div class="player-info-box">
+                        <!-- 我方头像与分值 -->
+                        <div class="seat-user-pill bottom-pill">
+                            <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
                             <span class="p-name" id="mNameBottom">我方玩家</span>
                             <span class="p-score" id="mScoreBottom">1000分</span>
                         </div>
 
-                        <!-- 碰/杠/胡 动态吃碰动作浮条 -->
+                        <!-- 碰/杠/胡 动态吃碰动作浮条 (置于手牌上方) -->
                         <div class="mahjong-action-bar" id="mahjongActionBar" style="display:none;">
                             <button class="btn-mahjong-act act-pong" id="btnMahjongPong">🀄 碰</button>
                             <button class="btn-mahjong-act act-kong" id="btnMahjongKong">🀅 杠</button>
@@ -543,16 +547,10 @@
                             <button class="btn-mahjong-act act-pass" id="btnMahjongPass">✕ 过</button>
                         </div>
 
-                        <!-- 我方立体手牌区 (象牙白面 + 翡翠绿背) -->
+                        <!-- 我方沉底 3D 立体手牌区 (象牙白面 + 翡翠绿背) -->
                         <div class="mahjong-tiles-bottom" id="mahjongHandTilesContainer"></div>
                     </div>
 
-                </div>
-
-                <!-- 底栏返回大厅与重来一局控制 -->
-                <div class="mahjong-control-btns">
-                    <button class="btn-mahjong-ctrl" id="btnMahjongBackLobby"><i class="fa-solid fa-house"></i> 返回大厅</button>
-                    <button class="btn-mahjong-ctrl rematch" id="btnMahjongRematch"><i class="fa-solid fa-rotate-right"></i> 重来一局</button>
                 </div>
             </div>
         </div>

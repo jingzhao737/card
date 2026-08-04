@@ -2047,28 +2047,65 @@ class GameEngineController {
     }
 
     /**
-     * 渲染我方及另外 3 方手牌
+     * 渲染我方手牌及另外 3 家盖牌背牌 (Top, Left, Right)
      */
     renderMahjongHandTiles() {
-        const container = document.getElementById('mahjongHandTilesContainer');
-        if (!container || !window.mahjongEngine) return;
+        const engine = window.mahjongEngine;
+        if (!engine) return;
 
-        container.innerHTML = '';
-        const myHand = window.mahjongEngine.hands[0] || [];
+        // 1. 渲染我方 (Seat 0 / 南) 手牌
+        const containerBottom = document.getElementById('mahjongHandTilesContainer');
+        if (containerBottom) {
+            containerBottom.innerHTML = '';
+            const myHand = engine.hands[0] || [];
 
-        myHand.forEach((tile, index) => {
-            const card = document.createElement('div');
-            card.className = 'mahjong-tile-card';
-            card.dataset.index = index;
+            myHand.forEach((tile, index) => {
+                const card = document.createElement('div');
+                card.className = 'mahjong-tile-card';
+                card.dataset.index = index;
 
-            card.innerHTML = `<span class="mahjong-tile-name">${tile.name}</span>`;
+                card.innerHTML = `<span class="mahjong-tile-name">${tile.name}</span>`;
 
-            card.addEventListener('click', () => {
-                this.handleMahjongTileDiscard(index);
+                card.addEventListener('click', () => {
+                    this.handleMahjongTileDiscard(index);
+                });
+
+                containerBottom.appendChild(card);
             });
+        }
 
-            container.appendChild(card);
-        });
+        // 2. 渲染北家 (Seat 2 / Top) 13张盖牌背牌
+        const containerTop = document.getElementById('mahjongTilesTop');
+        if (containerTop) {
+            const countTop = (engine.hands[2] || []).length;
+            let htmlTop = '';
+            for (let i = 0; i < countTop; i++) {
+                htmlTop += `<div class="standing-tile-top"></div>`;
+            }
+            containerTop.innerHTML = htmlTop;
+        }
+
+        // 3. 渲染西家 (Seat 3 / Left) 13张盖牌背牌
+        const containerLeft = document.getElementById('mahjongTilesLeft');
+        if (containerLeft) {
+            const countLeft = (engine.hands[3] || []).length;
+            let htmlLeft = '';
+            for (let i = 0; i < countLeft; i++) {
+                htmlLeft += `<div class="standing-tile-left"></div>`;
+            }
+            containerLeft.innerHTML = htmlLeft;
+        }
+
+        // 4. 渲染东家 (Seat 1 / Right) 13张盖牌背牌
+        const containerRight = document.getElementById('mahjongTilesRight');
+        if (containerRight) {
+            const countRight = (engine.hands[1] || []).length;
+            let htmlRight = '';
+            for (let i = 0; i < countRight; i++) {
+                htmlRight += `<div class="standing-tile-right"></div>`;
+            }
+            containerRight.innerHTML = htmlRight;
+        }
     }
 
     /**
@@ -2078,10 +2115,40 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
-        const rowBottom = document.getElementById('discardsBottom');
-        if (rowBottom) {
-            rowBottom.innerHTML = (engine.discards[0] || []).map(t => `<span class="discard-chip">${t.name}</span>`).join('');
-        }
+        const map = [
+            { id: 'discardsBottom', idx: 0 },
+            { id: 'discardsRight',  idx: 1 },
+            { id: 'discardsTop',    idx: 2 },
+            { id: 'discardsLeft',   idx: 3 }
+        ];
+
+        map.forEach(item => {
+            const el = document.getElementById(item.id);
+            if (el) {
+                const list = engine.discards[item.idx] || [];
+                el.innerHTML = list.map(t => `<span class="discard-chip">${t.name}</span>`).join('');
+            }
+        });
+    }
+
+    /**
+     * 3D 抛掷出牌飞行动画
+     */
+    animateTileThrow(tile, playerIdx) {
+        const table = document.querySelector('.vertical-mahjong-table');
+        if (!table) return;
+
+        const animTile = document.createElement('div');
+        animTile.className = `throwing-mahjong-tile player-${playerIdx}`;
+        animTile.textContent = tile ? tile.name : '🀄';
+
+        table.appendChild(animTile);
+
+        setTimeout(() => {
+            if (animTile.parentNode) {
+                animTile.parentNode.removeChild(animTile);
+            }
+        }, 450);
     }
 
     /**
@@ -2094,7 +2161,6 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
-        // 亮起当前出牌方风向
         const winds = ['windSouth', 'windEast', 'windNorth', 'windWest'];
         winds.forEach((wId, idx) => {
             const el = document.getElementById(wId);
@@ -2106,7 +2172,7 @@ class GameEngineController {
     }
 
     /**
-     * 我方打牌与 4 人 AI 顺序轮转
+     * 我方打牌与 4 人 AI 顺序轮转 (带 3D 抛掷动画)
      */
     handleMahjongTileDiscard(tileIndex) {
         const engine = window.mahjongEngine;
@@ -2122,6 +2188,7 @@ class GameEngineController {
             SoundEngine.playCardPlaySound();
         }
 
+        this.animateTileThrow(res.discarded, 0);
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
 
@@ -2131,12 +2198,11 @@ class GameEngineController {
             return;
         }
 
-        // 自动触发 3 家 AI 依序打牌 (1 -> 2 -> 3 -> 0)
         this.triggerAiTurnLoop();
     }
 
     /**
-     * 3 家 AI 依序打牌循环
+     * 3 家 AI 依序打牌循环 (带 3D 抛掷动画)
      */
     triggerAiTurnLoop() {
         const engine = window.mahjongEngine;
@@ -2152,6 +2218,10 @@ class GameEngineController {
 
             if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) {
                 SoundEngine.playCardPlaySound();
+            }
+
+            if (aiRes && aiRes.discarded) {
+                this.animateTileThrow(aiRes.discarded, aiIdx);
             }
 
             this.renderMahjongHandTiles();
