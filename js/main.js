@@ -2608,12 +2608,12 @@ class GameEngineController {
         if (!row || !window.mahjongEngine) return;
 
         const count = window.mahjongEngine.wallCount || 0;
-        const maxCols = 24;
-        const colCount = Math.min(maxCols, Math.max(0, Math.ceil(count / 3.5)));
+        const maxCols = 22;
+        const colCount = Math.min(maxCols, Math.max(0, Math.ceil(count / 3.8)));
 
         let html = '';
         for (let i = 0; i < colCount; i++) {
-            const isDouble = (i * 3.5 < count);
+            const isDouble = (i * 3.8 < count);
             html += `<div class="wall-mini-tile-stack ${isDouble ? 'double-stack' : ''}"></div>`;
         }
         row.innerHTML = html;
