@@ -5541,31 +5541,40 @@ body.theme-mahjong #lobbyScreen {
     padding: 12px 14px;
 }
 
-/* 顶部对局状态 Bar (大幅下移 100px+，远离屏幕顶沿) */
+/* 顶部对局状态 Bar (严格固定 38px 高度，防止长文本换行推挤下移麻将桌) */
 .mahjong-top-bar {
     width: 100%;
+    height: 38px;
+    min-height: 38px;
+    max-height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 4px 6px;
+    padding: 0 6px;
     margin-top: 25px;
     flex-shrink: 0;
     z-index: 50;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .mahjong-turn-status.top-status {
     background: rgba(0, 0, 0, 0.65);
     border: 1px solid rgba(52, 211, 153, 0.5);
     border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.84rem;
+    padding: 5px 16px;
+    font-size: 0.82rem;
     font-weight: 800;
     color: #34d399;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 85%;
 }
 
 .btn-mahjong-nav-rematch {
@@ -5828,22 +5837,30 @@ body.theme-mahjong #lobbyScreen {
     box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
 }
 
-/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台左右加宽展开 */
+/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台左右加宽 + 上下拉长 */
 @media (max-width: 768px) {
     .mahjong-screen-wrap {
         padding: 4px !important;
-        padding-top: max(65px, env(safe-area-inset-top)) !important;
+        padding-top: max(60px, env(safe-area-inset-top)) !important;
     }
     .mahjong-table-vertical-container {
         max-width: 100% !important;
-        padding: 6px 4px !important;
+        padding: 4px !important;
     }
     .vertical-mahjong-table {
         max-width: 100% !important;
         width: 98% !important;
-        aspect-ratio: 1 / 1.22 !important;
+        aspect-ratio: 1 / 1.36 !important;
+        max-height: 82vh !important;
+        max-height: 82dvh !important;
         border-width: 4.5px !important;
         border-radius: 14px !important;
+    }
+    .mahjong-top-bar {
+        margin-top: 10px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        max-height: 34px !important;
     }
     .mahjong-tiles-bottom {
         gap: 1.5px !important;
