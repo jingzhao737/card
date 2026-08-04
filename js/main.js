@@ -2161,7 +2161,10 @@ class GameEngineController {
 
         // 实时监听其他玩家在云端的打牌动作与全局牌桌同步
         NetworkManager.onMahjongMove((move) => {
-            if (!move || move.senderSlot === mySlot) return;
+            if (!move) return;
+            const senderIsAi = (this.gameState.players && this.gameState.players[move.senderSlot]) ? this.gameState.players[move.senderSlot].isAi : false;
+            if (NetworkManager.isHost && senderIsAi) return;
+            if (move.senderSlot === mySlot) return;
             if (move.stateData) {
                 window.mahjongEngine.importState(move.stateData);
                 this.renderMahjongHandTiles();
@@ -2722,7 +2725,7 @@ class GameEngineController {
                 }
 
                 // 轮到下一家
-                if (engine.currentTurn !== 0) {
+                if (engine.currentTurn !== mySlot) {
                     this.triggerAiTurnLoop();
                 } else {
                     this.updateMahjongStatusUI('🀄 轮到你出牌');
@@ -2733,7 +2736,7 @@ class GameEngineController {
                 // 兜底：渲染/动画/音效等任何一步出错都不能让 AI 链永久卡死
                 try {
                     if (engine.isGameOver) return;
-                    if (engine.currentTurn !== 0) {
+                    if (engine.currentTurn !== mySlot) {
                         this.triggerAiTurnLoop();
                     } else {
                         this.updateMahjongStatusUI('🀄 轮到你出牌');
