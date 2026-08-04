@@ -412,6 +412,7 @@ class GameEngineController {
                 if (cardMahjong)    cardMahjong.style.display = 'none';
             }
         };
+        this.switchGameLobby = switchGameLobby;
 
         if (btnNavDoudizhu) btnNavDoudizhu.addEventListener('click', () => switchGameLobby('DOUDIZHU'));
         if (btnNavGomoku)   btnNavGomoku.addEventListener('click', () => switchGameLobby('GOMOKU'));
@@ -1633,8 +1634,16 @@ class GameEngineController {
         }
         this.updateHeaderVisibility();
 
-        // 房主随机决定先手黑棋归属
-        const hostIsBlack = Math.random() < 0.5;
+        // 房主随机决定先手黑棋归属并广播同步
+        let hostIsBlack;
+        if (isHost) {
+            hostIsBlack = hostIsBlackSynced !== null ? hostIsBlackSynced : (Math.random() < 0.5);
+            NetworkManager.clearGomokuMoves();
+            NetworkManager.sendGomokuStart(roomId, hostIsBlack);
+        } else {
+            hostIsBlack = hostIsBlackSynced !== null ? hostIsBlackSynced : true;
+        }
+
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
         const myColor = (mySlot === 0 && hostIsBlack) || (mySlot === 1 && !hostIsBlack) ? 1 : 2;
         const iAmBlack = (myColor === 1);
@@ -1671,7 +1680,7 @@ class GameEngineController {
 
         // 监听云端落子广播
         NetworkManager.onGomokuMove((move) => {
-            if (!move) return;
+            if (!move || move.senderSlot === NetworkManager.myPlayerIndex) return;
             const engine = window.gomokuEngine;
             if (engine.board[move.r][move.c] === 0) {
                 const res = engine.placeStone(move.r, move.c);

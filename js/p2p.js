@@ -784,11 +784,17 @@ class P2PManager {
         this.roomRef.child('mahjongLastMove').remove();
     }
 
-    sendGomokuStart(roomId) {
+    clearGomokuMoves() {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuMove').remove();
+    }
+
+    sendGomokuStart(roomId, hostIsBlack = true) {
         if (!this.roomRef) return;
         this.roomRef.child('gomokuStart').set({
             ts: Date.now(),
-            hostNick: this.nickname
+            hostNick: this.nickname,
+            hostIsBlack
         });
     }
 
