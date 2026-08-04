@@ -5226,6 +5226,55 @@ body.theme-mahjong {
 .game-switch-nav .game-nav-btn {
     white-space: nowrap !important;
     position: relative !important;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* 🎮 主大厅 3 大游戏导航按键 对应专属主题颜色高亮 */
+
+/* 1. 游鲸斗地主：经典金灿流光高亮 */
+#btnNavDoudizhu.active {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: #0f172a !important;
+    border-color: #fbbf24 !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5) !important;
+    font-weight: 900 !important;
+}
+
+/* 2. 游鲸五子棋：翡翠碧绿主题高亮 */
+#btnNavGomoku.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    border-color: #34d399 !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5) !important;
+    font-weight: 900 !important;
+}
+
+/* 3. 游鲸麻将：正宗沉香桃木红+描金主题高亮 */
+#btnNavMahjong.active {
+    background: linear-gradient(135deg, #8b261b 0%, #6e1e14 50%, #4a130c 100%) !important;
+    color: #fef08a !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 4px 16px rgba(139, 38, 27, 0.75), 0 0 12px rgba(245, 158, 11, 0.4) !important;
+    font-weight: 900 !important;
+}
+
+/* 未激活 hover 效果 */
+#btnNavDoudizhu:hover:not(.active) {
+    background: rgba(245, 158, 11, 0.2) !important;
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    color: #fef08a !important;
+}
+
+#btnNavGomoku:hover:not(.active) {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border-color: rgba(52, 211, 153, 0.4) !important;
+    color: #6ee7b7 !important;
+}
+
+#btnNavMahjong:hover:not(.active) {
+    background: rgba(139, 38, 27, 0.35) !important;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    color: #fde047 !important;
 }
 
 .badge-corner-new {
