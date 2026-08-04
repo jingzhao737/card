@@ -591,9 +591,15 @@ class AuthManager {
 
         const currentCoins = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
         let fee = 20;
-        if (gameType === 'GOMOKU') fee = isPve ? 3 : 10;
-        else if (gameType === 'MAHJONG') fee = isPve ? 8 : 30;
-        else fee = isPve ? 5 : 20;
+        if (isPve) {
+            fee = 1; // 人机局切磋统一固定仅收 1 知因币！
+        } else if (gameType === 'GOMOKU') {
+            fee = 10;
+        } else if (gameType === 'MAHJONG') {
+            fee = 30;
+        } else {
+            fee = 20;
+        }
 
         if (currentCoins < fee) {
             if (typeof UIRenderer !== 'undefined') {
