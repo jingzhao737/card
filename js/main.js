@@ -2570,6 +2570,72 @@ class GameEngineController {
     }
 
     /**
+     * 启动/重置 25 秒麻将倒计时器 (与扑克风格一致，超时自动打出刚摸的牌)
+     */
+    resetMahjongTurnTimer() {
+        if (this._mahjongTimerInterval) {
+            clearInterval(this._mahjongTimerInterval);
+            this._mahjongTimerInterval = null;
+        }
+
+        const timerEl = document.getElementById('mahjongTimer');
+        const engine = window.mahjongEngine;
+        if (!engine || engine.isGameOver) {
+            if (timerEl) {
+                timerEl.textContent = '25';
+                timerEl.classList.remove('urgent');
+            }
+            return;
+        }
+
+        this._mahjongTimerSeconds = 25;
+        if (timerEl) {
+            timerEl.textContent = '25';
+            timerEl.classList.remove('urgent');
+        }
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+
+        this._mahjongTimerInterval = setInterval(() => {
+            if (!engine || engine.isGameOver) {
+                clearInterval(this._mahjongTimerInterval);
+                this._mahjongTimerInterval = null;
+                return;
+            }
+
+            this._mahjongTimerSeconds--;
+            if (timerEl) {
+                timerEl.textContent = Math.max(0, this._mahjongTimerSeconds);
+                if (this._mahjongTimerSeconds <= 5) timerEl.classList.add('urgent');
+                else timerEl.classList.remove('urgent');
+            }
+
+            if (this._mahjongTimerSeconds <= 0) {
+                clearInterval(this._mahjongTimerInterval);
+                this._mahjongTimerInterval = null;
+
+                // 超时托管判定
+                if (this.pendingDiscardRes) {
+                    // 吃碰杠胡响应超时 -> 自动过牌
+                    this.handleMahjongPassClick();
+                } else if (engine.currentTurn === mySlot) {
+                    // 我方回合打牌超时 -> 自动打出刚摸到的牌
+                    const myHand = engine.hands[mySlot] || [];
+                    if (myHand.length > 0) {
+                        let targetIndex = myHand.length - 1;
+                        if (engine.lastDrawnTile) {
+                            const drawnIdx = myHand.findIndex(t => t.id === engine.lastDrawnTile.id || (t.type === engine.lastDrawnTile.type && t.num === engine.lastDrawnTile.num));
+                            if (drawnIdx !== -1) targetIndex = drawnIdx;
+                        }
+                        UIRenderer.showToast('⏳ 出牌超时，已自动打出刚摸到的牌！');
+                        this.handleMahjongTileDiscard(targetIndex);
+                    }
+                }
+            }
+        }, 1000);
+    }
+
+    /**
      * 更新 3D 局风罗盘与当前出牌回合指示
      */
     updateMahjongStatusUI(msg) {
@@ -2590,6 +2656,9 @@ class GameEngineController {
                 else el.classList.remove('active');
             }
         });
+
+        // 每次状态更新重新启动 25 秒倒计时
+        this.resetMahjongTurnTimer();
     }
 
     /**

@@ -5735,6 +5735,18 @@ body.theme-mahjong #lobbyScreen {
     gap: 2px;
 }
 
+/* 3D 局风罗盘中央倒计时及 5s 紧急闪烁动画 */
+.compass-timer.urgent {
+    color: #ef4444 !important;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.9) !important;
+    animation: compassTimerPulse 0.5s infinite alternate;
+}
+
+@keyframes compassTimerPulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(1.18); }
+}
+
 .discard-grid.grid-bottom {
     bottom: -22px; /* 我方出的牌向下方移近，贴近我方 */
     left: 50%;
