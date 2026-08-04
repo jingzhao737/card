@@ -1494,7 +1494,7 @@ class GameEngineController {
     }
 
     /**
-     * 播放棋盘中央开局先后手大字标语 (你先手 / 你后手 1.6 秒闪现)
+     * 播放棋盘中央开局先后手微标语 (极简克制版: 1.2秒轻柔滑入滑出)
      */
     showGomokuCenterBanner(isMyTurnFirst) {
         const banner = document.getElementById('gomokuCenterBanner');
@@ -1517,7 +1517,7 @@ class GameEngineController {
 
         this._bannerTimeout = setTimeout(() => {
             banner.style.display = 'none';
-        }, 1600);
+        }, 1200);
     }
 
     /**
