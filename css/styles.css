@@ -5675,10 +5675,9 @@ body.theme-mahjong {
 .meld-tile .m-face.wan .w-char { font-size: 0.58rem; }
 .meld-tile .m-face.honor { font-size: 0.9rem; }
 
-/* 沉底我方 3D 手牌区 (手机端紧密无缝密排，固定黄金 1:1.32 宽高比防拉伸) */
+/* 沉底我方 3D 手牌区 (基础通用结构) */
 .mahjong-tiles-bottom {
     display: flex;
-    gap: 1px !important; /* 手机端严格统一 1px 微缝隙 */
     align-items: flex-end;
     justify-content: center;
     width: 100%;
@@ -5688,15 +5687,10 @@ body.theme-mahjong {
 }
 
 .mahjong-tile-card {
-    flex: 0 0 auto !important;
-    margin: 0 !important; /* 保证 100% 间距统一无偏斜 */
-    width: calc((100% - 16px) / 14.2);
-    max-width: 25px;
-    min-width: 18px;
-    aspect-ratio: 1 / 1.34; /* 手机端独立 1:1.34 拟真身材（告别“变扁”，展现立柱沉稳感） */
-    height: auto;
+    flex: 0 0 auto;
+    margin: 0;
     background: linear-gradient(145deg, #ffffff 0%, #fffdfa 70%, #f3eee3 100%);
-    border-radius: 3px;
+    border-radius: 3.5px;
     border: 1px solid rgba(255, 255, 255, 0.95);
     box-shadow: 0 3.5px 0 #047857, 0 5px 10px rgba(0, 0, 0, 0.55);
     display: flex;
@@ -5712,6 +5706,20 @@ body.theme-mahjong {
 .mahjong-tile-card:hover, .mahjong-tile-card:active {
     transform: translateY(-12px);
     box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸，绝对不渗透至 PC 端 */
+@media (max-width: 768px) {
+    .mahjong-tiles-bottom {
+        gap: 1px !important;
+    }
+    .mahjong-tile-card {
+        width: calc((100% - 16px) / 14.2) !important;
+        max-width: 25px !important;
+        min-width: 18px !important;
+        aspect-ratio: 1 / 1.34 !important;
+        height: auto !important;
+    }
 }
 
 /* 🀄 正宗国粹麻将牌面 Style */
@@ -6289,17 +6297,19 @@ body.theme-mahjong {
         border-radius: 20px !important;
     }
 
-    /* PC 端独立样式：44px 宽 x 52px 高 (宽阔厚实大牌视感，与手机端独立隔离) */
+    /* PC 端独立样式：44px 宽 x 52px 高 (宽阔厚实大牌视感，与手机端物理隔离) */
     .mahjong-tiles-bottom {
-        gap: 2px !important; /* 严格统一一致的 2px 缝隙 */
+        gap: 2px !important;
     }
 
     .mahjong-tile-card {
         width: 44px !important;
         height: 52px !important;
+        max-width: none !important;
+        min-width: 0 !important;
         aspect-ratio: auto !important;
         flex: 0 0 auto !important;
-        margin: 0 !important; /* 100% 绝对统一缝隙 */
+        margin: 0 !important;
         border-radius: 5px !important;
         box-shadow: 0 5.5px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.65) !important;
     }
