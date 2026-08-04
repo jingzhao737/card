@@ -473,7 +473,21 @@ class MahjongEngine {
             details.push('七对子 (+2番)');
         }
 
-        // 3. 检查自摸
+        // 3. 检查碰碰胡 (无吃牌面子，且手牌中仅包含 1 个将牌对子，其余均为三张或四张刻子)
+        const hasChowMeld = melds.some(m => m.type === 'CHOW');
+        if (!hasChowMeld && fullHand.length % 3 === 2) {
+            const counts = {};
+            fullHand.forEach(t => { counts[t.name] = (counts[t.name] || 0) + 1; });
+            const countsList = Object.values(counts);
+            const pairs = countsList.filter(c => c === 2);
+            const tripletsOrKongs = countsList.filter(c => c === 3 || c === 4);
+            if (pairs.length === 1 && pairs.length + tripletsOrKongs.length === countsList.length) {
+                totalFan += 2;
+                details.push('碰碰胡 (+2番)');
+            }
+        }
+
+        // 4. 检查自摸
         if (isSelfDraw) {
             totalFan += 1;
             details.push('自摸 (+1番)');
