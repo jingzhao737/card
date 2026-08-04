@@ -660,7 +660,9 @@ class GameEngineController {
         if (menuBtnLb) {
             menuBtnLb.addEventListener('click', () => {
                 if (navMenuDropdown) navMenuDropdown.style.display = 'none';
-                this.openStatsModal('LEADERBOARD');
+                const lbModal = document.getElementById('leaderboardModal');
+                if (lbModal) lbModal.style.display = 'flex';
+                this.renderLeaderboard();
             });
         }
         if (menuBtnHelp) {
@@ -1876,9 +1878,27 @@ class GameEngineController {
     updateHeaderVisibility() {
         const appHeader = document.querySelector('.app-header');
         const lobbyScr = document.getElementById('lobbyScreen');
+        const gomokuScr = document.getElementById('gomokuGameScreen');
+
+        const menuBtnHelp = document.getElementById('menuBtnCardHelp');
+        const menuBtnLeave = document.getElementById('menuBtnLeaveRoom');
+
+        const isGomokuScreen = gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none');
+        const isLobbyScreen = lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none');
+
+        // 五子棋界面或五子棋大厅时隐藏“牌型说明”
+        if (menuBtnHelp) {
+            menuBtnHelp.style.display = (isGomokuScreen || this.activeGameType === 'GOMOKU') ? 'none' : 'flex';
+        }
+
+        // 非主界面时在右上角下拉菜单中显示“退出/离开房间”按钮
+        if (menuBtnLeave) {
+            menuBtnLeave.style.display = isLobbyScreen ? 'none' : 'flex';
+        }
+
         if (!appHeader) return;
 
-        if (lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none')) {
+        if (isLobbyScreen) {
             appHeader.style.display = 'none';
             appHeader.classList.add('in-lobby');
         } else {
@@ -2215,6 +2235,9 @@ class GameEngineController {
      * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
      */
     resetToLobby() {
+        const gomokuScr = document.getElementById('gomokuGameScreen');
+        const isGomokuExit = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
+
         this._stopKeepAlive();
         NetworkManager.clearSession();
 
@@ -2258,8 +2281,9 @@ class GameEngineController {
         const btnGoHomeTop  = document.getElementById('btnGoHomeTop');
 
         if (waitingScreen) { waitingScreen.style.display = 'none'; waitingScreen.classList.remove('active'); }
-        if (gameTable)     gameTable.style.display = 'none';
+        if (gameTable)     { gameTable.style.display = 'none'; gameTable.classList.remove('active'); }
         if (gameOverModal) gameOverModal.style.display = 'none';
+        if (gomokuScr)     { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
         if (roomInfoBar)   roomInfoBar.style.display = 'none';
         if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
         if (btnGoHomeTop)  btnGoHomeTop.style.display = 'none';
@@ -2270,6 +2294,12 @@ class GameEngineController {
             lobbyScreen.style.display = 'flex';
             lobbyScreen.classList.add('active');
         }
+
+        // 如果是从五子棋退出的，退回主页时默认切为五子棋主页 Tab
+        if (isGomokuExit && typeof this.switchGameLobby === 'function') {
+            this.switchGameLobby('GOMOKU');
+        }
+
         this.updateHeaderVisibility();
 
         // 恢复大厅基础按钮可见性
