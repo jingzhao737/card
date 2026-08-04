@@ -4622,8 +4622,8 @@ body.theme-gomoku .overlay-screen {
     display: grid;
     grid-template-columns: repeat(15, 1fr);
     grid-template-rows: repeat(15, 1fr);
-    width: min(calc(100vw - 32px), 365px);
-    height: min(calc(100vw - 32px), 365px);
+    width: min(calc(100vw - 36px), 340px);
+    height: min(calc(100vw - 36px), 340px);
     position: relative;
     user-select: none;
     touch-action: manipulation;
@@ -4632,25 +4632,25 @@ body.theme-gomoku .overlay-screen {
 
 @media (max-width: 768px) {
     .gomoku-board-wrapper {
-        padding: 4px !important; /* 极简边框，外壳尺寸保持不变，内部网格空间最大化 */
+        padding: 6px !important;
     }
 }
 
-/* PC 桌面大屏专属：大幅扩展棋盘尺寸与高清晰视野 */
+/* PC 桌面大屏专属：棋盘尺寸适度微缩与清晰视野 */
 @media (min-width: 768px) {
     .gomoku-container {
-        max-width: 660px;
+        max-width: 600px;
         gap: 16px;
     }
 
     .gomoku-board-wrapper {
-        padding: 18px;
-        border-width: 9px;
+        padding: 16px;
+        border-width: 8px;
     }
 
     .gomoku-board {
-        width: 540px;
-        height: 540px;
+        width: 480px;
+        height: 480px;
     }
 
     .gomoku-header-bar {
