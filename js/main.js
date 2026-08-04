@@ -1575,17 +1575,33 @@ class GameEngineController {
     }
 
     /**
-     * 处理五子棋棋盘单元格点击落子 (手机端支持 2 次点击二次确认落子)
+     * 处理五子棋棋盘单元格点击落子 (严格校验当前回合，手机端支持 2-Tap 二次确认落子)
      */
     handleGomokuCellClick(r, c) {
         const engine = window.gomokuEngine;
         if (!engine || engine.isGameOver) return;
         if (engine.board[r][c] !== 0) return; // 该位置已有棋子
 
-        // 判断是否为移动端设备/触摸屏/小屏 (包括手机及 Chrome 模拟器)
+        // 1. 严格回合校验：非我方回合时，禁止任何点击 (无论是第一次还是第二次)
+        if (!engine.isAiMode) {
+            // 双人在线对战模式
+            const myColor = engine.playerColor;
+            if (engine.currentTurn !== myColor) {
+                UIRenderer.showToast('⏳ 还没轮到你，请等待对方落子');
+                return;
+            }
+        } else {
+            // 单机 AI 切磋模式
+            if (engine.currentTurn !== engine.playerColor) {
+                UIRenderer.showToast('⏳ 🤖 AI 棋圣思考中，请稍候...');
+                return;
+            }
+        }
+
+        // 2. 判断是否为移动端设备/触摸屏/小屏 (包括手机及 Chrome 模拟器)
         const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
 
-        // 📱 手机端 2-Tap 二次确认落子流程
+        // 📱 手机端 2-Tap 二次确认落子流程 (已在回合校验之后，确保仅轮到自己时生效)
         if (isMobile) {
             if (!this.gomokuPendingMove || this.gomokuPendingMove.r !== r || this.gomokuPendingMove.c !== c) {
                 // 第一次点击：预选该位置，渲染虚影预览并提示再次点击确定
@@ -1600,13 +1616,9 @@ class GameEngineController {
             this.gomokuPendingMove = null;
         }
 
-        // 双人在线模式
+        // 3. 执行正式落子逻辑
         if (!engine.isAiMode) {
             const myColor = engine.playerColor;
-            if (engine.currentTurn !== myColor) {
-                UIRenderer.showToast('⏳ 还没轮到你，请等待对方落子');
-                return;
-            }
             const res = engine.placeStone(r, c);
             if (!res || !res.success) return;
 
@@ -1621,8 +1633,7 @@ class GameEngineController {
             return;
         }
 
-        if (engine.isAiMode && engine.currentTurn !== engine.playerColor) return; // 轮到 AI 落子
-
+        // 单机 AI 模式落子
         const res = engine.placeStone(r, c);
         if (!res || !res.success) return;
 
