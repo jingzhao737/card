@@ -5760,6 +5760,301 @@ body.theme-mahjong {
     }
 }
 
+/* ==========================================================================
+   🀄 游鲸麻将 拟真升级样式 (Wall Counter, Dealer Tag, Action Toast, Melds, Settlement)
+   ========================================================================== */
+
+/* 1. 顶部剩余牌墙计数器 */
+.mahjong-wall-badge {
+    background: rgba(4, 120, 87, 0.45);
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    color: #a7f3d0;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* 2. 庄家金色标签 */
+.dealer-tag {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 1px 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    margin-left: 2px;
+}
+
+/* 3. 吃牌动作按钮 */
+.btn-mahjong-act.act-chow {
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    border-color: #34d399 !important;
+    color: #ecfdf5 !important;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5), 0 0 0 2px rgba(52, 211, 153, 0.3) !important;
+}
+
+.btn-mahjong-act.act-chow:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.7) !important;
+}
+
+/* 4. 国风金光动作大字报特效 (吃/碰/杠/胡 动画) */
+.mahjong-action-toast-banner {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.action-toast-inner {
+    font-family: 'STKaiti', 'KaiTi', 'SimKai', serif, sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fef08a;
+    text-shadow: 0 0 10px #f59e0b, 0 0 20px #d97706, 0 0 40px #b45309, 2px 2px 4px rgba(0, 0, 0, 0.9);
+    letter-spacing: 2px;
+    animation: actionToastAnim 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes actionToastAnim {
+    0% {
+        transform: scale(0.2) rotate(-15deg);
+        opacity: 0;
+    }
+    40% {
+        transform: scale(1.3) rotate(0deg);
+        opacity: 1;
+    }
+    70% {
+        transform: scale(1.0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+/* 5. 最新弃牌红点高亮与光晕指示 */
+.discard-chip.latest-discard {
+    background: #fef08a !important;
+    border: 1.5px solid #ef4444 !important;
+    box-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.6) !important;
+    transform: scale(1.1);
+    z-index: 5;
+    animation: latestPulse 1.2s infinite alternate;
+}
+
+@keyframes latestPulse {
+    0% { box-shadow: 0 0 6px #ef4444; }
+    100% { box-shadow: 0 0 16px #ef4444, 0 0 24px rgba(239, 68, 68, 0.8); }
+}
+
+/* 6. 吃碰杠牌堆 (Melds display) */
+.melds-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.melds-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.meld-group {
+    display: flex;
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.meld-tile {
+    padding: 2px 4px;
+    background: #ffffff;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* 7. 吃牌搭子选择弹窗列表 */
+.chow-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chow-option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+    border: 1px solid #34d399;
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chow-option-btn:hover {
+    background: linear-gradient(135deg, #047857 0%, #059669 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4);
+}
+
+/* 8. 麻将胡牌奢华结算面板 (Settlement Modal) */
+.settlement-inner {
+    max-width: 440px !important;
+    background: linear-gradient(180deg, #064e3b 0%, #022c22 100%) !important;
+    border: 2px solid #34d399 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(52, 211, 153, 0.3) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    color: #fff;
+}
+
+.settlement-header {
+    text-align: center;
+    padding: 20px 16px 12px;
+    background: linear-gradient(180deg, rgba(52, 211, 153, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.settlement-icon {
+    font-size: 2.8rem;
+    margin-bottom: 4px;
+    animation: bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.settlement-title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fef08a;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.settlement-subtitle {
+    font-size: 0.85rem;
+    color: #a7f3d0;
+    margin-top: 4px;
+}
+
+.settlement-body {
+    padding: 12px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.fan-details-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px dashed rgba(52, 211, 153, 0.4);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.fan-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 900;
+    padding: 4px 14px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+    margin-bottom: 8px;
+}
+
+.fan-list {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+}
+
+.scores-table {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.score-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    padding: 4px 6px;
+}
+
+.score-row-item .p-diff.positive {
+    color: #4ade80;
+    font-weight: 900;
+}
+
+.score-row-item .p-diff.negative {
+    color: #f87171;
+    font-weight: 800;
+}
+
+.settlement-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.btn-settle-primary {
+    flex: 1;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-settle-primary:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.btn-settle-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-settle-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+
 
 
 

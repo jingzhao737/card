@@ -474,7 +474,15 @@
                         <span class="status-dot jade"></span>
                         <span id="mahjongTurnText">🀄 东风圈 · 你的回合</span>
                     </div>
+                    <div class="mahjong-wall-badge" id="mahjongWallBadge" title="剩余牌墙数量">
+                        <i class="fa-solid fa-layer-group"></i> 剩 <span id="mahjongWallCount">84</span> 张
+                    </div>
                     <button class="btn-mahjong-nav-rematch" id="btnMahjongRematch"><i class="fa-solid fa-rotate-right"></i> 重来</button>
+                </div>
+
+                <!-- 🀄 国风金光动作大字报 (吃/碰/杠/胡 特效) -->
+                <div id="mahjongActionToast" class="mahjong-action-toast-banner" style="display: none;">
+                    <div class="action-toast-inner" id="mahjongActionToastText">碰！</div>
                 </div>
 
                 <!-- 🀄 竖屏全景绒面麻将桌 (Vertical Mobile Felt Table) -->
@@ -485,8 +493,11 @@
                         <div class="seat-user-pill">
                             <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameTop">AI 北家</span>
+                            <span class="dealer-tag" id="mDealerTop" style="display:none;">庄</span>
                             <span class="p-score" id="mScoreTop">1000分</span>
                         </div>
+                        <!-- 北家吃碰杠牌堆 -->
+                        <div class="melds-row top-melds" id="meldsTop"></div>
                         <!-- 北家立牌 (13张背面盖牌) -->
                         <div class="standing-tiles-row top-row" id="mahjongTilesTop"></div>
                     </div>
@@ -496,7 +507,10 @@
                         <div class="seat-user-pill vertical">
                             <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameLeft">AI 西家</span>
+                            <span class="dealer-tag" id="mDealerLeft" style="display:none;">庄</span>
                         </div>
+                        <!-- 西家吃碰杠牌堆 -->
+                        <div class="melds-col left-melds" id="meldsLeft"></div>
                         <!-- 西家立牌 (13张侧立盖牌) -->
                         <div class="standing-tiles-col left-col" id="mahjongTilesLeft"></div>
                     </div>
@@ -506,7 +520,10 @@
                         <div class="seat-user-pill vertical">
                             <div class="player-avatar-badge">🤖</div>
                             <span class="p-name" id="mNameRight">AI 东家</span>
+                            <span class="dealer-tag" id="mDealerRight" style="display:none;">庄</span>
                         </div>
+                        <!-- 东家吃碰杠牌堆 -->
+                        <div class="melds-col right-melds" id="meldsRight"></div>
                         <!-- 东家立牌 (13张侧立盖牌) -->
                         <div class="standing-tiles-col right-col" id="mahjongTilesRight"></div>
                     </div>
@@ -537,21 +554,83 @@
                         <div class="seat-user-pill bottom-pill">
                             <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
                             <span class="p-name" id="mNameBottom">我方玩家</span>
+                            <span class="dealer-tag" id="mDealerBottom" style="display:none;">庄</span>
                             <span class="p-score" id="mScoreBottom">1000分</span>
                         </div>
 
-                        <!-- 碰/杠/胡 动态吃碰动作浮条 (置于手牌上方) -->
+                        <!-- 吃/碰/杠/胡 动态吃碰动作浮条 (置于手牌上方) -->
                         <div class="mahjong-action-bar" id="mahjongActionBar" style="display:none;">
+                            <button class="btn-mahjong-act act-chow" id="btnMahjongChow">🀁 吃</button>
                             <button class="btn-mahjong-act act-pong" id="btnMahjongPong">🀄 碰</button>
                             <button class="btn-mahjong-act act-kong" id="btnMahjongKong">🀅 杠</button>
                             <button class="btn-mahjong-act act-hu" id="btnMahjongHu">🀀 胡</button>
                             <button class="btn-mahjong-act act-pass" id="btnMahjongPass">✕ 过</button>
                         </div>
 
+                        <!-- 我方吃碰杠牌堆 -->
+                        <div class="melds-row bottom-melds" id="meldsBottom"></div>
+
                         <!-- 我方沉底 3D 立体手牌区 (象牙白面 + 翡翠绿背) -->
                         <div class="mahjong-tiles-bottom" id="mahjongHandTilesContainer"></div>
                     </div>
 
+                </div>
+            </div>
+        </div>
+
+        <!-- 🀄 多组吃牌搭子选择弹窗 (Chow Options Modal) -->
+        <div id="mahjongChowModal" class="card-type-modal" style="display:none; z-index: 10005;">
+            <div class="card-type-inner" style="max-width: 360px; text-align: center;">
+                <div class="ct-header">
+                    <span class="ct-title">🀁 选择吃牌搭子</span>
+                    <button class="ct-close" id="btnCloseChowModal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="ct-body" style="padding: 16px;">
+                    <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">请选择欲消耗的手牌与上家的牌组成顺子：</p>
+                    <div id="chowOptionsList" class="chow-options-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🀄 麻将奢华对局结算弹窗 (Mahjong Victory Settlement Modal) -->
+        <div id="mahjongSettlementModal" class="card-type-modal" style="display:none; z-index: 10010;">
+            <div class="card-type-inner settlement-inner">
+                <div class="settlement-header" id="mahjongSettlementHeader">
+                    <div class="settlement-icon" id="mahjongWinIcon">🏆</div>
+                    <div class="settlement-title" id="mahjongWinTitle">胡牌大吉</div>
+                    <div class="settlement-subtitle" id="mahjongWinSubtitle">我方玩家 喜胡牌局！</div>
+                </div>
+                <div class="settlement-body">
+                    <div class="fan-details-card" id="mahjongFanCard">
+                        <div class="fan-badge" id="mahjongFanBadge">清一色 · 4番</div>
+                        <div class="fan-list" id="mahjongFanList">
+                            <span>· 清一色 (4番)</span>
+                        </div>
+                    </div>
+
+                    <div class="scores-table">
+                        <div class="score-row-item" id="scoreRow0">
+                            <span class="p-label">🤠 我方玩家</span>
+                            <span class="p-diff positive">+1200 分</span>
+                        </div>
+                        <div class="score-row-item" id="scoreRow1">
+                            <span class="p-label">🤖 AI 东家</span>
+                            <span class="p-diff negative">-400 分</span>
+                        </div>
+                        <div class="score-row-item" id="scoreRow2">
+                            <span class="p-label">🤖 AI 北家</span>
+                            <span class="p-diff negative">-400 分</span>
+                        </div>
+                        <div class="score-row-item" id="scoreRow3">
+                            <span class="p-label">🤖 AI 西家</span>
+                            <span class="p-diff negative">-400 分</span>
+                        </div>
+                    </div>
+
+                    <div class="settlement-actions">
+                        <button class="btn-settle-primary" id="btnMahjongSettleRematch"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>
+                        <button class="btn-settle-secondary" id="btnMahjongSettleLobby"><i class="fa-solid fa-house"></i> 返回大厅</button>
+                    </div>
                 </div>
             </div>
         </div>

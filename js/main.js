@@ -2026,6 +2026,12 @@ class GameEngineController {
 
         const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
 
+        // 关闭胡牌结算弹窗 & 吃牌弹窗
+        const settlementModal = document.getElementById('mahjongSettlementModal');
+        if (settlementModal) settlementModal.style.display = 'none';
+        const chowModal = document.getElementById('mahjongChowModal');
+        if (chowModal) chowModal.style.display = 'none';
+
         // 初始化 4 人麻将引擎 (我方 Seat 0 / 南)
         window.mahjongEngine.reset(true, 0);
 
@@ -2033,17 +2039,80 @@ class GameEngineController {
         const mNameBottom = document.getElementById('mNameBottom');
         if (mNameBottom) mNameBottom.textContent = nick;
 
+        // 设置庄家标识
+        const dealerIdx = window.mahjongEngine.dealer;
+        const dealerTags = ['mDealerBottom', 'mDealerRight', 'mDealerTop', 'mDealerLeft'];
+        dealerTags.forEach((tagId, idx) => {
+            const el = document.getElementById(tagId);
+            if (el) el.style.display = (idx === dealerIdx) ? 'inline-block' : 'none';
+        });
+
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
+        this.renderMahjongMelds();
         this.updateMahjongStatusUI('🀄 4人雀神对决 · 庄家先手出牌');
-        UIRenderer.showToast('🀄 4人正宗麻将对局开始！你是庄家先手出牌');
+        UIRenderer.showToast('🀄 4人大众推倒胡麻将开局！你是庄家先手出牌');
 
-        // 绑定底栏与吃碰按键
+        // 绑定底栏与菜单按键
         const btnBack = document.getElementById('btnMahjongBackLobby');
         if (btnBack) btnBack.onclick = () => this.resetToLobby();
 
         const btnRematch = document.getElementById('btnMahjongRematch');
         if (btnRematch) btnRematch.onclick = () => this.startMahjongAiMode();
+
+        const btnCloseChow = document.getElementById('btnCloseChowModal');
+        if (btnCloseChow) btnCloseChow.onclick = () => {
+            if (chowModal) chowModal.style.display = 'none';
+        };
+
+        const btnSettleRematch = document.getElementById('btnMahjongSettleRematch');
+        if (btnSettleRematch) btnSettleRematch.onclick = () => this.startMahjongAiMode();
+
+        const btnSettleLobby = document.getElementById('btnMahjongSettleLobby');
+        if (btnSettleLobby) btnSettleLobby.onclick = () => {
+            if (settlementModal) settlementModal.style.display = 'none';
+            this.resetToLobby();
+        };
+
+        // 绑定吃/碰/杠/胡/过按键
+        this.bindMahjongActionButtons();
+
+        // 我方开局自摸/杠牌动作判定
+        this.checkSelfActionsOnTurn();
+    }
+
+    /**
+     * 绑定吃/碰/杠/胡/过动作按钮
+     */
+    bindMahjongActionButtons() {
+        const btnChow = document.getElementById('btnMahjongChow');
+        const btnPong = document.getElementById('btnMahjongPong');
+        const btnKong = document.getElementById('btnMahjongKong');
+        const btnHu = document.getElementById('btnMahjongHu');
+        const btnPass = document.getElementById('btnMahjongPass');
+
+        if (btnChow) btnChow.onclick = () => this.handleMahjongChowClick();
+        if (btnPong) btnPong.onclick = () => this.handleMahjongPongClick();
+        if (btnKong) btnKong.onclick = () => this.handleMahjongKongClick();
+        if (btnHu) btnHu.onclick = () => this.handleMahjongHuClick();
+        if (btnPass) btnPass.onclick = () => this.handleMahjongPassClick();
+    }
+
+    /**
+     * 播放国风特效大字报 (吃！/碰！/杠！/胡！)
+     */
+    showMahjongActionToast(text) {
+        const toast = document.getElementById('mahjongActionToast');
+        const textEl = document.getElementById('mahjongActionToastText');
+        if (!toast || !textEl) return;
+
+        textEl.textContent = text;
+        toast.style.display = 'block';
+
+        if (this._actionToastTimer) clearTimeout(this._actionToastTimer);
+        this._actionToastTimer = setTimeout(() => {
+            toast.style.display = 'none';
+        }, 850);
     }
 
     /**
@@ -2052,6 +2121,10 @@ class GameEngineController {
     renderMahjongHandTiles() {
         const engine = window.mahjongEngine;
         if (!engine) return;
+
+        // 更新剩余牌墙计数器
+        const countEl = document.getElementById('mahjongWallCount');
+        if (countEl) countEl.textContent = engine.wallCount;
 
         // 1. 渲染我方 (Seat 0 / 南) 手牌
         const containerBottom = document.getElementById('mahjongHandTilesContainer');
@@ -2063,7 +2136,6 @@ class GameEngineController {
                 const card = document.createElement('div');
                 card.className = 'mahjong-tile-card';
                 card.dataset.index = index;
-
                 card.innerHTML = `<span class="mahjong-tile-name">${tile.name}</span>`;
 
                 card.addEventListener('click', () => {
@@ -2074,7 +2146,7 @@ class GameEngineController {
             });
         }
 
-        // 2. 渲染北家 (Seat 2 / Top) 13张盖牌背牌
+        // 2. 渲染北家 (Seat 2 / Top) 盖牌背牌
         const containerTop = document.getElementById('mahjongTilesTop');
         if (containerTop) {
             const countTop = (engine.hands[2] || []).length;
@@ -2085,7 +2157,7 @@ class GameEngineController {
             containerTop.innerHTML = htmlTop;
         }
 
-        // 3. 渲染西家 (Seat 3 / Left) 13张盖牌背牌
+        // 3. 渲染西家 (Seat 3 / Left) 盖牌背牌
         const containerLeft = document.getElementById('mahjongTilesLeft');
         if (containerLeft) {
             const countLeft = (engine.hands[3] || []).length;
@@ -2096,7 +2168,7 @@ class GameEngineController {
             containerLeft.innerHTML = htmlLeft;
         }
 
-        // 4. 渲染东家 (Seat 1 / Right) 13张盖牌背牌
+        // 4. 渲染东家 (Seat 1 / Right) 盖牌背牌
         const containerRight = document.getElementById('mahjongTilesRight');
         if (containerRight) {
             const countRight = (engine.hands[1] || []).length;
@@ -2109,7 +2181,33 @@ class GameEngineController {
     }
 
     /**
-     * 渲染 4 方弃牌堆
+     * 渲染 4 方吃碰杠牌堆 (Melds)
+     */
+    renderMahjongMelds() {
+        const engine = window.mahjongEngine;
+        if (!engine) return;
+
+        const meldMap = [
+            { id: 'meldsBottom', idx: 0 },
+            { id: 'meldsRight',  idx: 1 },
+            { id: 'meldsTop',    idx: 2 },
+            { id: 'meldsLeft',   idx: 3 }
+        ];
+
+        meldMap.forEach(item => {
+            const el = document.getElementById(item.id);
+            if (el) {
+                const list = engine.melds[item.idx] || [];
+                el.innerHTML = list.map(m => {
+                    const tilesHtml = m.tiles.map(t => `<span class="meld-tile">${t.name}</span>`).join('');
+                    return `<div class="meld-group">${tilesHtml}</div>`;
+                }).join('');
+            }
+        });
+    }
+
+    /**
+     * 渲染 4 方弃牌堆（最新打出的牌添加红点高亮）
      */
     renderMahjongDiscards() {
         const engine = window.mahjongEngine;
@@ -2122,11 +2220,17 @@ class GameEngineController {
             { id: 'discardsLeft',   idx: 3 }
         ];
 
+        const lastTile = engine.lastDiscard ? engine.lastDiscard.tile : null;
+        const lastPlayer = engine.lastDiscard ? engine.lastDiscard.playerIdx : null;
+
         map.forEach(item => {
             const el = document.getElementById(item.id);
             if (el) {
                 const list = engine.discards[item.idx] || [];
-                el.innerHTML = list.map(t => `<span class="discard-chip">${t.name}</span>`).join('');
+                el.innerHTML = list.map((t, index) => {
+                    const isLatest = (item.idx === lastPlayer && index === list.length - 1);
+                    return `<span class="discard-chip ${isLatest ? 'latest-discard' : ''}">${t.name}</span>`;
+                }).join('');
             }
         });
     }
@@ -2172,7 +2276,37 @@ class GameEngineController {
     }
 
     /**
-     * 我方打牌与 4 人 AI 顺序轮转 (带 3D 抛掷动画)
+     * 检查我方在自己回合的自摸或杠牌选项
+     */
+    checkSelfActionsOnTurn() {
+        const engine = window.mahjongEngine;
+        if (!engine || engine.isGameOver || engine.currentTurn !== 0) return;
+
+        const actionBar = document.getElementById('mahjongActionBar');
+        const btnChow = document.getElementById('btnMahjongChow');
+        const btnPong = document.getElementById('btnMahjongPong');
+        const btnKong = document.getElementById('btnMahjongKong');
+        const btnHu = document.getElementById('btnMahjongHu');
+        const btnPass = document.getElementById('btnMahjongPass');
+
+        const canSelfHu = engine.checkCanHu(engine.hands[0]);
+        const selfKongOptions = engine.getSelfKongOptions(0);
+        const canSelfKong = selfKongOptions.length > 0;
+
+        if (canSelfHu || canSelfKong) {
+            if (btnChow) btnChow.style.display = 'none';
+            if (btnPong) btnPong.style.display = 'none';
+            if (btnKong) btnKong.style.display = canSelfKong ? 'inline-block' : 'none';
+            if (btnHu) btnHu.style.display = canSelfHu ? 'inline-block' : 'none';
+            if (btnPass) btnPass.style.display = 'inline-block';
+            if (actionBar) actionBar.style.display = 'flex';
+        } else {
+            if (actionBar) actionBar.style.display = 'none';
+        }
+    }
+
+    /**
+     * 我方打牌与 4 人 AI 顺序轮转
      */
     handleMahjongTileDiscard(tileIndex) {
         const engine = window.mahjongEngine;
@@ -2180,6 +2314,10 @@ class GameEngineController {
             UIRenderer.showToast('⏳ 正在等待其他玩家出牌...');
             return;
         }
+
+        // 隐藏动作条
+        const actionBar = document.getElementById('mahjongActionBar');
+        if (actionBar) actionBar.style.display = 'none';
 
         const res = engine.discardTile(0, tileIndex);
         if (!res) return;
@@ -2193,8 +2331,7 @@ class GameEngineController {
         this.renderMahjongDiscards();
 
         if (res.isGameOver) {
-            UIRenderer.showToast('🤝 牌墙摸完，流局平局！');
-            this.updateMahjongStatusUI('流局平局 · 对局结束');
+            this.showMahjongSettlement(-1, null);
             return;
         }
 
@@ -2202,7 +2339,7 @@ class GameEngineController {
     }
 
     /**
-     * 3 家 AI 依序打牌循环 (带 3D 抛掷动画)
+     * 3 家 AI 依序打牌与响应循环 (AI 智能胡、碰、杠、吃)
      */
     triggerAiTurnLoop() {
         const engine = window.mahjongEngine;
@@ -2228,64 +2365,234 @@ class GameEngineController {
             this.renderMahjongDiscards();
 
             if (aiRes && aiRes.isGameOver) {
-                UIRenderer.showToast('🤝 牌墙摸完，流局平局！');
-                this.updateMahjongStatusUI('流局平局 · 对局结束');
-            } else if (engine.currentTurn !== 0) {
+                this.showMahjongSettlement(-1, null);
+                return;
+            }
+
+            // 检查我方 (Seat 0) 对 AI 打出的牌是否有 碰/杠/吃/胡 响应
+            if (aiRes && (aiRes.canHu || aiRes.canPong || aiRes.canKong || aiRes.canChow)) {
+                this.pendingDiscardRes = aiRes;
+                this.showHumanResponseActionBar(aiRes);
+                this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
+                return;
+            }
+
+            // 轮到下一家
+            if (engine.currentTurn !== 0) {
                 this.triggerAiTurnLoop();
             } else {
                 this.updateMahjongStatusUI('🀄 轮到你出牌');
+                this.checkSelfActionsOnTurn();
             }
         }, 600);
     }
 
     /**
-     * 开启在线游鲸麻将双人对战模式
+     * 展示我方吃碰杠胡响应动作浮条
      */
-    startMahjongOnlineGame(roomId, isHost = false) {
-        const lobbyScr = document.getElementById('lobbyScreen');
-        const waitingScr = document.getElementById('waitingScreen');
-        const mahjongScr = document.getElementById('mahjongGameScreen');
+    showHumanResponseActionBar(res) {
+        const actionBar = document.getElementById('mahjongActionBar');
+        const btnChow = document.getElementById('btnMahjongChow');
+        const btnPong = document.getElementById('btnMahjongPong');
+        const btnKong = document.getElementById('btnMahjongKong');
+        const btnHu = document.getElementById('btnMahjongHu');
+        const btnPass = document.getElementById('btnMahjongPass');
 
-        if (lobbyScr) { lobbyScr.style.display = 'none'; lobbyScr.classList.remove('active'); }
-        if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
-        if (mahjongScr) { mahjongScr.style.display = 'flex'; mahjongScr.classList.add('active'); }
-        this.updateHeaderVisibility();
+        if (btnChow) btnChow.style.display = res.canChow ? 'inline-block' : 'none';
+        if (btnPong) btnPong.style.display = res.canPong ? 'inline-block' : 'none';
+        if (btnKong) btnKong.style.display = res.canKong ? 'inline-block' : 'none';
+        if (btnHu) btnHu.style.display = res.canHu ? 'inline-block' : 'none';
+        if (btnPass) btnPass.style.display = 'inline-block';
 
-        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
-        const hostNick = isHost ? NetworkManager.nickname : '房主';
-        const guestNick = !isHost ? NetworkManager.nickname : '对手';
-        const myNick = NetworkManager.nickname || '玩家';
-        const oppNick = isHost ? guestNick : hostNick;
+        if (actionBar) actionBar.style.display = 'flex';
+    }
 
-        // 设置玩家卡片 (左侧是我方，右侧是对手)
-        const nameLeft = document.getElementById('mNameLeft');
-        const roleLeft = document.getElementById('mRoleLeft');
-        if (nameLeft) nameLeft.textContent = myNick;
-        if (roleLeft) roleLeft.textContent = mySlot === 0 ? '东家 (1000分)' : '南家 (1000分)';
+    /**
+     * 点击【吃】按钮逻辑
+     */
+    handleMahjongChowClick() {
+        const engine = window.mahjongEngine;
+        if (!engine || !this.pendingDiscardRes || !this.pendingDiscardRes.canChow) return;
 
-        const nameRight = document.getElementById('mNameRight');
-        const roleRight = document.getElementById('mRoleRight');
-        if (nameRight) nameRight.textContent = oppNick;
-        if (roleRight) roleRight.textContent = mySlot === 0 ? '南家 (1000分)' : '东家 (1000分)';
+        const options = this.pendingDiscardRes.chowOptions || [];
+        if (options.length === 0) return;
 
-        window.mahjongEngine.reset(false, mySlot);
-        this.renderMahjongHandTiles();
-        this.renderMahjongDiscards();
+        if (options.length === 1) {
+            this.executeChowOption(options[0]);
+        } else {
+            // 多组吃牌组合，弹出选择框
+            const modal = document.getElementById('mahjongChowModal');
+            const listEl = document.getElementById('chowOptionsList');
+            if (modal && listEl) {
+                listEl.innerHTML = '';
+                const tile = this.pendingDiscardRes.discarded;
 
-        const isMyTurn = (window.mahjongEngine.currentTurn === mySlot);
-        this.updateMahjongStatusUI(isMyTurn ? '🀄 轮到你出牌' : '⏳ 对方出牌中...');
-        UIRenderer.showToast(`✅ 成功进入房间 #${roomId}，游鲸麻将开局！`);
+                options.forEach((pair) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'chow-option-btn';
+                    btn.innerHTML = `<span>${pair[0].name}</span> + <span>${pair[1].name}</span> + <span style="color:#fef08a;">[${tile.name}]</span>`;
+                    btn.onclick = () => {
+                        modal.style.display = 'none';
+                        this.executeChowOption(pair);
+                    };
+                    listEl.appendChild(btn);
+                });
+                modal.style.display = 'flex';
+            }
+        }
+    }
 
-        // 监听云端打牌广播
-        NetworkManager.onMahjongMove((move) => {
-            if (!move || move.senderSlot === mySlot) return;
-            const engine = window.mahjongEngine;
-            engine.discardTile(move.senderSlot, move.tileIndex);
+    executeChowOption(pair) {
+        const engine = window.mahjongEngine;
+        const res = this.pendingDiscardRes;
+        if (!engine || !res) return;
+
+        if (engine.executeChow(0, res.discarded, pair)) {
+            this.showMahjongActionToast('吃！');
+            SoundEngine.playCardPlaySound();
             this.renderMahjongHandTiles();
-            this.renderMahjongDiscards();
-            const isNowMyTurn = (engine.currentTurn === mySlot);
-            this.updateMahjongStatusUI(isNowMyTurn ? '🀄 轮到你出牌' : '⏳ 对方出牌中...');
-        });
+            this.renderMahjongMelds();
+            const actionBar = document.getElementById('mahjongActionBar');
+            if (actionBar) actionBar.style.display = 'none';
+            this.updateMahjongStatusUI('🀁 吃牌成功 · 请出牌');
+        }
+    }
+
+    /**
+     * 点击【碰】按钮逻辑
+     */
+    handleMahjongPongClick() {
+        const engine = window.mahjongEngine;
+        if (!engine || !this.pendingDiscardRes) return;
+
+        if (engine.executePong(0, this.pendingDiscardRes.discarded)) {
+            this.showMahjongActionToast('碰！');
+            SoundEngine.playCardPlaySound();
+            this.renderMahjongHandTiles();
+            this.renderMahjongMelds();
+            const actionBar = document.getElementById('mahjongActionBar');
+            if (actionBar) actionBar.style.display = 'none';
+            this.updateMahjongStatusUI('🀄 碰牌成功 · 请出牌');
+        }
+    }
+
+    /**
+     * 点击【杠】按钮逻辑 (包含明杠、暗杠、补杠)
+     */
+    handleMahjongKongClick() {
+        const engine = window.mahjongEngine;
+        if (!engine) return;
+
+        if (this.pendingDiscardRes) {
+            // 明杠
+            if (engine.executeKong(0, this.pendingDiscardRes.discarded)) {
+                this.showMahjongActionToast('杠！');
+                SoundEngine.playCardPlaySound();
+                this.renderMahjongHandTiles();
+                this.renderMahjongMelds();
+                const actionBar = document.getElementById('mahjongActionBar');
+                if (actionBar) actionBar.style.display = 'none';
+                this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
+            }
+        } else {
+            // 暗杠 / 补杠
+            const options = engine.getSelfKongOptions(0);
+            if (options.length > 0) {
+                if (engine.executeSelfKong(0, options[0])) {
+                    this.showMahjongActionToast(options[0].type === 'ANKONG' ? '暗杠！' : '补杠！');
+                    SoundEngine.playCardPlaySound();
+                    this.renderMahjongHandTiles();
+                    this.renderMahjongMelds();
+                    const actionBar = document.getElementById('mahjongActionBar');
+                    if (actionBar) actionBar.style.display = 'none';
+                    this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
+                }
+            }
+        }
+    }
+
+    /**
+     * 点击【胡】按钮逻辑 (点炮胡 / 自摸胡)
+     */
+    handleMahjongHuClick() {
+        const engine = window.mahjongEngine;
+        if (!engine) return;
+
+        const isSelfDraw = !this.pendingDiscardRes;
+        const extraTile = this.pendingDiscardRes ? this.pendingDiscardRes.discarded : null;
+
+        if (engine.checkCanHu(engine.hands[0], extraTile)) {
+            const huDetails = engine.getHuDetails(0, extraTile, isSelfDraw);
+            this.showMahjongActionToast('胡！');
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) {
+                SoundEngine.playWin();
+            }
+            engine.isGameOver = true;
+            engine.winner = 0;
+            this.showMahjongSettlement(0, huDetails);
+        }
+    }
+
+    /**
+     * 点击【过】按钮逻辑
+     */
+    handleMahjongPassClick() {
+        const actionBar = document.getElementById('mahjongActionBar');
+        if (actionBar) actionBar.style.display = 'none';
+
+        const engine = window.mahjongEngine;
+        if (!engine) return;
+
+        if (this.pendingDiscardRes) {
+            this.pendingDiscardRes = null;
+            // 跳过我方响应，继续 AI 轮转
+            if (engine.currentTurn !== 0) {
+                this.triggerAiTurnLoop();
+            } else {
+                this.updateMahjongStatusUI('🀄 轮到你出牌');
+            }
+        }
+    }
+
+    /**
+     * 展示麻将奢华结算面板
+     */
+    showMahjongSettlement(winnerIdx, huDetails) {
+        const modal = document.getElementById('mahjongSettlementModal');
+        const iconEl = document.getElementById('mahjongWinIcon');
+        const titleEl = document.getElementById('mahjongWinTitle');
+        const subTitleEl = document.getElementById('mahjongWinSubtitle');
+        const fanBadgeEl = document.getElementById('mahjongFanBadge');
+        const fanListEl = document.getElementById('mahjongFanList');
+
+        if (!modal) return;
+
+        if (winnerIdx === -1) {
+            // 流局平局
+            if (iconEl) iconEl.textContent = '🤝';
+            if (titleEl) titleEl.textContent = '流局平局';
+            if (subTitleEl) subTitleEl.textContent = '牌墙已摸完，无家胡牌';
+            if (fanBadgeEl) fanBadgeEl.textContent = '平局 0番';
+            if (fanListEl) fanListEl.textContent = '· 荒庄流局';
+        } else if (winnerIdx === 0) {
+            // 我方大胜！
+            if (iconEl) iconEl.textContent = '🏆';
+            if (titleEl) titleEl.textContent = '胡牌大吉';
+            if (subTitleEl) subTitleEl.textContent = '我方玩家 喜胡牌局！';
+            const details = huDetails || { fanName: '平胡 1番', details: ['平胡 (1番)'] };
+            if (fanBadgeEl) fanBadgeEl.textContent = details.fanName;
+            if (fanListEl) fanListEl.innerHTML = details.details.map(d => `<span>· ${d}</span>`).join('<br>');
+        } else {
+            // 其他 AI 胡牌
+            const seatNames = ['我方玩家', 'AI 东家', 'AI 北家', 'AI 西家'];
+            if (iconEl) iconEl.textContent = '🀄';
+            if (titleEl) titleEl.textContent = '对局结束';
+            if (subTitleEl) subTitleEl.textContent = `${seatNames[winnerIdx]} 抢先胡牌！`;
+            if (fanBadgeEl) fanBadgeEl.textContent = '推倒胡';
+            if (fanListEl) fanListEl.textContent = '· 对方胡牌';
+        }
+
+        modal.style.display = 'flex';
     }
 
     /**
