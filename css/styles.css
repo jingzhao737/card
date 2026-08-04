@@ -5412,7 +5412,7 @@ body.theme-mahjong {
 }
 
 /* ==========================================================================
-   🀄 游鲸麻将 对局桌台 (Mahjong Game Screen & Table)
+   🀄 游鲸麻将 4人围桌对局桌台 (Real 4-Player Square Mahjong Table)
    ========================================================================== */
 .mahjong-screen-wrap {
     background: radial-gradient(circle at 50% 50%, #2b110b 0%, #150604 100%);
@@ -5421,22 +5421,13 @@ body.theme-mahjong {
     padding: 12px;
 }
 
-.mahjong-container {
+.mahjong-table-square-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-}
-
-/* 顶部状态与 VS Bar */
-.mahjong-header-area {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .mahjong-turn-status.top-status {
@@ -5453,214 +5444,234 @@ body.theme-mahjong {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
-.status-dot.jade {
-    width: 7px;
-    height: 7px;
-    background: #34d399;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #34d399;
+.square-mahjong-table {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 480px;
+    background: radial-gradient(circle at 50% 50%, #065f46 0%, #047857 50%, #022c22 100%);
+    border: 10px solid #4a150e;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(245, 158, 11, 0.3);
+    position: relative;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
-.mahjong-header-bar {
-    width: 100%;
+/* 4 座位布局 */
+.table-player-seat {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: rgba(30, 10, 7, 0.82);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    border-radius: 12px;
-    padding: 8px 12px;
-    box-sizing: border-box;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    gap: 10px;
+    gap: 8px;
+    z-index: 10;
 }
 
-.mahjong-vs-badge {
-    font-size: 0.85rem;
-    font-weight: 900;
-    color: #34d399;
-    text-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+.table-player-seat.seat-top {
+    justify-content: center;
+    flex-direction: row;
 }
 
-.mahjong-player-pill {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 7px 10px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    transition: all 0.25s ease;
-    max-width: 46%;
-}
-
-.mahjong-player-pill.turn-active {
-    border-color: rgba(52, 211, 153, 0.7);
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
-    background: rgba(16, 185, 129, 0.08);
-}
-
-.mini-mahjong-badge {
-    font-size: 1.1rem;
-}
-
-/* 桃木边框 + 翠绿桌面 雀牌台 */
-.mahjong-table-wrapper {
-    width: 100%;
-    min-height: 380px;
-    background-color: #064e3b;
-    background-image:
-        radial-gradient(ellipse 90% 70% at 50% 50%, #047857 0%, #064e3b 65%, #022c22 100%),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 6px);
-    border: 8px solid #5c1d15;
-    border-radius: 12px;
-    padding: 14px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(255, 215, 0, 0.25);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-sizing: border-box;
-}
-
-/* 中央 3D 风圈罗盘 */
-.mahjong-compass-center {
+.table-player-seat.seat-left {
     position: absolute;
-    top: 35%;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+}
+
+.table-player-seat.seat-right {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+}
+
+.table-player-seat.seat-bottom {
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+}
+
+.player-avatar-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.player-info-box {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-info-box .p-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #f1f5f9;
+}
+
+.player-info-box .p-score {
+    font-size: 0.65rem;
+    color: #34d399;
+}
+
+/* 中央 3D 局风罗盘 */
+.table-center-zone {
+    position: absolute;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 72px;
-    height: 72px;
-    background: rgba(10, 20, 15, 0.85);
-    border: 2px solid rgba(52, 211, 153, 0.4);
-    border-radius: 50%;
-    box-shadow: 0 0 16px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(52, 211, 153, 0.2);
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mahjong-compass-center {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1c0a07, #3d100a);
+    border: 2px solid #f59e0b;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(245, 158, 11, 0.3);
+    position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    padding: 6px;
-    box-sizing: border-box;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    align-items: center;
+    justify-items: center;
+    z-index: 5;
 }
 
 .compass-wind {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #94a3b8;
 }
+
+.compass-wind.wind-n { grid-column: 2; grid-row: 1; }
+.compass-wind.wind-w { grid-column: 1; grid-row: 2; }
+.compass-wind.wind-e { grid-column: 3; grid-row: 2; }
+.compass-wind.wind-s { grid-column: 2; grid-row: 3; }
 
 .compass-wind.active {
     color: #34d399;
-    text-shadow: 0 0 6px #34d399;
+    text-shadow: 0 0 8px #34d399;
     font-size: 0.85rem;
 }
 
-/* 弃牌堆 */
-.mahjong-discard-area {
-    width: 100%;
-    min-height: 120px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 10px;
-    box-sizing: border-box;
-    align-content: flex-start;
+.compass-timer {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #f59e0b;
+    font-family: monospace;
 }
 
-.discard-tile {
-    width: 22px;
-    height: 30px;
-    background: #f8fafc;
-    border-radius: 3px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 2px 0 #059669;
+/* 我方手牌 (象牙白面 + 翡翠绿背 3D 正面) */
+.mahjong-tiles-bottom {
     display: flex;
-    align-items: center;
+    gap: 3px;
+    align-items: flex-end;
     justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-/* 玩家手牌区 */
-.mahjong-hand-wrapper {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    padding-top: 10px;
-}
-
-.mahjong-hand-container {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    padding: 6px 2px;
-    max-width: 100%;
+    padding: 4px 0;
 }
 
 .mahjong-tile-card {
-    width: 32px;
-    height: 46px;
-    border-radius: 5px;
-    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 70%, #e2e8f0 100%);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 0 5px 0 #059669, 0 8px 16px rgba(0, 0, 0, 0.5);
+    width: 30px;
+    height: 44px;
+    background: linear-gradient(145deg, #ffffff 0%, #fefcf8 70%, #f3eee3 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 3px 0 #047857, 0 5px 10px rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: #0f172a;
     cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
     user-select: none;
-    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .mahjong-tile-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 0 #059669, 0 12px 20px rgba(0, 0, 0, 0.6);
+    transform: translateY(-8px);
+    box-shadow: 0 6px 0 #047857, 0 10px 16px rgba(0, 0, 0, 0.6);
 }
 
-.mahjong-tile-card.selected {
-    transform: translateY(-10px);
-    border-color: #34d399;
-    box-shadow: 0 10px 0 #10b981, 0 0 12px rgba(52, 211, 153, 0.6);
-}
-
-.mahjong-tile-name {
-    font-size: 0.8rem;
-    font-weight: 900;
-    color: #0f172a;
-    line-height: 1;
-}
-
-/* 麻将动作控制栏 */
-.mahjong-actions-bar {
+/* 碰/杠/胡 悬浮吃碰动作条 */
+.mahjong-action-bar {
+    position: absolute;
+    bottom: 54px;
     display: flex;
     gap: 8px;
-    justify-content: center;
-    width: 100%;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
 }
 
-.btn-mahjong-action {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    border: 1px solid #34d399;
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-size: 0.9rem;
-    font-weight: 800;
+.btn-mahjong-act {
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 900;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-    transition: all 0.2s ease;
+    border: none;
+    transition: transform 0.15s ease;
 }
 
-.btn-mahjong-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.6);
+.btn-mahjong-act.act-pong { background: #10b981; color: #fff; }
+.btn-mahjong-act.act-kong { background: #059669; color: #fff; }
+.btn-mahjong-act.act-hu { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+.btn-mahjong-act.act-pass { background: #475569; color: #cbd5e1; }
+.btn-mahjong-act:hover { transform: scale(1.08); }
+
+.mahjong-control-btns {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-mahjong-ctrl {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-mahjong-ctrl.rematch {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #34d399;
 }
 
 
