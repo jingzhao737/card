@@ -5718,6 +5718,68 @@ body.theme-mahjong {
     }
 }
 
+/* ==========================================================================
+   💻 PC / 桌面端自适应大号正方形雀神桌台 (PC Desktop Large Square Table)
+   ========================================================================== */
+@media (min-width: 769px) {
+    .mahjong-table-vertical-container {
+        max-width: 680px !important;
+    }
+
+    .vertical-mahjong-table {
+        max-width: 600px !important;
+        aspect-ratio: 1 / 1 !important;
+        max-height: 78vh !important;
+        max-height: 78dvh !important;
+        border: 10px solid #4a150e !important;
+        border-radius: 22px !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 35px rgba(0, 0, 0, 0.7), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
+    }
+
+    /* PC 端左右两侧 ID 恢复正向显示 */
+    .seat-user-pill.vertical {
+        writing-mode: horizontal-tb !important;
+        padding: 4px 12px !important;
+        border-radius: 20px !important;
+        letter-spacing: normal !important;
+    }
+
+    .table-player-seat.seat-left {
+        left: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+
+    .table-player-seat.seat-right {
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        flex-direction: row-reverse !important;
+        gap: 8px !important;
+    }
+
+    .standing-tiles-col {
+        flex-direction: row !important;
+    }
+
+    .standing-tile-left, .standing-tile-right {
+        width: 18px !important;
+        height: 26px !important;
+        background: linear-gradient(to bottom, #10b981, #047857) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 2px !important;
+        box-shadow: 0 2px 0 #022c22 !important;
+    }
+
+    .mahjong-tile-card {
+        width: 36px !important;
+        height: 54px !important;
+        font-size: 1.05rem !important;
+    }
+}
+
 
 
 
