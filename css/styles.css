@@ -4744,13 +4744,16 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
-/* 棋子 Style (全自然光感，无描边) */
+/* 棋子 Style (全自然光感，100% 精确居中对齐网格交叉点) */
 .gomoku-stone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 84%;
     height: 84%;
     border-radius: 50%;
     z-index: 5;
-    position: relative;
     border: none !important; /* 彻底无描边 */
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.65);
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -4758,9 +4761,9 @@ body.theme-gomoku .overlay-screen {
 }
 
 @keyframes stonePop {
-    0% { transform: scale(0.2); }
-    80% { transform: scale(1.15); }
-    100% { transform: scale(1); }
+    0% { transform: translate(-50%, -50%) scale(0.2); }
+    80% { transform: translate(-50%, -50%) scale(1.15); }
+    100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 .gomoku-stone.black {
@@ -4797,17 +4800,23 @@ body.theme-gomoku .overlay-screen {
 
 @keyframes winPulse {
     0% {
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
         box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
     }
     100% {
-        transform: scale(1.08);
+        transform: translate(-50%, -50%) scale(1.08);
         box-shadow: 0 0 22px rgba(52, 211, 153, 0.95), 0 0 10px rgba(16, 185, 129, 0.8);
     }
 }
 
-/* 手机端二次确认落子 静态虚影预选棋子 (Static Ghost Preview Stone) */
+/* 手机端二次确认落子 静态虚影预选棋子 (100% 精确对齐交叉点) */
 .gomoku-stone.preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 84%;
+    height: 84%;
     opacity: 0.55;
     pointer-events: none;
     border: none !important;
