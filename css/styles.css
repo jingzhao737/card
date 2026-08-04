@@ -195,7 +195,7 @@ body:has(#lobbyScreen.active) .app-header,
     align-items: center;
     justify-content: center;
     padding: 6px;
-    opacity: 0.35;
+    opacity: 0.18;
     transition: opacity 0.2s ease, filter 0.2s ease;
 }
 .btn-mail-icon-only:hover {
