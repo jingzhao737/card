@@ -2071,8 +2071,7 @@ class GameEngineController {
                 btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启五子棋对局';
             }
             if (btnAi) {
-                btnAi.style.display = 'inline-flex';
-                btnAi.innerHTML = '<i class="fa-solid fa-robot"></i> 补齐 AI 棋圣开局';
+                btnAi.style.display = 'none'; // 保持界面简洁，无需额外 AI 按键
             }
         } else {
             if (connectedCount) {
@@ -2089,7 +2088,6 @@ class GameEngineController {
             }
             if (btnAi) {
                 btnAi.style.display = 'none';
-                btnAi.innerHTML = '<i class="fa-solid fa-robot"></i> 补齐机器人并立即开局';
             }
         }
 
