@@ -5985,27 +5985,27 @@ body.theme-mahjong #lobbyScreen {
     z-index: 20 !important;
 }
 
-/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台上移，远离屏幕底部 */
+/* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台位置平衡微调 */
 @media (max-width: 768px) {
     .mahjong-screen-wrap {
         padding: 2px !important;
-        padding-top: max(40px, env(safe-area-inset-top)) !important;
-        padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+        padding-top: max(48px, env(safe-area-inset-top)) !important;
+        padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
     }
     .mahjong-table-vertical-container {
         max-width: 100% !important;
         padding: 2px !important;
-        gap: 4px !important;
+        gap: 6px !important;
         justify-content: flex-start !important;
     }
     .mahjong-top-bar {
-        margin-top: 2px !important;
+        margin-top: 6px !important;
         height: 32px !important;
         min-height: 32px !important;
         max-height: 32px !important;
     }
     .mahjong-visual-wall-row {
-        margin: 1px auto 3px auto !important;
+        margin: 2px auto 4px auto !important;
     }
     .vertical-mahjong-table {
         max-width: 100% !important;
@@ -6013,7 +6013,7 @@ body.theme-mahjong #lobbyScreen {
         aspect-ratio: 1 / 1.36 !important;
         max-height: 78vh !important;
         max-height: 78dvh !important;
-        margin-top: 2px !important;
+        margin-top: 6px !important;
         margin-bottom: auto !important;
         border-width: 4.5px !important;
         border-radius: 8px !important;
