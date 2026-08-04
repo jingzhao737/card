@@ -1494,134 +1494,7 @@ class GameEngineController {
     }
 
     /**
-     * 开启五子棋开局 3秒 倒计时反应抢先手 (3秒灰色禁用倒计时，到期高亮亮起拼手速抢)
-     */
-    startGomokuGrabBlackCountdown(isAiMode, isHost, onComplete) {
-        const biddingBar = document.getElementById('gomokuBiddingBar');
-        const btnGrab = document.getElementById('btnGrabBlackStone');
-        const grabBtnText = document.getElementById('grabBtnText');
-
-        if (!biddingBar || !btnGrab) {
-            if (onComplete) onComplete(isHost ? 1 : 2);
-            return;
-        }
-
-        if (this._grabTimerInterval) { clearInterval(this._grabTimerInterval); this._grabTimerInterval = null; }
-        if (this._grabReactInterval) { clearInterval(this._grabReactInterval); this._grabReactInterval = null; }
-
-        biddingBar.style.display = 'flex';
-
-        // 初始 3 秒倒计时：按键置灰禁用
-        btnGrab.disabled = true;
-        btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
-        if (grabBtnText) {
-            grabBtnText.innerHTML = '⚫ 准备抢先手 (<b id="grabTimerNum">3</b>s)';
-        }
-
-        let finished = false;
-        let claimedPlayer = null; // 1: Slot0(Host), 2: Slot1(Guest)
-        let canGrabNow = false;
-
-        const finishBidding = (winnerSlot, message) => {
-            if (finished) return;
-            finished = true;
-            if (this._grabTimerInterval) { clearInterval(this._grabTimerInterval); this._grabTimerInterval = null; }
-            if (this._grabReactInterval) { clearInterval(this._grabReactInterval); this._grabReactInterval = null; }
-
-            if (grabBtnText && message) grabBtnText.innerHTML = message;
-
-            setTimeout(() => {
-                biddingBar.style.display = 'none';
-                if (onComplete) onComplete(winnerSlot);
-            }, 500);
-        };
-
-        // 在线双人模式监听云端抢黑子广播
-        if (!isAiMode && typeof NetworkManager !== 'undefined') {
-            NetworkManager.clearGomokuClaimBlack();
-            NetworkManager.onGomokuClaimBlack((data) => {
-                if (data && !finished) {
-                    claimedPlayer = data.claimedSlot === 0 ? 1 : 2;
-                    const isMe = (data.claimedSlot === NetworkManager.myPlayerIndex);
-                    btnGrab.disabled = true;
-                    btnGrab.className = isMe ? 'btn-gomoku-bid grab-black claimed' : 'btn-gomoku-bid grab-black disabled-gray';
-                    finishBidding(claimedPlayer, isMe ? '<span>🎉 抢占成功！你执先手黑棋！</span>' : '<span>⚡ 对方手速更快抢到了先手！</span>');
-                }
-            });
-        }
-
-        // 点击抢先手（仅在 3 秒倒计时结束亮起后生效）
-        btnGrab.onclick = () => {
-            if (!canGrabNow || finished) return;
-            btnGrab.className = 'btn-gomoku-bid grab-black claimed';
-            btnGrab.disabled = true;
-
-            if (typeof SoundEngine !== 'undefined') {
-                SoundEngine.playCardPlaySound();
-            }
-
-            const mySlot = (typeof NetworkManager !== 'undefined' && NetworkManager.myPlayerIndex !== null) ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
-            const winnerSlot = (mySlot === 0) ? 1 : 2;
-
-            if (!isAiMode && typeof NetworkManager !== 'undefined' && NetworkManager.sendGomokuClaimBlack) {
-                NetworkManager.sendGomokuClaimBlack(mySlot);
-            }
-
-            finishBidding(winnerSlot, '<span>🎉 抢占成功！你执先手黑棋！</span>');
-        };
-
-        let timeLeft = 3000;
-        const step = 50;
-
-        // 阶段 1：3秒 灰色禁用倒计时
-        this._grabTimerInterval = setInterval(() => {
-            if (finished) return;
-            timeLeft -= step;
-            const sec = Math.max(1, Math.ceil(timeLeft / 1000));
-            const freshNum = document.getElementById('grabTimerNum');
-            if (freshNum) freshNum.textContent = sec;
-
-            if (timeLeft <= 0) {
-                clearInterval(this._grabTimerInterval);
-                this._grabTimerInterval = null;
-
-                if (finished) return;
-
-                // 3 秒到期！按键正式亮起！
-                canGrabNow = true;
-                btnGrab.disabled = false;
-                btnGrab.className = 'btn-gomoku-bid grab-black active-gold';
-                if (grabBtnText) grabBtnText.innerHTML = '🔥 拼手速！立即抢先手黑棋！';
-
-                if (typeof SoundEngine !== 'undefined') {
-                    SoundEngine.playCountdownGo();
-                }
-
-                // 阶段 2：给玩家 3.0 秒拼手速抢。若 3.0 秒内没人点，则自动随机分配！
-                let reactTime = 3000;
-                const reactStep = 50;
-                this._grabReactInterval = setInterval(() => {
-                    if (finished) return;
-                    reactTime -= reactStep;
-                    if (reactTime <= 0) {
-                        clearInterval(this._grabReactInterval);
-                        this._grabReactInterval = null;
-
-                        if (!finished) {
-                            // 没人抢 -> 随机分配！
-                            const randomWinner = Math.random() < 0.5 ? 1 : 2;
-                            btnGrab.disabled = true;
-                            btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
-                            finishBidding(randomWinner, '🎲 无人抢占，已随机分配先手！');
-                        }
-                    }
-                }, reactStep);
-            }
-        }, step);
-    }
-
-    /**
-     * 开启在线五子棋真人双人对战模式
+     * 开启在线五子棋真人双人对战模式 (随机先后手，我方固定在左侧)
      */
     startGomokuOnlineGame(roomId, isHost = false) {
         const lobbyScr = document.getElementById('lobbyScreen');
@@ -1642,32 +1515,40 @@ class GameEngineController {
         }
         this.updateHeaderVisibility();
 
-        // 预先绘制 15x15 五子棋盘，保证背景网格 100% 渲染呈现！
-        window.gomokuEngine.reset(false, isHost ? 1 : 2);
+        // 房主随机决定先手黑棋归属
+        const hostIsBlack = Math.random() < 0.5;
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
+        const myColor = (mySlot === 0 && hostIsBlack) || (mySlot === 1 && !hostIsBlack) ? 1 : 2;
+        const iAmBlack = (myColor === 1);
+
+        const hostNick = isHost ? NetworkManager.nickname : '房主';
+        const guestNick = !isHost ? NetworkManager.nickname : '对手';
+        const myNick = NetworkManager.nickname || '玩家';
+        const oppNick = isHost ? guestNick : hostNick;
+
+        // 左侧卡片 (固定是我方)
+        const nameLeft = document.getElementById('gNameLeft');
+        const roleLeft = document.getElementById('gRoleLeft');
+        const avatarLeft = document.getElementById('gAvatarLeft');
+        if (nameLeft) nameLeft.textContent = myNick;
+        if (roleLeft) roleLeft.textContent = iAmBlack ? '⚫ 先手黑棋' : '⚪ 后手白棋';
+        if (avatarLeft) avatarLeft.className = iAmBlack ? 'mini-stone-avatar black' : 'mini-stone-avatar white';
+
+        // 右侧卡片 (固定是对手)
+        const nameRight = document.getElementById('gNameRight');
+        const roleRight = document.getElementById('gRoleRight');
+        const avatarRight = document.getElementById('gAvatarRight');
+        if (nameRight) nameRight.textContent = oppNick;
+        if (roleRight) roleRight.textContent = iAmBlack ? '⚪ 后手白棋' : '⚫ 先手黑棋';
+        if (avatarRight) avatarRight.className = iAmBlack ? 'mini-stone-avatar white' : 'mini-stone-avatar black';
+
+        window.gomokuEngine.reset(false, myColor); // 双人在线模式
         this.initGomokuUI();
         this.renderGomokuBoard();
 
-        // 触发 3 秒抢先手黑棋倒计时 (无人抢则随机分配)
-        this.startGomokuGrabBlackCountdown(false, isHost, (blackAssign) => {
-            const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
-            const myColor = (mySlot === 0 && blackAssign === 1) || (mySlot === 1 && blackAssign === 2) ? 1 : 2;
-
-            const nameBlack = document.getElementById('gNameBlack');
-            const nameWhite = document.getElementById('gNameWhite');
-            const hostNick = isHost ? NetworkManager.nickname : '房主';
-            const guestNick = !isHost ? NetworkManager.nickname : '对手';
-
-            if (nameBlack) nameBlack.textContent = blackAssign === 1 ? hostNick : guestNick;
-            if (nameWhite) nameWhite.textContent = blackAssign === 1 ? guestNick : hostNick;
-
-            window.gomokuEngine.reset(false, myColor); // 双人在线模式
-            this.initGomokuUI();
-            this.renderGomokuBoard();
-
-            const isMyTurn = window.gomokuEngine.currentTurn === myColor;
-            this.updateGomokuStatusUI(isMyTurn ? `⚫ 轮到你落子 (先手黑棋)` : `⚪ 对方思考中 (后手白棋)...`);
-            UIRenderer.showToast(isMyTurn ? '⚫ 抢占/随机完毕！你执先手黑棋' : '⚪ 抢占/随机完毕！你执后手白棋');
-        });
+        const isMyTurn = window.gomokuEngine.currentTurn === myColor;
+        this.updateGomokuStatusUI(isMyTurn ? `⚫ 轮到你落子 (先手黑棋)` : `⚪ 对方思考中 (后手白棋)...`);
+        UIRenderer.showToast(isMyTurn ? '🎲 随机先后手：你执先手黑棋！' : '🎲 随机先后手：你执后手白棋！');
 
         // 监听云端落子广播
         NetworkManager.onGomokuMove((move) => {
@@ -1742,20 +1623,13 @@ class GameEngineController {
             // 双方都点击了【重来一局】！重置盘面，开启新对局！
             if (hostVote && joinerVote) {
                 NetworkManager.clearGomokuRematchVotes();
-                const myColor = isHost ? 1 : 2;
-                window.gomokuEngine.reset(false, myColor);
-                this.initGomokuUI();
-                this.renderGomokuBoard();
-
-                const isMyTurn = window.gomokuEngine.currentTurn === myColor;
-                this.updateGomokuStatusUI(isMyTurn ? `⚫ 房间 #${roomId} · 轮到你落子` : `⚪ 房间 #${roomId} · 对方思考中...`);
-                UIRenderer.showToast('⚔️ 双方均已同意，新一局对局开始！');
+                this.startGomokuOnlineGame(roomId, isHost);
             }
         });
     }
 
     /**
-     * 开启单机 AI 五子棋切磋模式
+     * 开启单机 AI 五子棋切磋模式 (随机先后手，我方固定在左侧)
      */
     startGomokuAiMode() {
         const lobbyScr = document.getElementById('lobbyScreen');
@@ -1777,41 +1651,45 @@ class GameEngineController {
 
         const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
 
-        // 预先绘制 15x15 五子棋盘，保证背景网格 100% 渲染呈现！
-        window.gomokuEngine.reset(true, 1);
+        // 随机决定先后手
+        const iAmBlack = Math.random() < 0.5;
+        const myColor = iAmBlack ? 1 : 2;
+
+        // 左侧卡片 (固定是我方)
+        const nameLeft = document.getElementById('gNameLeft');
+        const roleLeft = document.getElementById('gRoleLeft');
+        const avatarLeft = document.getElementById('gAvatarLeft');
+        if (nameLeft) nameLeft.textContent = nick;
+        if (roleLeft) roleLeft.textContent = iAmBlack ? '⚫ 先手黑棋' : '⚪ 后手白棋';
+        if (avatarLeft) avatarLeft.className = iAmBlack ? 'mini-stone-avatar black' : 'mini-stone-avatar white';
+
+        // 右侧卡片 (固定是 AI 棋圣)
+        const nameRight = document.getElementById('gNameRight');
+        const roleRight = document.getElementById('gRoleRight');
+        const avatarRight = document.getElementById('gAvatarRight');
+        if (nameRight) nameRight.textContent = 'AI 棋圣';
+        if (roleRight) roleRight.textContent = iAmBlack ? '⚪ 后手白棋' : '⚫ 先手黑棋';
+        if (avatarRight) avatarRight.className = iAmBlack ? 'mini-stone-avatar white' : 'mini-stone-avatar black';
+
+        window.gomokuEngine.reset(true, myColor);
         this.initGomokuUI();
         this.renderGomokuBoard();
 
-        // 触发 3 秒抢先手黑棋倒计时
-        this.startGomokuGrabBlackCountdown(true, true, (blackAssign) => {
-            const playerIsBlack = blackAssign === 1;
-            const playerColor = playerIsBlack ? 1 : 2;
-
-            const nameBlack = document.getElementById('gNameBlack');
-            const nameWhite = document.getElementById('gNameWhite');
-            if (nameBlack) nameBlack.textContent = playerIsBlack ? nick : 'AI 棋圣';
-            if (nameWhite) nameWhite.textContent = playerIsBlack ? 'AI 棋圣' : nick;
-
-            window.gomokuEngine.reset(true, playerColor);
-            this.initGomokuUI();
-            this.renderGomokuBoard();
-
-            if (playerIsBlack) {
-                this.updateGomokuStatusUI('⚫ 黑方落子中 (你)');
-                UIRenderer.showToast('🟢 抢占/随机分配完毕！你是先手黑棋');
-            } else {
-                this.updateGomokuStatusUI('🤖 AI 棋圣思考中...');
-                UIRenderer.showToast('🎲 随机分配完毕！AI 棋圣执先手黑棋');
-                setTimeout(() => {
-                    const aiMove = window.gomokuEngine.getBestAiMove();
-                    if (aiMove) {
-                        window.gomokuEngine.placeStone(aiMove.r, aiMove.c);
-                        this.renderGomokuBoard();
-                        this.updateGomokuStatusUI('⚪ 轮到你落子 (白棋)');
-                    }
-                }, 800);
-            }
-        });
+        if (iAmBlack) {
+            this.updateGomokuStatusUI('⚫ 轮到你落子 (先手黑棋)');
+            UIRenderer.showToast('🎲 随机分配完成：你执先手黑棋！');
+        } else {
+            this.updateGomokuStatusUI('🤖 AI 棋圣 (先手黑棋) 思考中...');
+            UIRenderer.showToast('🎲 随机分配完成：AI 棋圣执先手黑棋！');
+            setTimeout(() => {
+                const aiMove = window.gomokuEngine.getBestAiMove();
+                if (aiMove) {
+                    window.gomokuEngine.placeStone(aiMove.r, aiMove.c);
+                    this.renderGomokuBoard();
+                    this.updateGomokuStatusUI('⚪ 轮到你落子 (后手白棋)');
+                }
+            }, 800);
+        }
     }
 
     /**
@@ -1964,26 +1842,24 @@ class GameEngineController {
     }
 
     /**
-     * 更新顶部对局状态指示与当前回合玩家高亮
+     * 更新顶部对局状态指示与当前回合玩家高亮 (左侧固定为我方，右侧固定为对方)
      */
     updateGomokuStatusUI(msg) {
         const textEl = document.getElementById('gomokuTurnText');
         if (textEl) textEl.textContent = msg;
 
-        // 根据回合提示同步高亮对应玩家卡片
-        const pillBlack = document.getElementById('gomokuPlayerBlack');
-        const pillWhite = document.getElementById('gomokuPlayerWhite');
+        const pillLeft = document.getElementById('gomokuPlayerLeft');
+        const pillRight = document.getElementById('gomokuPlayerRight');
+        const engine = window.gomokuEngine;
 
-        if (pillBlack && pillWhite) {
-            if (msg.includes('黑方') || msg.includes('你的回合') || msg.includes('轮到你')) {
-                pillBlack.classList.add('turn-active');
-                pillWhite.classList.remove('turn-active');
-            } else if (msg.includes('白方') || msg.includes('思考中') || msg.includes('AI')) {
-                pillWhite.classList.add('turn-active');
-                pillBlack.classList.remove('turn-active');
+        if (pillLeft && pillRight && engine) {
+            const isMyTurn = (engine.currentTurn === engine.playerColor);
+            if (isMyTurn) {
+                pillLeft.classList.add('turn-active');
+                pillRight.classList.remove('turn-active');
             } else {
-                pillBlack.classList.remove('turn-active');
-                pillWhite.classList.remove('turn-active');
+                pillRight.classList.add('turn-active');
+                pillLeft.classList.remove('turn-active');
             }
         }
     }

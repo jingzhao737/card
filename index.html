@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=7.7">
+    <link rel="stylesheet" href="css/styles.css?v=7.8">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -359,14 +359,6 @@
 
         <!-- 游鲸五子棋 专属墨绿棋盘对局室 (Gomoku Game Screen) -->
         <div id="gomokuGameScreen" class="overlay-screen gomoku-screen-wrap" style="display: none;">
-            <!-- 五子棋开局 3秒 倒计时后亮起抢先手按键 -->
-            <div id="gomokuBiddingBar" class="gomoku-bidding-bar" style="display: none;">
-                <button class="btn-gomoku-bid grab-black disabled-gray" id="btnGrabBlackStone" disabled>
-                    <div class="mini-stone-avatar black" style="width:16px;height:16px;"></div>
-                    <span id="grabBtnText">⚫ 准备抢先手 (<b id="grabTimerNum">3</b>s)</span>
-                </button>
-            </div>
-
             <div class="gomoku-container">
                 <!-- 顶部对局玩家与回合信息 Area (Status Pill Top + Expanded VS Bar) -->
                 <div class="gomoku-header-area">
@@ -376,27 +368,27 @@
                         <span id="gomokuTurnText">黑方落子</span>
                     </div>
 
-                    <!-- 玩家 VS 信息 Bar -->
+                    <!-- 玩家 VS 信息 Bar (左侧固定是我方，右侧固定是对方/AI) -->
                     <div class="gomoku-header-bar">
-                        <!-- 黑方玩家卡片 -->
-                        <div class="gomoku-player-pill black turn-active" id="gomokuPlayerBlack">
+                        <!-- 我方玩家卡片 (固定在左侧) -->
+                        <div class="gomoku-player-pill left-me turn-active" id="gomokuPlayerLeft">
                             <div class="player-pill-top">
-                                <div class="mini-stone-avatar black" title="黑棋先手"></div>
-                                <span class="p-role">先手黑棋</span>
+                                <div class="mini-stone-avatar black" id="gAvatarLeft" title="棋子颜色"></div>
+                                <span class="p-role" id="gRoleLeft">⚫ 先手黑棋</span>
                             </div>
-                            <div class="player-pill-name" id="gNameBlack">玩家</div>
+                            <div class="player-pill-name" id="gNameLeft">我方玩家</div>
                         </div>
 
                         <!-- 中央 VS 标识 -->
                         <div class="gomoku-vs-badge">VS</div>
 
-                        <!-- 白方玩家卡片 -->
-                        <div class="gomoku-player-pill white" id="gomokuPlayerWhite">
+                        <!-- 对方玩家卡片 (固定在右侧: 对方/AI) -->
+                        <div class="gomoku-player-pill right-opp" id="gomokuPlayerRight">
                             <div class="player-pill-top right">
-                                <span class="p-role">后手白棋</span>
-                                <div class="mini-stone-avatar white" title="白棋后手"></div>
+                                <span class="p-role" id="gRoleRight">⚪ 后手白棋</span>
+                                <div class="mini-stone-avatar white" id="gAvatarRight" title="棋子颜色"></div>
                             </div>
-                            <div class="player-pill-name align-right" id="gNameWhite">AI 棋圣</div>
+                            <div class="player-pill-name align-right" id="gNameRight">AI 棋圣</div>
                         </div>
                     </div>
                 </div>
