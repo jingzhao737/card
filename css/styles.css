@@ -5255,12 +5255,12 @@ body.theme-mahjong .game-container {
     font-weight: 900 !important;
 }
 
-/* 3. 游鲸麻将：暖黄琥珀桃木+描金主题高亮 (偏黄琥珀桃木) */
+/* 3. 游鲸麻将：明亮通透桃木沉香主题高亮 */
 #btnNavMahjong.active {
-    background: linear-gradient(135deg, #d97706 0%, #a13b12 50%, #6e1e14 100%) !important;
+    background: linear-gradient(135deg, #923a2a 0%, #752a1c 50%, #571f16 100%) !important;
     color: #fffbeb !important;
     border-color: #f59e0b !important;
-    box-shadow: 0 4px 18px rgba(217, 119, 6, 0.65), 0 0 14px rgba(245, 158, 11, 0.5) !important;
+    box-shadow: 0 4px 18px rgba(146, 58, 42, 0.65), 0 0 14px rgba(245, 158, 11, 0.5) !important;
     font-weight: 900 !important;
 }
 
@@ -5278,7 +5278,7 @@ body.theme-mahjong .game-container {
 }
 
 #btnNavMahjong:hover:not(.active) {
-    background: rgba(217, 119, 6, 0.35) !important;
+    background: rgba(146, 58, 42, 0.35) !important;
     border-color: rgba(245, 158, 11, 0.5) !important;
     color: #fef08a !important;
 }
@@ -5329,11 +5329,11 @@ body.theme-mahjong .game-container {
     color: #34d399;
 }
 
-/* 游鲸麻将 主大厅卡片 琥珀桃木质感与精细微阴影 */
+/* 游鲸麻将 主大厅卡片 暖金桃木质感与精细微阴影 */
 .lobby-card.theme-mahjong {
     border: 1.5px solid rgba(245, 158, 11, 0.4) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(180, 83, 9, 0.35) !important;
-    background: rgba(38, 14, 6, 0.96) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(146, 58, 42, 0.35) !important;
+    background: rgba(87, 31, 22, 0.96) !important;
 }
 
 .mode-card.primary-card.mahjong-theme {
@@ -5365,9 +5365,9 @@ body.theme-mahjong .game-container {
     transform: translateY(-2px);
 }
 
-/* 暖黄琥珀桃木色主大厅 Header (富贵金边 + 沉香木纹) */
+/* 明亮暖金桃木色主大厅 Header (富贵金边 + 沉香木纹) */
 .lobby-header.peachwood-header {
-    background: linear-gradient(135deg, #6e240c 0%, #9a3412 40%, #b45309 75%, #431707 100%) !important;
+    background: linear-gradient(135deg, #923a2a 0%, #752a1c 40%, #632419 75%, #42160e 100%) !important;
     border-bottom: 1.5px solid rgba(245, 158, 11, 0.45);
     position: relative;
     overflow: hidden;
