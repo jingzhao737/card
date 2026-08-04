@@ -1154,9 +1154,46 @@ class GameEngineController {
     }
 
     /**
+     * 彻底终止麻将对局中的所有定时器、看门狗与 AI 轮转 loop
+     */
+    stopMahjongGame() {
+        if (window.mahjongEngine) {
+            window.mahjongEngine.isGameOver = true;
+        }
+        if (this._mahjongWatchdogId) {
+            clearInterval(this._mahjongWatchdogId);
+            this._mahjongWatchdogId = null;
+        }
+        if (this._mahjongTimerInterval) {
+            clearInterval(this._mahjongTimerInterval);
+            this._mahjongTimerInterval = null;
+        }
+        if (this._mahjongResponseTimer) {
+            clearTimeout(this._mahjongResponseTimer);
+            this._mahjongResponseTimer = null;
+        }
+        this._mahjongAiBusy = false;
+        this.pendingDiscardRes = null;
+
+        const timerEl = document.getElementById('mahjongTimer');
+        if (timerEl) {
+            timerEl.textContent = '25';
+            timerEl.classList.remove('urgent');
+        }
+    }
+
+    /**
      * 重置界面并退出当前房间 (无论是人机还是玩家对局，只要无真人玩家立即删除云端房间)
      */
     resetToLobby() {
+        // 彻底清空麻将与斗地主所有定时器，防止离开大厅后后台 AI 继续走牌并播音效！
+        this.stopMahjongGame();
+        if (this.turnTimerId) {
+            clearInterval(this.turnTimerId);
+            this.turnTimerId = null;
+        }
+        this.gameState.phase = 'LOBBY';
+
         const doResetUI = () => {
             const lobbyScr = document.getElementById('lobbyScreen');
             const waitingScr = document.getElementById('waitingScreen');
@@ -2632,7 +2669,8 @@ class GameEngineController {
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
 
         this._mahjongTimerInterval = setInterval(() => {
-            if (!engine || engine.isGameOver) {
+            const mahjongScr = document.getElementById('mahjongGameScreen');
+            if (!mahjongScr || mahjongScr.style.display === 'none' || !engine || engine.isGameOver) {
                 clearInterval(this._mahjongTimerInterval);
                 this._mahjongTimerInterval = null;
                 return;
@@ -2780,6 +2818,12 @@ class GameEngineController {
      * 3 家 AI 依序打牌与响应循环 (AI 智能胡、碰、杠、吃)
      */
     triggerAiTurnLoop() {
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+        if (!mahjongScr || mahjongScr.style.display === 'none') {
+            this._mahjongAiBusy = false;
+            return;
+        }
+
         const engine = window.mahjongEngine;
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (!engine || engine.isGameOver || engine.currentTurn === mySlot) {
@@ -2804,7 +2848,10 @@ class GameEngineController {
             // 回合即将执行，释放守卫
             this._mahjongAiBusy = false;
             try {
-                if (engine.isGameOver || engine.currentTurn === mySlot) return;
+                // 界面脱离/退回大厅判定：如果在思考延迟期间用户已退出麻将屏，直接丢弃，严禁播音效或继续发牌！
+                const scrCheck = document.getElementById('mahjongGameScreen');
+                if (!scrCheck || scrCheck.style.display === 'none' || engine.isGameOver || engine.currentTurn === mySlot) return;
+
                 const curIdx = engine.currentTurn;
                 const isAiSeatNow = (this.gameState.players && this.gameState.players[curIdx]) ? this.gameState.players[curIdx].isAi : (curIdx !== mySlot);
                 if (!isAiSeatNow) return;
@@ -2866,7 +2913,8 @@ class GameEngineController {
                 console.error('[Mahjong] AI 回合执行异常，自动恢复轮转:', err);
                 // 兜底：渲染/动画/音效等任何一步出错都不能让 AI 链永久卡死
                 try {
-                    if (engine.isGameOver) return;
+                    const scrCheck = document.getElementById('mahjongGameScreen');
+                    if (!scrCheck || scrCheck.style.display === 'none' || engine.isGameOver) return;
                     if (engine.currentTurn !== mySlot) {
                         this.triggerAiTurnLoop();
                     } else {
@@ -2884,6 +2932,15 @@ class GameEngineController {
      * 房主 AI 回合看门狗：若 AI 回合因任何原因卡住(异常/竞态)，自动重新驱动，保证对局不死锁
      */
     _checkMahjongAiWatchdog() {
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+        if (!mahjongScr || mahjongScr.style.display === 'none') {
+            if (this._mahjongWatchdogId) {
+                clearInterval(this._mahjongWatchdogId);
+                this._mahjongWatchdogId = null;
+            }
+            return;
+        }
+
         const engine = window.mahjongEngine;
         if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
         if (!NetworkManager.isHost || NetworkManager.isAiMode || !NetworkManager.roomId) return;
