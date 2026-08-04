@@ -3177,8 +3177,10 @@ class GameEngineController {
      * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
      */
     resetToLobby() {
-        const gomokuScr = document.getElementById('gomokuGameScreen');
-        const isGomokuExit = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+        const gomokuScr  = document.getElementById('gomokuGameScreen');
+        const isMahjongExit = (this.activeGameType === 'MAHJONG') || (mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none'));
+        const isGomokuExit  = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
 
         this._stopKeepAlive();
         NetworkManager.clearSession();
@@ -3213,19 +3215,22 @@ class GameEngineController {
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // 4. 界面瞬间平滑切回大厅 Screen (无需刷新网页)
-        const waitingScreen = document.getElementById('waitingScreen');
-        const gameTable     = document.getElementById('gameTable');
-        const gameOverModal = document.getElementById('gameOverModal');
-        const lobbyScreen   = document.getElementById('lobbyScreen');
-        const roomInfoBar   = document.getElementById('roomInfoBar');
-        const btnLeaveRoom  = document.getElementById('btnLeaveRoom');
-        const btnGoHomeTop  = document.getElementById('btnGoHomeTop');
+        // 4. 界面瞬间平滑切回大厅 Screen (彻底隐藏麻将/五子棋/斗地主对局屏与结算弹窗)
+        const waitingScreen   = document.getElementById('waitingScreen');
+        const gameTable       = document.getElementById('gameTable');
+        const gameOverModal   = document.getElementById('gameOverModal');
+        const mahjongSettle   = document.getElementById('mahjongSettlementModal');
+        const lobbyScreen     = document.getElementById('lobbyScreen');
+        const roomInfoBar     = document.getElementById('roomInfoBar');
+        const btnLeaveRoom    = document.getElementById('btnLeaveRoom');
+        const btnGoHomeTop    = document.getElementById('btnGoHomeTop');
 
         if (waitingScreen) { waitingScreen.style.display = 'none'; waitingScreen.classList.remove('active'); }
         if (gameTable)     { gameTable.style.display = 'none'; gameTable.classList.remove('active'); }
         if (gameOverModal) gameOverModal.style.display = 'none';
         if (gomokuScr)     { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
+        if (mahjongScr)    { mahjongScr.style.display = 'none'; mahjongScr.classList.remove('active'); }
+        if (mahjongSettle) { mahjongSettle.style.display = 'none'; mahjongSettle.classList.remove('active'); }
         if (roomInfoBar)   roomInfoBar.style.display = 'none';
         if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
         if (btnGoHomeTop)  btnGoHomeTop.style.display = 'none';
@@ -3237,8 +3242,10 @@ class GameEngineController {
             lobbyScreen.classList.add('active');
         }
 
-        // 如果是从五子棋退出的，退回主页时默认切为五子棋主页 Tab
-        if (isGomokuExit && typeof this.switchGameLobby === 'function') {
+        // 如果是从麻将/五子棋退出的，退回主页时自动切为对应的麻将/五子棋主页 Tab
+        if (isMahjongExit && typeof this.switchGameLobby === 'function') {
+            this.switchGameLobby('MAHJONG');
+        } else if (isGomokuExit && typeof this.switchGameLobby === 'function') {
             this.switchGameLobby('GOMOKU');
         }
 
