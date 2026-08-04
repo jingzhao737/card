@@ -6111,6 +6111,19 @@ body.theme-mahjong #lobbyScreen {
     margin-left: 2px;
 }
 
+/* 📱 手机移动端：两侧纵向 ID 栏中的庄标旋转 90 度，保持纵向规整防撑宽 */
+@media (max-width: 768px) {
+    .seat-user-pill.vertical .dealer-tag {
+        writing-mode: horizontal-tb;
+        transform: rotate(90deg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 4px auto 2px auto;
+        padding: 2px 4px;
+    }
+}
+
 /* 3. 吃牌动作按钮 */
 .btn-mahjong-act.act-chow {
     background: linear-gradient(135deg, #059669, #047857) !important;
@@ -6414,6 +6427,13 @@ body.theme-mahjong #lobbyScreen {
         writing-mode: horizontal-tb !important;
         padding: 4px 10px 4px 4px !important;
         border-radius: 20px !important;
+    }
+
+    .seat-user-pill.vertical .dealer-tag {
+        writing-mode: horizontal-tb !important;
+        transform: none !important;
+        margin-left: 3px !important;
+        margin-top: 0 !important;
     }
 
     /* PC 端独立精致样式：36px 宽 x 48px 高 (黄金 3:4 沉稳比例，修长匀称，告别太胖太宽感) */
