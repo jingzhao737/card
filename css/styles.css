@@ -4571,22 +4571,28 @@ body.theme-gomoku .overlay-screen {
     gap: 8px;
 }
 
-/* 玩家卡片 */
+/* 玩家卡片 (纵向分层，ID 独立占一行) */
 .gomoku-player-pill {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-radius: 8px;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
     transition: all 0.25s ease;
     max-width: 38%;
-    overflow: hidden;
+    min-width: 0;
 }
 
-.gomoku-player-pill.white {
+.player-pill-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.player-pill-top.right {
     justify-content: flex-end;
 }
 
@@ -4600,8 +4606,8 @@ body.theme-gomoku .overlay-screen {
 
 /* 3D 迷你棋子头像 */
 .mini-stone-avatar {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
@@ -4617,24 +4623,18 @@ body.theme-gomoku .overlay-screen {
     border: none;
 }
 
-/* 玩家文本信息 */
-.gomoku-player-pill .player-info-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.gomoku-player-pill .player-info-text.align-right {
-    text-align: right;
-}
-
-.gomoku-player-pill .p-name {
+/* 玩家 ID / 昵称 (单独一行，长 ID 完整展示不截断) */
+.player-pill-name {
     font-size: 0.82rem;
     font-weight: 800;
     color: #f1f5f9;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    width: 100%;
+    word-break: break-word;
+    line-height: 1.25;
+}
+
+.player-pill-name.align-right {
+    text-align: right;
 }
 
 .gomoku-player-pill .p-role {
@@ -4642,7 +4642,6 @@ body.theme-gomoku .overlay-screen {
     font-weight: 600;
     color: #94a3b8;
     white-space: nowrap;
-    margin-top: 1px;
 }
 
 /* 中央对局回合指示胶囊 */

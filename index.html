@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=6.1">
+    <link rel="stylesheet" href="css/styles.css?v=6.2">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -360,15 +360,15 @@
         <!-- 游鲸五子棋 专属墨绿棋盘对局室 (Gomoku Game Screen) -->
         <div id="gomokuGameScreen" class="overlay-screen gomoku-screen-wrap" style="display: none;">
             <div class="gomoku-container">
-                <!-- 顶部对局玩家与回合信息 Bar (Redesigned Modern Header) -->
+                <!-- 顶部对局玩家与回合信息 Bar (Full ID Display Redesign) -->
                 <div class="gomoku-header-bar">
                     <!-- 黑方玩家卡片 -->
                     <div class="gomoku-player-pill black turn-active" id="gomokuPlayerBlack">
-                        <div class="mini-stone-avatar black" title="黑棋先手"></div>
-                        <div class="player-info-text">
-                            <span class="p-name" id="gNameBlack">黑方 (玩家)</span>
+                        <div class="player-pill-top">
+                            <div class="mini-stone-avatar black" title="黑棋先手"></div>
                             <span class="p-role">先手黑棋</span>
                         </div>
+                        <div class="player-pill-name" id="gNameBlack">黑方 (玩家)</div>
                     </div>
 
                     <!-- 中央回合状态指示胶囊 -->
@@ -379,11 +379,11 @@
 
                     <!-- 白方玩家卡片 -->
                     <div class="gomoku-player-pill white" id="gomokuPlayerWhite">
-                        <div class="player-info-text align-right">
-                            <span class="p-name" id="gNameWhite">白方 (AI棋圣)</span>
+                        <div class="player-pill-top right">
                             <span class="p-role">后手白棋</span>
+                            <div class="mini-stone-avatar white" title="白棋后手"></div>
                         </div>
-                        <div class="mini-stone-avatar white" title="白棋后手"></div>
+                        <div class="player-pill-name align-right" id="gNameWhite">白方 (AI棋圣)</div>
                     </div>
                 </div>
 
