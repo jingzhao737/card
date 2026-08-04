@@ -4640,25 +4640,23 @@ body.theme-gomoku .overlay-screen {
     transform: scale(1.02);
 }
 
-/* 3D 迷你棋子头像 (黑棋加大物理尺寸防止视觉偏小) */
+/* 3D 迷你棋子头像 (标准 1:1 相同规格) */
 .mini-stone-avatar {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
 .mini-stone-avatar.black {
-    width: 22px;
-    height: 22px;
-    background: radial-gradient(circle at 35% 35%, #64748b 0%, #27272a 50%, #000000 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none;
 }
 
 .mini-stone-avatar.white {
-    width: 19px;
-    height: 19px;
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: none;
 }
 
 /* 玩家 ID / 昵称 (精致字号 0.72rem，去冗余高精简) */
@@ -4823,15 +4821,18 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
-/* 棋子 Style (专业围棋/五子棋物理视错觉光学微调：黑子稍大 5% 呈现视觉等大) */
+/* 棋子 Style (全自然光感，1:1 物理等大规格) */
 .gomoku-stone {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 84%;
+    height: 84%;
     border-radius: 50%;
     z-index: 5;
     border: none !important; /* 彻底无描边 */
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.65);
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation: stonePop 0.2s ease;
 }
@@ -4843,18 +4844,12 @@ body.theme-gomoku .overlay-screen {
 }
 
 .gomoku-stone.black {
-    width: 92%;
-    height: 92%;
-    background: radial-gradient(circle at 35% 35%, #64748b 0%, #27272a 45%, #09090b 80%, #000000 100%);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.18);
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
     border: none !important;
 }
 
 .gomoku-stone.white {
-    width: 83%;
-    height: 83%;
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.55);
     border: none !important;
 }
 
