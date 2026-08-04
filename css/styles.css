@@ -5972,9 +5972,8 @@ body.theme-mahjong #lobbyScreen {
     overflow: hidden;
 }
 
-.mahjong-tile-card:hover, .mahjong-tile-card:active {
-    transform: translateY(-12px);
-    box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
+.mahjong-tile-card:hover {
+    filter: brightness(1.03);
 }
 
 /* 🀄 第 1 次点击高亮选中：轻微上移 8px + 保持绿色底座厚度与宽度完全一致 */
