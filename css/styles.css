@@ -5488,13 +5488,13 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 修长 9:14 充盈绒面麻将桌台 (高度扩展至 84vh，大气恢弘) */
+/* 自然开阔 3:4 黄金绒面麻将桌台 */
 .vertical-mahjong-table {
     width: 100%;
-    max-width: 450px;
-    aspect-ratio: 9 / 14;
-    max-height: 84vh;
-    max-height: 84dvh;
+    max-width: 460px;
+    aspect-ratio: 3 / 4;
+    max-height: 76vh;
+    max-height: 76dvh;
     margin: auto 0;
     flex-shrink: 0;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
@@ -6246,28 +6246,70 @@ body.theme-mahjong {
 }
 
 /* ==========================================================================
-   💻 PC 端 (min-width: 769px) 显著加宽手牌身材 (44px 宽 x 52px 高，加宽敦厚视感)
+   💻 PC 大屏桌面端 (min-width: 769px) 4:3 宽屏高奢麻将桌台全景重构
    ========================================================================== */
 @media (min-width: 769px) {
-    .mahjong-tiles-bottom {
-        gap: 3px !important;
+    .mahjong-table-vertical-container {
+        max-width: 880px !important;
+        width: 90vw !important;
     }
+
+    /* 4:3 大气宽屏横向绿绒桌台 */
+    .vertical-mahjong-table {
+        max-width: 780px !important;
+        aspect-ratio: 4 / 3 !important;
+        max-height: 76vh !important;
+        max-height: 76dvh !important;
+        border: 10px solid #4a150e !important;
+        border-radius: 24px !important;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), inset 0 0 40px rgba(0, 0, 0, 0.75), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
+    }
+
+    /* PC 端左右两侧玩家名片恢复横向读取与宽边距 */
+    .table-player-seat.seat-left {
+        left: 14px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+
+    .table-player-seat.seat-right {
+        right: 14px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        flex-direction: row-reverse !important;
+        gap: 8px !important;
+    }
+
+    .seat-user-pill.vertical {
+        writing-mode: horizontal-tb !important;
+        padding: 4px 10px 4px 4px !important;
+        border-radius: 20px !important;
+    }
+
+    /* PC 端我方手牌：40px 宽 x 52px 高（大气厚实比例） */
+    .mahjong-tiles-bottom {
+        gap: 3.5px !important;
+    }
+
     .mahjong-tile-card {
-        width: 44px !important;
+        width: 40px !important;
         height: 52px !important;
         aspect-ratio: auto !important;
         flex: 0 0 auto !important;
         border-radius: 5px !important;
-        box-shadow: 0 6px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.65) !important;
+        box-shadow: 0 5.5px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.65) !important;
     }
-    .mahjong-tile-card .m-face.wan .w-num { font-size: 1.05rem !important; }
-    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.9rem !important; }
-    .mahjong-tile-card .m-face.honor { font-size: 1.35rem !important; }
-    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 20px !important; height: 28px !important; }
-    .mahjong-tile-card .m-face.bing-1 .rosette { width: 23px !important; height: 23px !important; }
-    .mahjong-tile-card .m-face.bing .dot { width: 7.5px !important; height: 7.5px !important; }
-    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.5rem !important; }
-    .mahjong-tile-card .m-face.tiao .bar { width: 4.2px !important; height: 14px !important; }
+
+    .mahjong-tile-card .m-face.wan .w-num { font-size: 1rem !important; }
+    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.85rem !important; }
+    .mahjong-tile-card .m-face.honor { font-size: 1.3rem !important; }
+    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 19px !important; height: 27px !important; }
+    .mahjong-tile-card .m-face.bing-1 .rosette { width: 22px !important; height: 22px !important; }
+    .mahjong-tile-card .m-face.bing .dot { width: 7px !important; height: 7px !important; }
+    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.45rem !important; }
+    .mahjong-tile-card .m-face.tiao .bar { width: 4px !important; height: 14px !important; }
 }
 
 
