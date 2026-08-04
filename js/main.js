@@ -5048,8 +5048,14 @@ class GameEngineController {
     processBid(playerIndex, action) {
         if (this.gameState.phase !== 'BIDDING') return;
 
-        // 如果处于 3 秒开局倒计时中，拒绝任何叫牌操作
-        if (this.gameState.isOpeningCountdown) return;
+        // 如果处于 3 秒开局倒计时中且非房主直接忽略，房主解除锁定响应叫牌
+        if (this.gameState.isOpeningCountdown) {
+            if (NetworkManager.isHost) {
+                this.gameState.isOpeningCountdown = false;
+            } else {
+                return;
+            }
+        }
 
         const player = this.gameState.players[playerIndex];
         if (!player || player.passedBid) return; // 已经不叫退出的玩家不能再叫
@@ -5073,16 +5079,23 @@ class GameEngineController {
             UIRenderer.showBubble(bubbleTarget, '不叫');
             UIRenderer.showToast(`${player.name} 放弃叫地主`);
 
+            // 广播不叫状态，保证其他玩家的冒泡提示与手牌同步
+            if (NetworkManager.isHost) {
+                NetworkManager.broadcastState(this.gameState);
+            }
+
             // 统计剩下没有退出的玩家
             const activeBidders = this.gameState.players.filter(p => !p.passedBid);
 
             if (activeBidders.length === 1) {
                 // 其他人都退出了，剩下的唯一一个人自动变成地主！
                 const lastPlayer = activeBidders[0];
+                const lastPlayerIdx = this.gameState.players.findIndex(p => p === lastPlayer);
+                const targetIdx = (lastPlayerIdx !== -1) ? lastPlayerIdx : 0;
                 SoundEngine.playBid();
                 UIRenderer.showToast(`🌾 其他玩家均已退出，${lastPlayer.name} 自动获封地主！`);
                 setTimeout(() => {
-                    this.finalizeLandlord(lastPlayer.id);
+                    this.finalizeLandlord(targetIdx);
                 }, 1000);
                 return;
             } else if (activeBidders.length === 0) {
@@ -5099,12 +5112,12 @@ class GameEngineController {
      */
     finalizeLandlord(landlordIdx) {
         // 防重机制：防止网络延迟或定时器导致重复触发领底牌产生 5张Q/重复卡牌 bug！
-        if (this.gameState.phase === 'PLAYING') return;
+        if (this.gameState.phase === 'PLAYING' || landlordIdx === undefined || landlordIdx < 0 || landlordIdx > 2) return;
 
         this.gameState.landlordIndex = landlordIdx;
         this.gameState.phase = 'PLAYING';
         this.gameState.currentTurn = landlordIdx;
-        this.gameState.multiplier = Math.max(1, this.gameState.highestBid);
+        this.gameState.multiplier = Math.max(1, this.gameState.highestBid || 1);
 
         // 赋予角色并自动为全场玩家整理手牌
         this.gameState.players.forEach((p, idx) => {
@@ -5121,6 +5134,11 @@ class GameEngineController {
         UIRenderer.showToast(`${this.gameState.players[landlordIdx].name} 成为地主！得 3 张底牌`);
         SoundEngine.playCardSort();
         this.startTurnTimer();
+
+        // 全量同步最新地主身份、20张地主手牌与 PLAYING 阶段状态至云端/所有客户端
+        if (NetworkManager.isHost) {
+            NetworkManager.broadcastState(this.gameState);
+        }
     }
 
     /**
