@@ -950,15 +950,9 @@ body.theme-gomoku .overlay-screen {
     pointer-events: none;
 }
 
-/* 顶部金线装饰 */
+/* 顶部金线装饰已彻底移除 */
 .lobby-header::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #c9922a 20%, #ffd700 50%, #c9922a 80%, transparent 100%);
+    display: none !important;
 }
 
 .brand-hero {
