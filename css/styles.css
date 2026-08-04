@@ -201,22 +201,17 @@ body:has(#lobbyScreen.active) .app-header,
     filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }
 .btn-mail-icon-only.has-unread {
-    animation: mailGlowPulse 1.5s infinite alternate;
-}
-@keyframes mailGlowPulse {
-    0% { filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4)); }
-    100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)); }
+    /* 完全无动画与呼吸光效，保持纯静止图标 */
 }
 .mail-unread-dot {
     position: absolute;
     top: 4px;
     right: 2px;
-    width: 9px;
-    height: 9px;
+    width: 8px;
+    height: 8px;
     background: #fbbf24;
     border: 1.5px solid #0f172a;
     border-radius: 50%;
-    box-shadow: 0 0 6px #fbbf24;
 }
 
 /* 邮件卡片列表项样式 (克制极简) */
