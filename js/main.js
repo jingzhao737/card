@@ -842,11 +842,19 @@ class GameEngineController {
         if (tabBarStats) tabBarStats.addEventListener('click', () => switchProtrudingTab(false));
 
         // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU 分流)
+        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU 分流)
         const _btnStartGame = document.getElementById('btnStartGame');
         if (_btnStartGame) {
             _btnStartGame.addEventListener('click', () => {
-                if (NetworkManager.gameType === 'GOMOKU') {
-                    this.startGomokuOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
+                const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
+                if (isGomoku) {
+                    const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
+                    if (hasSecondPlayer) {
+                        this.startGomokuOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
+                    } else {
+                        // 如果没有其他真人，自动补齐 AI 棋圣开局
+                        this.startGomokuAiMode();
+                    }
                 } else {
                     this.fillAiAndStart();
                 }
@@ -855,7 +863,16 @@ class GameEngineController {
 
         // 补齐机器人开局 (null-safe)
         const _btnStartWithAi = document.getElementById('btnStartWithAi');
-        if (_btnStartWithAi) _btnStartWithAi.addEventListener('click', () => this.fillAiAndStart());
+        if (_btnStartWithAi) {
+            _btnStartWithAi.addEventListener('click', () => {
+                const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
+                if (isGomoku) {
+                    this.startGomokuAiMode();
+                } else {
+                    this.fillAiAndStart();
+                }
+            });
+        }
 
         // 绑定胜负横幅【再来一局】、【收起/关闭】与【展开】事件
         document.addEventListener('click', (e) => {
@@ -2015,6 +2032,13 @@ class GameEngineController {
             }
         }
 
+        // 识别五子棋 1v1 vs 斗地主 3人 模式
+        const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
+        if (isGomoku) {
+            NetworkManager.gameType = 'GOMOKU';
+            this.activeGameType = 'GOMOKU';
+        }
+
         // 初始化房主 slot0
         const nick = NetworkManager.nickname || '房主';
         const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
@@ -2027,15 +2051,47 @@ class GameEngineController {
         if (slotName0) slotName0.textContent = `${nick} (房主)`;
         if (slotAvatar0) slotAvatar0.textContent = currentAvatar;
 
-        // 立即展示空位为 AI 机器人
-        this._fillSlotWithAi(1);
-        this._fillSlotWithAi(2);
-
-        // 房主始终可以直接开始
+        const connectedCount = document.getElementById('connectedCount');
+        const slot2 = document.getElementById('slot2');
         const btnStart = document.getElementById('btnStartGame');
         const btnAi = document.getElementById('btnStartWithAi');
-        if (btnStart) btnStart.style.display = 'block';
-        if (btnAi) btnAi.style.display = 'none';
+
+        if (isGomoku) {
+            if (connectedCount) {
+                connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+            }
+            if (slot2) slot2.style.display = 'none'; // 五子棋仅需 1 名对手
+
+            this._fillSlotWithAi(1);
+            const slotName1 = document.getElementById('slotName1');
+            if (slotName1) slotName1.textContent = 'AI 棋圣';
+
+            if (btnStart) {
+                btnStart.style.display = 'block';
+                btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启五子棋对局';
+            }
+            if (btnAi) {
+                btnAi.style.display = 'inline-flex';
+                btnAi.innerHTML = '<i class="fa-solid fa-robot"></i> 补齐 AI 棋圣开局';
+            }
+        } else {
+            if (connectedCount) {
+                connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
+            }
+            if (slot2) slot2.style.display = 'flex';
+
+            this._fillSlotWithAi(1);
+            this._fillSlotWithAi(2);
+
+            if (btnStart) {
+                btnStart.style.display = 'block';
+                btnStart.innerHTML = '<i class="fa-solid fa-play"></i> START';
+            }
+            if (btnAi) {
+                btnAi.style.display = 'none';
+                btnAi.innerHTML = '<i class="fa-solid fa-robot"></i> 补齐机器人并立即开局';
+            }
+        }
 
         this.broadcastLobbyState();
 
