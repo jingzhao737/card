@@ -2619,8 +2619,10 @@ class GameEngineController {
         }
 
         const nextTurn = engine.currentTurn;
-        const isNextAi = this.gameState.players[nextTurn] ? this.gameState.players[nextTurn].isAi : (nextTurn !== 0);
-        if (NetworkManager.isHost && isNextAi) {
+        const isNextAi = (this.gameState.players && this.gameState.players[nextTurn]) ? this.gameState.players[nextTurn].isAi : (nextTurn !== mySlot);
+        const shouldRunAi = NetworkManager.isAiMode || !NetworkManager.roomId || (NetworkManager.isHost && isNextAi);
+
+        if (shouldRunAi) {
             this.triggerAiTurnLoop();
         }
     }
@@ -2630,25 +2632,33 @@ class GameEngineController {
      */
     triggerAiTurnLoop() {
         const engine = window.mahjongEngine;
-        if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
-        // 防重入守卫：同一时刻只允许一条 AI 链运行，避免回声/自动过牌等重复调度导致 AI 连出两张
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        if (!engine || engine.isGameOver || engine.currentTurn === mySlot) {
+            this._mahjongAiBusy = false;
+            return;
+        }
+
+        // 防重入守卫：同一时刻只允许一条 AI 链运行
         if (this._mahjongAiBusy) return;
         this._mahjongAiBusy = true;
 
         const aiIdx = engine.currentTurn;
-        const seatNames = ['你', '右家', '对家', '左家'];
-        const aiName = seatNames[aiIdx] || `AI-${aiIdx}`;
+        const relativePos = (aiIdx - mySlot + 4) % 4;
+        const seatLabels = ['你', '右家', '对家', '左家'];
+        const aiName = seatLabels[relativePos] || `AI-${aiIdx}`;
         this.updateMahjongStatusUI(`🤖 ${aiName} 思考打牌中...`);
 
-        // 拟真玩家思维延迟 800ms ~ 1700ms
-        const thinkDelay = 800 + Math.floor(Math.random() * 900);
+        // 拟真玩家思维延迟 800ms ~ 1500ms
+        const thinkDelay = 800 + Math.floor(Math.random() * 700);
 
         setTimeout(() => {
-            // 回合即将执行，释放守卫，让递归/看门狗可正常重新调度
+            // 回合即将执行，释放守卫
             this._mahjongAiBusy = false;
             try {
-                if (engine.isGameOver || engine.currentTurn === 0) return;
+                if (engine.isGameOver || engine.currentTurn === mySlot) return;
                 const curIdx = engine.currentTurn;
+                const isAiSeatNow = (this.gameState.players && this.gameState.players[curIdx]) ? this.gameState.players[curIdx].isAi : (curIdx !== mySlot);
+                if (!isAiSeatNow) return;
                 const aiMoveIdx = engine.getBestAiMove(curIdx);
                 const aiRes = engine.discardTile(curIdx, aiMoveIdx);
 
