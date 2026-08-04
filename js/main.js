@@ -2502,35 +2502,133 @@ class GameEngineController {
             return `<div class="m-face bing bing-${num}">${dots}</div>`;
         }
 
-        // 4. 条/索牌 (1-9条)
+        // 4. 条/索牌 (1-9条：高清 100% 数学精准矢量 SVG，彻底解决尺寸不一与换行问题)
         if (type === '条' || type === '索') {
-            if (num === 1) {
-                return `
-                    <div class="m-face tiao tiao-1">
-                        <svg class="sparrow-svg" viewBox="0 0 36 46" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 4C14.5 4 12 6.5 12 10.5C12 12.5 13 14.5 15 15.5C12 16.5 8 20.5 8 27C8 35 13 41 18 41C23 41 28 35 28 27C28 20.5 24 16.5 21 15.5C23 14.5 24 12.5 24 10.5C24 6.5 21.5 4 18 4Z" fill="#15803d"/>
-                            <circle cx="15.5" cy="9.5" r="1.5" fill="#fef08a"/>
-                            <path d="M18 16V37" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
-                            <path d="M12 23.5C15 25.5 21 25.5 24 23.5" stroke="#f59e0b" stroke-width="1.8"/>
-                            <path d="M10.5 30C14.5 32.5 21.5 32.5 25.5 30" stroke="#2563eb" stroke-width="1.8"/>
-                        </svg>
-                    </div>`;
-            }
-            if (num === 7) {
-                return `
-                    <div class="m-face tiao tiao-7">
-                        <div class="t7-top"><span class="bar b-1"></span><span class="bar b-2"></span><span class="bar b-3"></span></div>
-                        <div class="t7-bot"><span class="bar b-4"></span><span class="bar b-5"></span><span class="bar b-6"></span><span class="bar b-7"></span></div>
-                    </div>`;
-            }
-            let bars = '';
-            for (let i = 1; i <= num; i++) {
-                bars += `<span class="bar b-${i}"></span>`;
-            }
-            return `<div class="m-face tiao tiao-${num}">${bars}</div>`;
+            return this.getTiaoTileSVG(num);
         }
 
         return `<div class="m-face fallback">${name}</div>`;
+    }
+
+    /**
+     * 🀄 136张国粹 1-9 条/索全量高清 100% 数学几何精准 SVG 矢量生成函数
+     * 彻底解决原本 CSS 浮动导致同一索牌在不同区域尺寸不一、中心杆变高变矮或换行的缺陷
+     */
+    getTiaoTileSVG(num) {
+        if (num === 1) {
+            return `
+                <div class="m-face tiao tiao-1">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4C13 4 10.5 6 10.5 9.5C10.5 11 11.5 12.5 13 13.5C10.5 14.5 7 18 7 24C7 31 11 37 16 37C21 37 25 31 25 24C25 18 21.5 14.5 19 13.5C20.5 12.5 21.5 11 21.5 9.5C21.5 6 19 4 16 4Z" fill="#15803d"/>
+                        <circle cx="14" cy="8.5" r="1.2" fill="#fef08a"/>
+                        <path d="M16 14V34" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M10.5 21C13.5 22.8 18.5 22.8 21.5 21" stroke="#f59e0b" stroke-width="1.6"/>
+                        <path d="M9 27C13 29 19 29 23 27" stroke="#2563eb" stroke-width="1.6"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 2) {
+            return `
+                <div class="m-face tiao tiao-2">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="9.5" y="10" width="3.8" height="24" rx="1.5" fill="#16a34a"/>
+                        <rect x="18.7" y="10" width="3.8" height="24" rx="1.5" fill="#dc2626"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 3) {
+            return `
+                <div class="m-face tiao tiao-3">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5.7" y="11" width="3.6" height="22" rx="1.5" fill="#2563eb"/>
+                        <rect x="14.2" y="11" width="3.6" height="22" rx="1.5" fill="#16a34a"/>
+                        <rect x="22.7" y="11" width="3.6" height="22" rx="1.5" fill="#dc2626"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 4) {
+            return `
+                <div class="m-face tiao tiao-4">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="7.5" y="7" width="3.8" height="13.5" rx="1.2" fill="#16a34a"/>
+                        <rect x="20.7" y="7" width="3.8" height="13.5" rx="1.2" fill="#dc2626"/>
+                        <rect x="7.5" y="23.5" width="3.8" height="13.5" rx="1.2" fill="#dc2626"/>
+                        <rect x="20.7" y="23.5" width="3.8" height="13.5" rx="1.2" fill="#16a34a"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 5) {
+            // 五条：4角 (16a34a绿) + 1中心 (dc2626红)，5 根竹条 100% 绝对相同尺寸 (width=3.6, height=13)
+            return `
+                <div class="m-face tiao tiao-5">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6.5" y="6.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
+                        <rect x="21.9" y="6.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
+                        <rect x="14.2" y="15.5" width="3.6" height="13" rx="1.2" fill="#dc2626"/>
+                        <rect x="6.5" y="24.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
+                        <rect x="21.9" y="24.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 6) {
+            return `
+                <div class="m-face tiao tiao-6">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8.5" y="5.5" width="3.5" height="9.5" rx="1" fill="#16a34a"/>
+                        <rect x="20" y="5.5" width="3.5" height="9.5" rx="1" fill="#16a34a"/>
+                        <rect x="8.5" y="17.25" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
+                        <rect x="20" y="17.25" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
+                        <rect x="8.5" y="29" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
+                        <rect x="20" y="29" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 7) {
+            return `
+                <div class="m-face tiao tiao-7">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="7" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
+                        <rect x="14.3" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
+                        <rect x="21.6" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
+                        <rect x="9.5" y="20" width="3.4" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="19.1" y="20" width="3.4" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="9.5" y="31" width="3.4" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="19.1" y="31" width="3.4" height="9" rx="1" fill="#dc2626"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 8) {
+            return `
+                <div class="m-face tiao tiao-8">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8.5" y="4.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="20.1" y="4.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="8.5" y="14" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="20.1" y="14" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="8.5" y="23.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="20.1" y="23.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="8.5" y="33" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="20.1" y="33" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                    </svg>
+                </div>`;
+        }
+        if (num === 9) {
+            return `
+                <div class="m-face tiao tiao-9">
+                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5.5" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
+                        <rect x="14.35" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
+                        <rect x="23.2" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
+                        <rect x="5.5" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="14.35" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="23.2" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="5.5" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
+                        <rect x="14.35" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
+                        <rect x="23.2" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
+                    </svg>
+                </div>`;
+        }
+        return '';
     }
 
     /**

@@ -6136,10 +6136,12 @@ body.theme-mahjong #lobbyScreen {
     align-items: center;
     justify-content: center;
 }
-.sparrow-svg {
-    width: 84%;
-    height: 84%;
-    filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.4));
+.tiao-svg {
+    width: 86%;
+    height: 86%;
+    margin: auto;
+    display: block;
+    filter: drop-shadow(0 0.5px 1px rgba(0,0,0,0.35));
 }
 
 .m-face.tiao .bar {
