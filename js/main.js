@@ -1494,13 +1494,13 @@ class GameEngineController {
     }
 
     /**
-     * 开启五子棋开局 3秒 抢先手黑棋倒计时 (仿斗地主叫地主操作条，无人抢则随机分配)
+     * 开启五子棋开局 3秒 倒计时反应抢先手 (3秒灰色禁用倒计时，到期高亮亮起拼手速抢)
      */
     startGomokuGrabBlackCountdown(isAiMode, isHost, onComplete) {
         const biddingBar = document.getElementById('gomokuBiddingBar');
         const numEl = document.getElementById('grabTimerNum');
         const btnGrab = document.getElementById('btnGrabBlackStone');
-        const btnPass = document.getElementById('btnPassBlackStone');
+        const grabBtnText = document.getElementById('grabBtnText');
 
         if (!biddingBar || !btnGrab) {
             if (onComplete) onComplete(isHost ? 1 : 2);
@@ -1508,17 +1508,16 @@ class GameEngineController {
         }
 
         biddingBar.style.display = 'flex';
-        btnGrab.disabled = false;
-        btnGrab.classList.remove('claimed');
-        btnGrab.style.display = 'flex';
-        btnGrab.innerHTML = '<div class="mini-stone-avatar black" style="width:16px;height:16px;"></div><span>⚫ 抢先手</span>';
-        if (btnPass) {
-            btnPass.disabled = false;
-            btnPass.style.display = 'flex';
-            btnPass.innerHTML = '<span>⚪ 不抢 (随机)</span>';
+
+        // 初始 3 秒倒计时：按键置灰禁用
+        btnGrab.disabled = true;
+        btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
+        if (grabBtnText) {
+            grabBtnText.innerHTML = '⚫ 准备抢先手 (<b id="grabTimerNum">3</b>s)';
         }
 
         let claimedPlayer = null; // 1: Slot0(Host), 2: Slot1(Guest)
+        let canGrabNow = false;
         let myClaimed = false;
 
         // 在线双人模式监听对方抢黑子
@@ -1527,69 +1526,102 @@ class GameEngineController {
             NetworkManager.onGomokuClaimBlack((data) => {
                 if (data && !claimedPlayer) {
                     claimedPlayer = data.claimedSlot === 0 ? 1 : 2;
+                    // 对方手速更快，抢到了！
+                    if (data.claimedSlot !== NetworkManager.myPlayerIndex) {
+                        btnGrab.disabled = true;
+                        btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
+                        if (grabBtnText) grabBtnText.innerHTML = '<span>⚡ 对方手速更快抢到了先手！</span>';
+                        setTimeout(() => {
+                            biddingBar.style.display = 'none';
+                            if (onComplete) onComplete(claimedPlayer);
+                        }, 500);
+                    }
                 }
             });
         }
 
-        const handleClaim = () => {
-            if (myClaimed || claimedPlayer) return;
+        // 点击抢先手（仅在 3 秒倒计时结束亮起后生效）
+        btnGrab.onclick = () => {
+            if (!canGrabNow || myClaimed || claimedPlayer) return;
             myClaimed = true;
-            btnGrab.classList.add('claimed');
+            btnGrab.className = 'btn-gomoku-bid grab-black claimed';
             btnGrab.disabled = true;
-            btnGrab.innerHTML = '<span>✅ 已抢先手</span>';
-            if (btnPass) btnPass.style.display = 'none';
+            if (grabBtnText) grabBtnText.innerHTML = '<span>🎉 抢占成功！你执先手黑棋！</span>';
 
             if (typeof SoundEngine !== 'undefined') {
                 SoundEngine.playCardPlaySound();
             }
 
             if (isAiMode) {
-                claimedPlayer = 1;
+                claimedPlayer = 1; // 玩家手速快，抢到了黑棋
             } else if (NetworkManager.myPlayerIndex !== null) {
                 const mySlot = NetworkManager.myPlayerIndex;
                 claimedPlayer = mySlot === 0 ? 1 : 2;
                 NetworkManager.sendGomokuClaimBlack(mySlot);
             }
-        };
 
-        const handlePass = () => {
-            if (myClaimed) return;
-            myClaimed = true;
-            if (btnPass) {
-                btnPass.disabled = true;
-                btnPass.innerHTML = '<span>⚪ 已放弃抢先手</span>';
-            }
-            btnGrab.style.display = 'none';
+            setTimeout(() => {
+                biddingBar.style.display = 'none';
+                if (onComplete) onComplete(claimedPlayer);
+            }, 500);
         };
-
-        btnGrab.onclick = handleClaim;
-        if (btnPass) btnPass.onclick = handlePass;
 
         let timeLeft = 3000;
         const step = 50;
 
         if (this._grabTimerInterval) clearInterval(this._grabTimerInterval);
 
+        // 阶段 1：3秒 灰色禁用倒计时
         this._grabTimerInterval = setInterval(() => {
             timeLeft -= step;
             const sec = Math.max(1, Math.ceil(timeLeft / 1000));
-            if (numEl) numEl.textContent = sec;
+            const freshNum = document.getElementById('grabTimerNum');
+            if (freshNum) freshNum.textContent = sec;
 
             if (timeLeft <= 0) {
                 clearInterval(this._grabTimerInterval);
                 this._grabTimerInterval = null;
 
-                // 倒计时结束，若没人抢 -> 随机分配！
-                if (!claimedPlayer) {
-                    claimedPlayer = Math.random() < 0.5 ? 1 : 2;
+                // 3 秒到期！按键正式亮起！
+                canGrabNow = true;
+                btnGrab.disabled = false;
+                btnGrab.className = 'btn-gomoku-bid grab-black active-gold';
+                if (grabBtnText) grabBtnText.innerHTML = '🔥 拼手速！立即抢先手黑棋！';
+
+                if (typeof SoundEngine !== 'undefined') {
+                    SoundEngine.playCountdownGo();
                 }
 
-                setTimeout(() => {
-                    biddingBar.style.display = 'none';
-                    if (btnGrab) btnGrab.style.display = 'flex';
-                    if (btnPass) btnPass.style.display = 'flex';
-                    if (onComplete) onComplete(claimedPlayer);
-                }, 300);
+                // 阶段 2：给玩家 2.0 秒拼手速抢。若 2.0 秒内没人点，则自动随机分配！
+                let reactTime = 2000;
+                const reactStep = 50;
+                if (this._grabReactInterval) clearInterval(this._grabReactInterval);
+                this._grabReactInterval = setInterval(() => {
+                    reactTime -= reactStep;
+                    if (claimedPlayer || myClaimed) {
+                        clearInterval(this._grabReactInterval);
+                        this._grabReactInterval = null;
+                        return;
+                    }
+
+                    if (reactTime <= 0) {
+                        clearInterval(this._grabReactInterval);
+                        this._grabReactInterval = null;
+
+                        if (!claimedPlayer && !myClaimed) {
+                            // 没人抢 -> 随机分配！
+                            claimedPlayer = Math.random() < 0.5 ? 1 : 2;
+                            btnGrab.disabled = true;
+                            btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
+                            if (grabBtnText) grabBtnText.innerHTML = '🎲 无人抢占，已随机分配先手！';
+
+                            setTimeout(() => {
+                                biddingBar.style.display = 'none';
+                                if (onComplete) onComplete(claimedPlayer);
+                            }, 500);
+                        }
+                    }
+                }, reactStep);
             }
         }, step);
     }

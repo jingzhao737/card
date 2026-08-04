@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=7.4">
+    <link rel="stylesheet" href="css/styles.css?v=7.5">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -359,20 +359,12 @@
 
         <!-- 游鲸五子棋 专属墨绿棋盘对局室 (Gomoku Game Screen) -->
         <div id="gomokuGameScreen" class="overlay-screen gomoku-screen-wrap" style="display: none;">
-            <!-- 五子棋开局 3秒 抢黑子 Action Bar (仿斗地主叫地主操作条) -->
+            <!-- 五子棋开局 3秒 倒计时后亮起抢先手按键 -->
             <div id="gomokuBiddingBar" class="gomoku-bidding-bar" style="display: none;">
-                <div class="bidding-pill-hint">
-                    <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> 抢先手: <b id="grabTimerNum" style="color:#ffd700;font-size:1.1rem;">3</b>s
-                </div>
-                <div class="bidding-btns-row">
-                    <button class="btn-gomoku-bid grab-black" id="btnGrabBlackStone">
-                        <div class="mini-stone-avatar black" style="width:16px;height:16px;"></div>
-                        <span>⚫ 抢先手</span>
-                    </button>
-                    <button class="btn-gomoku-bid pass-black" id="btnPassBlackStone">
-                        <span>⚪ 不抢 (随机)</span>
-                    </button>
-                </div>
+                <button class="btn-gomoku-bid grab-black disabled-gray" id="btnGrabBlackStone" disabled>
+                    <div class="mini-stone-avatar black" style="width:16px;height:16px;"></div>
+                    <span id="grabBtnText">⚫ 准备抢先手 (<b id="grabTimerNum">3</b>s)</span>
+                </button>
             </div>
 
             <div class="gomoku-container">

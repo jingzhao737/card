@@ -5056,86 +5056,78 @@ body.theme-gomoku .overlay-screen {
 }
 
 /* ==========================================================================
-   五子棋开局 3秒 抢黑子 Action Bar (仿斗地主叫地主操作条)
+   五子棋开局 3秒 倒计时后亮起抢先手按键 (居中悬浮于棋盘中央)
    ========================================================================== */
 .gomoku-bidding-bar {
     position: absolute;
-    bottom: 70px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 60;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(245, 158, 11, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 10px 16px;
-    border-radius: 16px;
-    animation: slideUpAction 0.25s ease-out;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(245, 158, 11, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 16px 24px;
+    border-radius: 20px;
+    animation: zoomInBid 0.25s ease-out;
 }
 
-@keyframes slideUpAction {
-    from { transform: translate(-50%, 20px); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
-}
-
-.bidding-pill-hint {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.bidding-btns-row {
-    display: flex;
-    gap: 10px;
+@keyframes zoomInBid {
+    from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
 .btn-gomoku-bid {
-    padding: 8px 16px;
-    height: 38px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 0.85rem;
+    padding: 10px 22px;
+    height: 44px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 0.95rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    transition: all 0.15s ease;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: none;
+    white-space: nowrap;
 }
 
-.btn-gomoku-bid.grab-black {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #000;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+/* 3秒倒计时中：灰色未激活禁用态 */
+.btn-gomoku-bid.grab-black.disabled-gray {
+    background: rgba(71, 85, 105, 0.6) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.75;
 }
 
-.btn-gomoku-bid.grab-black:active {
-    transform: scale(0.95);
+/* 3秒倒计时结束：高亮闪耀就绪态 */
+.btn-gomoku-bid.grab-black.active-gold {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: #000 !important;
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.85), 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    animation: grabPulse 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes grabPulse {
+    0% { transform: scale(1); box-shadow: 0 0 16px rgba(245, 158, 11, 0.7); }
+    100% { transform: scale(1.06); box-shadow: 0 0 28px rgba(245, 158, 11, 0.95); }
 }
 
 .btn-gomoku-bid.grab-black.claimed {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
     color: #fff !important;
-}
-
-.btn-gomoku-bid.pass-black {
-    background: rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.btn-gomoku-bid.pass-black:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important;
 }
 
 
