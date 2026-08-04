@@ -1498,7 +1498,6 @@ class GameEngineController {
      */
     startGomokuGrabBlackCountdown(isAiMode, isHost, onComplete) {
         const biddingBar = document.getElementById('gomokuBiddingBar');
-        const numEl = document.getElementById('grabTimerNum');
         const btnGrab = document.getElementById('btnGrabBlackStone');
         const grabBtnText = document.getElementById('grabBtnText');
 
@@ -1506,6 +1505,9 @@ class GameEngineController {
             if (onComplete) onComplete(isHost ? 1 : 2);
             return;
         }
+
+        if (this._grabTimerInterval) { clearInterval(this._grabTimerInterval); this._grabTimerInterval = null; }
+        if (this._grabReactInterval) { clearInterval(this._grabReactInterval); this._grabReactInterval = null; }
 
         biddingBar.style.display = 'flex';
 
@@ -1516,63 +1518,64 @@ class GameEngineController {
             grabBtnText.innerHTML = '⚫ 准备抢先手 (<b id="grabTimerNum">3</b>s)';
         }
 
+        let finished = false;
         let claimedPlayer = null; // 1: Slot0(Host), 2: Slot1(Guest)
         let canGrabNow = false;
-        let myClaimed = false;
 
-        // 在线双人模式监听对方抢黑子
+        const finishBidding = (winnerSlot, message) => {
+            if (finished) return;
+            finished = true;
+            if (this._grabTimerInterval) { clearInterval(this._grabTimerInterval); this._grabTimerInterval = null; }
+            if (this._grabReactInterval) { clearInterval(this._grabReactInterval); this._grabReactInterval = null; }
+
+            if (grabBtnText && message) grabBtnText.innerHTML = message;
+
+            setTimeout(() => {
+                biddingBar.style.display = 'none';
+                if (onComplete) onComplete(winnerSlot);
+            }, 500);
+        };
+
+        // 在线双人模式监听云端抢黑子广播
         if (!isAiMode && typeof NetworkManager !== 'undefined') {
             NetworkManager.clearGomokuClaimBlack();
             NetworkManager.onGomokuClaimBlack((data) => {
-                if (data && !claimedPlayer) {
+                if (data && !finished) {
                     claimedPlayer = data.claimedSlot === 0 ? 1 : 2;
-                    // 对方手速更快，抢到了！
-                    if (data.claimedSlot !== NetworkManager.myPlayerIndex) {
-                        btnGrab.disabled = true;
-                        btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
-                        if (grabBtnText) grabBtnText.innerHTML = '<span>⚡ 对方手速更快抢到了先手！</span>';
-                        setTimeout(() => {
-                            biddingBar.style.display = 'none';
-                            if (onComplete) onComplete(claimedPlayer);
-                        }, 500);
-                    }
+                    const isMe = (data.claimedSlot === NetworkManager.myPlayerIndex);
+                    btnGrab.disabled = true;
+                    btnGrab.className = isMe ? 'btn-gomoku-bid grab-black claimed' : 'btn-gomoku-bid grab-black disabled-gray';
+                    finishBidding(claimedPlayer, isMe ? '<span>🎉 抢占成功！你执先手黑棋！</span>' : '<span>⚡ 对方手速更快抢到了先手！</span>');
                 }
             });
         }
 
         // 点击抢先手（仅在 3 秒倒计时结束亮起后生效）
         btnGrab.onclick = () => {
-            if (!canGrabNow || myClaimed || claimedPlayer) return;
-            myClaimed = true;
+            if (!canGrabNow || finished) return;
             btnGrab.className = 'btn-gomoku-bid grab-black claimed';
             btnGrab.disabled = true;
-            if (grabBtnText) grabBtnText.innerHTML = '<span>🎉 抢占成功！你执先手黑棋！</span>';
 
             if (typeof SoundEngine !== 'undefined') {
                 SoundEngine.playCardPlaySound();
             }
 
             if (isAiMode) {
-                claimedPlayer = 1; // 玩家手速快，抢到了黑棋
+                finishBidding(1, '<span>🎉 抢占成功！你执先手黑棋！</span>');
             } else if (NetworkManager.myPlayerIndex !== null) {
                 const mySlot = NetworkManager.myPlayerIndex;
                 claimedPlayer = mySlot === 0 ? 1 : 2;
                 NetworkManager.sendGomokuClaimBlack(mySlot);
+                finishBidding(claimedPlayer, '<span>🎉 抢占成功！你执先手黑棋！</span>');
             }
-
-            setTimeout(() => {
-                biddingBar.style.display = 'none';
-                if (onComplete) onComplete(claimedPlayer);
-            }, 500);
         };
 
         let timeLeft = 3000;
         const step = 50;
 
-        if (this._grabTimerInterval) clearInterval(this._grabTimerInterval);
-
         // 阶段 1：3秒 灰色禁用倒计时
         this._grabTimerInterval = setInterval(() => {
+            if (finished) return;
             timeLeft -= step;
             const sec = Math.max(1, Math.ceil(timeLeft / 1000));
             const freshNum = document.getElementById('grabTimerNum');
@@ -1581,6 +1584,8 @@ class GameEngineController {
             if (timeLeft <= 0) {
                 clearInterval(this._grabTimerInterval);
                 this._grabTimerInterval = null;
+
+                if (finished) return;
 
                 // 3 秒到期！按键正式亮起！
                 canGrabNow = true;
@@ -1595,30 +1600,19 @@ class GameEngineController {
                 // 阶段 2：给玩家 2.0 秒拼手速抢。若 2.0 秒内没人点，则自动随机分配！
                 let reactTime = 2000;
                 const reactStep = 50;
-                if (this._grabReactInterval) clearInterval(this._grabReactInterval);
                 this._grabReactInterval = setInterval(() => {
+                    if (finished) return;
                     reactTime -= reactStep;
-                    if (claimedPlayer || myClaimed) {
-                        clearInterval(this._grabReactInterval);
-                        this._grabReactInterval = null;
-                        return;
-                    }
-
                     if (reactTime <= 0) {
                         clearInterval(this._grabReactInterval);
                         this._grabReactInterval = null;
 
-                        if (!claimedPlayer && !myClaimed) {
+                        if (!finished) {
                             // 没人抢 -> 随机分配！
-                            claimedPlayer = Math.random() < 0.5 ? 1 : 2;
+                            const randomWinner = Math.random() < 0.5 ? 1 : 2;
                             btnGrab.disabled = true;
                             btnGrab.className = 'btn-gomoku-bid grab-black disabled-gray';
-                            if (grabBtnText) grabBtnText.innerHTML = '🎲 无人抢占，已随机分配先手！';
-
-                            setTimeout(() => {
-                                biddingBar.style.display = 'none';
-                                if (onComplete) onComplete(claimedPlayer);
-                            }, 500);
+                            finishBidding(randomWinner, '🎲 无人抢占，已随机分配先手！');
                         }
                     }
                 }, reactStep);
@@ -1647,6 +1641,11 @@ class GameEngineController {
             gomokuScr.classList.add('active');
         }
         this.updateHeaderVisibility();
+
+        // 预先绘制 15x15 五子棋盘，保证背景网格 100% 渲染呈现！
+        window.gomokuEngine.reset(false, isHost ? 1 : 2);
+        this.initGomokuUI();
+        this.renderGomokuBoard();
 
         // 触发 3 秒抢先手黑棋倒计时 (无人抢则随机分配)
         this.startGomokuGrabBlackCountdown(false, isHost, (blackAssign) => {
@@ -1777,6 +1776,11 @@ class GameEngineController {
         this.updateHeaderVisibility();
 
         const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
+
+        // 预先绘制 15x15 五子棋盘，保证背景网格 100% 渲染呈现！
+        window.gomokuEngine.reset(true, 1);
+        this.initGomokuUI();
+        this.renderGomokuBoard();
 
         // 触发 3 秒抢先手黑棋倒计时
         this.startGomokuGrabBlackCountdown(true, true, (blackAssign) => {
