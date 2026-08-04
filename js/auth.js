@@ -552,6 +552,103 @@ class AuthManager {
     }
 
     /**
+     * 计算当前等级升级所需经验 (满级 60 级，渐进指数曲线：前20级升阶轻松，后续越升越难)
+     */
+    getReqExp(level) {
+        if (level >= 60) return Infinity;
+        return Math.floor(100 * Math.pow(level, 1.45));
+    }
+
+    /**
+     * 获取等级专属尊号徽章
+     */
+    getLevelTitle(level) {
+        if (level >= 60) return '👑 终极雀皇';
+        if (level >= 50) return '⚡ 绝世传说';
+        if (level >= 40) return '🌟 棋牌宗师';
+        if (level >= 30) return '👑 胜率大师';
+        if (level >= 20) return '🔥 牌场高手';
+        if (level >= 10) return '🗡️ 竞技客';
+        return '🌱 牌坛新手';
+    }
+
+    /**
+     * 增加经验值并处理升级逻辑 (支持自动连续升级与升级知因币大礼包)
+     */
+    addExp(expGain, reason = '') {
+        if (!this.userData) return;
+        const currentLevel = this.userData.level || 1;
+        const currentExp = this.userData.exp || 0;
+        if (currentLevel >= 60) return;
+
+        let newExp = currentExp + expGain;
+        let newLevel = currentLevel;
+        let totalCoinBonus = 0;
+        let didLevelUp = false;
+
+        while (newLevel < 60) {
+            const req = this.getReqExp(newLevel);
+            if (newExp >= req) {
+                newExp -= req;
+                newLevel++;
+                didLevelUp = true;
+                totalCoinBonus += (newLevel * 30);
+            } else {
+                break;
+            }
+        }
+
+        if (newLevel >= 60) {
+            newLevel = 60;
+            newExp = 0;
+        }
+
+        this.userData.level = newLevel;
+        this.userData.exp = newExp;
+
+        if (this.db && this.userData.accountKey) {
+            this.db.ref('users/' + this.userData.accountKey).update({
+                level: newLevel,
+                exp: newExp
+            });
+        }
+
+        this.updateUserHeaderUI();
+
+        if (reason && typeof UIRenderer !== 'undefined') {
+            UIRenderer.showToast(`⭐ 经验值: <span style="color:#fbbf24;font-weight:bold;">+${expGain} EXP</span> (${reason})`);
+        }
+
+        if (didLevelUp) {
+            this.updateCoins(totalCoinBonus, `升级 Lv.${newLevel} 福利`);
+            this.showLevelUpNotice(currentLevel, newLevel, totalCoinBonus);
+        }
+    }
+
+    /**
+     * 弹出升级欢庆弹窗
+     */
+    showLevelUpNotice(oldLv, newLv, coinBonus) {
+        const title = this.getLevelTitle(newLv);
+        if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) SoundEngine.playWin();
+
+        const modal = document.getElementById('levelUpModal');
+        const badgeEl = document.getElementById('levelUpBadge');
+        const titleEl = document.getElementById('levelUpTitle');
+        const bonusEl = document.getElementById('levelUpBonusCoins');
+
+        if (badgeEl) badgeEl.textContent = `Lv.${oldLv} ➔ Lv.${newLv}`;
+        if (titleEl) titleEl.textContent = title;
+        if (bonusEl) bonusEl.textContent = `+${coinBonus}`;
+
+        if (modal) {
+            modal.style.display = 'flex';
+        } else if (typeof UIRenderer !== 'undefined') {
+            UIRenderer.showToast(`🎉 恭喜升级到 Lv.${newLv} (${title})！获赠 +${coinBonus} 知因币！`, 5000);
+        }
+    }
+
+    /**
      * 更新/结算玩家【知因币】资产 (支持增加正值、扣除负值，强制带零分保底保值)
      */
     updateCoins(deltaCoins, reason = '') {
@@ -670,29 +767,34 @@ class AuthManager {
 
         if (this.userData) {
             const currentYin = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
+            const level = this.userData.level || 1;
+            const title = this.getLevelTitle(level);
 
             if (badge) {
                 badge.innerHTML = `
                     <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
                     <div class="user-header-info">
-                        <span class="user-header-nick">${this.userData.nickname}</span>
+                        <div style="display:flex;align-items:center;">
+                            <span class="user-header-nick">${this.userData.nickname}</span>
+                            <span style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:10px;padding:0px 5px;font-size:0.62rem;font-weight:800;margin-left:4px;line-height:1.2;">Lv.${level}</span>
+                        </div>
                         <span class="user-header-score">🪙 ${currentYin} 知因币</span>
                     </div>
                 `;
             }
             if (lAuthAvatar) lAuthAvatar.textContent = this.userData.avatar || '🤠';
             if (lUserNick)   lUserNick.textContent   = this.userData.nickname;
-            if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin}`;
+            if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
             if (lBtnAuth)    lBtnAuth.textContent    = '个人信息';
 
             if (gAuthAvatar) gAuthAvatar.textContent = this.userData.avatar || '🤠';
             if (gUserNick)   gUserNick.textContent   = this.userData.nickname;
-            if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin}`;
+            if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
             if (gBtnAuth)    gBtnAuth.textContent    = '个人信息';
 
             if (mAuthAvatar) mAuthAvatar.textContent = this.userData.avatar || '🤠';
             if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
-            if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
+            if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
             if (mBtnAuth)    mBtnAuth.textContent    = '个人信息';
 
             // 登录后隐去随机昵称区块，避免误导

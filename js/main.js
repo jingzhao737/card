@@ -1262,6 +1262,13 @@ class GameEngineController {
         const regDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
         const uidStr = data.uid ? `UID: ${data.uid}` : 'UID: 10001';
 
+        const level = data.level || 1;
+        const exp = data.exp || 0;
+        const reqExp = AuthEngine.getReqExp(level);
+        const title = AuthEngine.getLevelTitle(level);
+        const expPct = (level >= 60) ? 100 : Math.min(100, Math.floor((exp / reqExp) * 100));
+        const expDisplay = (level >= 60) ? '已达到 60 级巅峰满级' : `${exp} / ${reqExp} EXP (${expPct}%)`;
+
         const hero = document.getElementById('userProfileHero');
         if (hero) {
             hero.innerHTML = `
@@ -1273,6 +1280,7 @@ class GameEngineController {
                     <div class="profile-names">
                         <div class="profile-nick" style="display:flex;align-items:center;gap:8px;">
                             <span>${data.nickname}</span>
+                            <span style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:10px;padding:1px 7px;font-size:0.68rem;font-weight:800;">Lv.${level}</span>
                             ${canRename ? `
                                 <button id="btnEditNick" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);color:#ffd700;border-radius:3px;padding:2px 6px;font-size:0.72rem;cursor:pointer;font-weight:700;">
                                     <i class="fa-solid fa-pen-to-square"></i> 改名
@@ -1287,6 +1295,21 @@ class GameEngineController {
                         </div>
                     </div>
                 </div>
+
+                <!-- 等级与经验条 -->
+                <div style="margin-top:10px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,215,0,0.18);border-radius:6px;padding:8px 10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.78rem;font-weight:700;margin-bottom:4px;">
+                        <span style="color:#ffd700;display:flex;align-items:center;gap:6px;">
+                            <i class="fa-solid fa-crown"></i> <span>${title}</span>
+                        </span>
+                        <span style="color:#94a3b8;font-size:0.72rem;">${expDisplay}</span>
+                    </div>
+                    <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+                        <div style="width:${expPct}%;height:100%;background:linear-gradient(90deg,#f1c40f,#f39c12);border-radius:3px;transition:width 0.4s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- 头像选择框 (点击头像展开/关闭) -->
 
                 <!-- 头像选择框 (点击头像展开/关闭) -->
                 <div id="avatarPickerBox" style="display:none;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:8px;margin:8px 0 4px;">
@@ -2109,6 +2132,13 @@ class GameEngineController {
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(20 * ratio);
                     AuthEngine.updateCoins(loseCoins, isPve ? '五子棋切磋负 (PVE)' : '五子棋负 (PVP)');
+                }
+
+                // ⭐ 结算五子棋【经验值】
+                if (AuthEngine.addExp) {
+                    const isWin = (winner === myColor);
+                    const expVal = isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50);
+                    AuthEngine.addExp(expVal, isPve ? '五子棋切磋 (PVE)' : '五子棋对局 (PVP)');
                 }
             }
         }
@@ -3226,11 +3256,20 @@ class GameEngineController {
             }
         }
 
-        if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins && winnerIdx !== -1) {
-            if (winnerIdx === mySlot) {
-                AuthEngine.updateCoins(winAmount, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
-            } else {
-                AuthEngine.updateCoins(-loseAmount, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
+        if (typeof AuthEngine !== 'undefined') {
+            if (AuthEngine.updateCoins && winnerIdx !== -1) {
+                if (winnerIdx === mySlot) {
+                    AuthEngine.updateCoins(winAmount, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
+                } else {
+                    AuthEngine.updateCoins(-loseAmount, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
+                }
+            }
+
+            // ⭐ 结算麻将【经验值】
+            if (AuthEngine.addExp) {
+                const isWin = (winnerIdx === mySlot);
+                const expVal = isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50);
+                AuthEngine.addExp(expVal, isPve ? '麻将切磋 (PVE)' : '麻将对局 (PVP)');
             }
         }
 
@@ -4793,6 +4832,12 @@ class GameEngineController {
                         } else {
                             const loseAmount = -Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);
                             AuthEngine.updateCoins(loseAmount, isPve ? '斗地主切磋负 (PVE)' : '斗地主负 (PVP)');
+                        }
+
+                        // ⭐ 结算斗地主【经验值】
+                        if (AuthEngine.addExp) {
+                            const expVal = isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50);
+                            AuthEngine.addExp(expVal, isPve ? '斗地主切磋 (PVE)' : '斗地主对局 (PVP)');
                         }
                     }
                 }

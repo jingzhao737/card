@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=25.1">
+    <link rel="stylesheet" href="css/styles.css?v=26.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1356,6 +1356,27 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎉 升级欢庆弹窗 (Level Up Modal) -->
+    <div id="levelUpModal" class="card-type-modal" style="display:none;z-index:10000;">
+        <div class="card-type-inner" style="max-width:380px;text-align:center;background:linear-gradient(135deg,#1e1e2f,#12121c);border:2px solid rgba(255,215,0,0.5);box-shadow:0 10px 40px rgba(255,215,0,0.3);">
+            <div style="padding: 24px 20px;">
+                <div style="font-size:3rem;margin-bottom:8px;">🎉</div>
+                <h2 style="font-size:1.5rem;font-weight:900;color:#ffd700;margin:0 0 6px 0;letter-spacing:1px;">荣耀升级！</h2>
+                <div id="levelUpBadge" style="display:inline-block;background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;font-weight:900;border-radius:20px;padding:4px 14px;font-size:1rem;margin-bottom:10px;">Lv.1 ➔ Lv.2</div>
+                <div style="font-size:1rem;font-weight:800;color:#e2e8f0;margin-bottom:14px;"><i class="fa-solid fa-crown" style="color:#ffd700;"></i> 荣获尊号：<span id="levelUpTitle" style="color:#34d399;">🌱 牌坛新手</span></div>
+                
+                <div style="background:rgba(255,215,0,0.1);border:1px dashed rgba(255,215,0,0.3);border-radius:8px;padding:10px;margin-bottom:18px;">
+                    <div style="font-size:0.75rem;color:#94a3b8;">🪙 升级福利大礼包</div>
+                    <div style="font-size:1.3rem;font-weight:900;color:#ffd700;margin-top:2px;">知因币 <span id="levelUpBonusCoins">+60</span></div>
+                </div>
+
+                <button class="btn-primary" id="btnConfirmLevelUp" onclick="document.getElementById('levelUpModal').style.display='none';" style="width:100%;padding:12px 0;font-size:1rem;font-weight:800;background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border:none;border-radius:8px;cursor:pointer;">
+                    🚀 领取升级奖励
+                </button>
             </div>
         </div>
     </div>
