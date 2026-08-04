@@ -5522,13 +5522,14 @@ body.theme-mahjong #lobbyScreen {
     padding-top: max(75px, env(safe-area-inset-top));
     padding-bottom: max(10px, env(safe-area-inset-bottom));
     box-sizing: border-box;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: 1000;
 }
 
 .mahjong-table-vertical-container {
     width: 100%;
-    max-width: 460px;
+    max-width: 480px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -5536,8 +5537,8 @@ body.theme-mahjong #lobbyScreen {
     justify-content: flex-start;
     gap: 10px;
     box-sizing: border-box;
-    overflow: hidden;
-    padding: 2px 0;
+    overflow: visible;
+    padding: 12px 14px;
 }
 
 /* 顶部对局状态 Bar (大幅下移 100px+，远离屏幕顶沿) */
@@ -5573,19 +5574,19 @@ body.theme-mahjong #lobbyScreen {
     color: #34d399;
 }
 
-/* 自然开阔 3:4 黄金绒面麻将桌台 */
+/* 自然开阔 3:4 黄金绒面麻将桌台 (外围立体柔和投影，彻底清除硬裁切 Bug) */
 .vertical-mahjong-table {
     width: 100%;
     max-width: 460px;
     aspect-ratio: 3 / 4;
-    max-height: 76vh;
-    max-height: 76dvh;
-    margin: auto 0;
+    max-height: 75vh;
+    max-height: 75dvh;
+    margin: auto;
     flex-shrink: 0;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
     border: 6px solid #4a150e;
     border-radius: 18px;
-    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(0, 0, 0, 0.65), 0 0 0 2px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75), 0 4px 14px rgba(0, 0, 0, 0.55), inset 0 0 25px rgba(0, 0, 0, 0.65), 0 0 0 1.5px rgba(245, 158, 11, 0.35);
     position: relative;
     box-sizing: border-box;
     display: flex;
