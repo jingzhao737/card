@@ -280,9 +280,11 @@ class GameEngineController {
         const _btnCreateRoom = document.getElementById('btnCreateRoom');
         if (_btnCreateRoom) _btnCreateRoom.addEventListener('click', () => {
             const nickname = getNickname();
+            this.activeGameType = 'DOUDIZHU';
+            NetworkManager.gameType = 'DOUDIZHU';
             NetworkManager.createRoom(nickname, (roomId) => {
                 this.setupWaitingScreen(roomId);
-            });
+            }, null, 'DOUDIZHU');
         });
 
         // 加入房间输入框增强 (自动转大写、回车快捷提交、卡片点击聚焦)
@@ -382,6 +384,8 @@ class GameEngineController {
 
         const switchGameLobby = (gameType) => {
             document.body.classList.remove('theme-gomoku', 'theme-mahjong');
+            this.activeGameType = gameType;
+            NetworkManager.gameType = gameType;
 
             if (gameType === 'MAHJONG') {
                 document.body.classList.add('theme-mahjong');
@@ -431,6 +435,7 @@ class GameEngineController {
             btnCreateMahjongRoom.addEventListener('click', () => {
                 const nickname = getNickname();
                 this.activeGameType = 'MAHJONG';
+                NetworkManager.gameType = 'MAHJONG';
                 NetworkManager.createRoom(nickname, (roomId) => {
                     UIRenderer.showToast(`✅ 游鲸麻将在线房间创建成功：#${roomId}`);
                     this.setupWaitingScreen(roomId);
@@ -507,6 +512,8 @@ class GameEngineController {
         if (btnCreateGomokuRoom) {
             btnCreateGomokuRoom.addEventListener('click', () => {
                 const nickname = getNickname();
+                this.activeGameType = 'GOMOKU';
+                NetworkManager.gameType = 'GOMOKU';
                 NetworkManager.createRoom(nickname, (roomId) => {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(roomId);
@@ -3035,8 +3042,9 @@ class GameEngineController {
         const btnStart = document.getElementById('btnStartGame');
         const btnAi = document.getElementById('btnStartWithAi');
 
-        const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
-        const isGomoku  = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
+        const currentType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
+        const isMahjong = (currentType === 'MAHJONG');
+        const isGomoku  = (currentType === 'GOMOKU');
 
         if (isMahjong) {
             NetworkManager.gameType = 'MAHJONG';
@@ -3063,6 +3071,8 @@ class GameEngineController {
             }
             if (btnAi) btnAi.style.display = 'none';
         } else if (isGomoku) {
+            NetworkManager.gameType = 'GOMOKU';
+            this.activeGameType = 'GOMOKU';
             if (connectedCount) {
                 connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
             }
@@ -3081,6 +3091,8 @@ class GameEngineController {
                 btnAi.style.display = 'none'; // 保持界面简洁，无需额外 AI 按键
             }
         } else {
+            NetworkManager.gameType = 'DOUDIZHU';
+            this.activeGameType = 'DOUDIZHU';
             if (connectedCount) {
                 connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
             }
