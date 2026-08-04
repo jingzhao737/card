@@ -2092,6 +2092,11 @@ class GameEngineController {
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
         const players = this.latestLobbyPlayers || this.gameState.players || [];
+        for (let i = 0; i < 4; i++) {
+            if (!players[i]) {
+                players[i] = { id: i, name: `AI-${i}`, isAi: (i !== 0), isHost: (i === 0) };
+            }
+        }
         // 引擎固定座位风向：0=南(我方/房主)、1=东(右家)、2=北(对家)、3=西(左家)
         const windNames = ['南', '东', '北', '西'];
 
@@ -2214,7 +2219,17 @@ class GameEngineController {
         if (mahjongScr) { mahjongScr.style.display = 'flex'; mahjongScr.classList.add('active'); }
         this.updateHeaderVisibility();
 
+        NetworkManager.isAiMode = true;
+        NetworkManager.isHost = true;
+        NetworkManager.myPlayerIndex = 0;
+
         const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
+        this.gameState.players = [
+            { id: 0, name: nick, isAi: false, isHost: true },
+            { id: 1, name: 'AI-1', isAi: true, isHost: false },
+            { id: 2, name: 'AI-2', isAi: true, isHost: false },
+            { id: 3, name: 'AI-3', isAi: true, isHost: false }
+        ];
 
         // 关闭胡牌结算弹窗 & 吃牌弹窗
         const settlementModal = document.getElementById('mahjongSettlementModal');
