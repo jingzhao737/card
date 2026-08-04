@@ -2686,14 +2686,19 @@ class GameEngineController {
         const res = this.pendingDiscardRes;
         if (!engine || !res) return;
 
-        if (engine.executeChow(0, res.discarded, pair)) {
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        if (engine.executeChow(mySlot, res.discarded, pair)) {
             this.showMahjongActionToast('吃！');
-            SoundEngine.playCardPlaySound();
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
             this.renderMahjongHandTiles();
             this.renderMahjongMelds();
             const actionBar = document.getElementById('mahjongActionBar');
             if (actionBar) actionBar.style.display = 'none';
             this.updateMahjongStatusUI('🀁 吃牌成功 · 请出牌');
+
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(mySlot, -1, res.discarded, engine.exportState(), 'CHOW');
+            }
         }
     }
 
@@ -2704,14 +2709,20 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine || !this.pendingDiscardRes) return;
 
-        if (engine.executePong(0, this.pendingDiscardRes.discarded)) {
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const discarded = this.pendingDiscardRes.discarded;
+        if (engine.executePong(mySlot, discarded)) {
             this.showMahjongActionToast('碰！');
-            SoundEngine.playCardPlaySound();
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
             this.renderMahjongHandTiles();
             this.renderMahjongMelds();
             const actionBar = document.getElementById('mahjongActionBar');
             if (actionBar) actionBar.style.display = 'none';
             this.updateMahjongStatusUI('🀄 碰牌成功 · 请出牌');
+
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(mySlot, -1, discarded, engine.exportState(), 'PONG');
+            }
         }
     }
 
@@ -2722,29 +2733,39 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (this.pendingDiscardRes) {
             // 明杠
-            if (engine.executeKong(0, this.pendingDiscardRes.discarded)) {
+            const discarded = this.pendingDiscardRes.discarded;
+            if (engine.executeKong(mySlot, discarded)) {
                 this.showMahjongActionToast('杠！');
-                SoundEngine.playCardPlaySound();
+                if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
                 this.renderMahjongHandTiles();
                 this.renderMahjongMelds();
                 const actionBar = document.getElementById('mahjongActionBar');
                 if (actionBar) actionBar.style.display = 'none';
                 this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
+
+                if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                    NetworkManager.sendMahjongMove(mySlot, -1, discarded, engine.exportState(), 'KONG');
+                }
             }
         } else {
             // 暗杠 / 补杠
-            const options = engine.getSelfKongOptions(0);
+            const options = engine.getSelfKongOptions(mySlot);
             if (options.length > 0) {
-                if (engine.executeSelfKong(0, options[0])) {
+                if (engine.executeSelfKong(mySlot, options[0])) {
                     this.showMahjongActionToast(options[0].type === 'ANKONG' ? '暗杠！' : '补杠！');
-                    SoundEngine.playCardPlaySound();
+                    if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
                     this.renderMahjongHandTiles();
                     this.renderMahjongMelds();
                     const actionBar = document.getElementById('mahjongActionBar');
                     if (actionBar) actionBar.style.display = 'none';
                     this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
+
+                    if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                        NetworkManager.sendMahjongMove(mySlot, -1, null, engine.exportState(), 'KONG');
+                    }
                 }
             }
         }
@@ -2757,18 +2778,23 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const isSelfDraw = !this.pendingDiscardRes;
         const extraTile = this.pendingDiscardRes ? this.pendingDiscardRes.discarded : null;
 
-        if (engine.checkCanHu(engine.hands[0], extraTile)) {
-            const huDetails = engine.getHuDetails(0, extraTile, isSelfDraw);
+        if (engine.checkCanHu(engine.hands[mySlot] || [], extraTile)) {
+            const huDetails = engine.getHuDetails(mySlot, extraTile, isSelfDraw);
             this.showMahjongActionToast('胡！');
             if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) {
                 SoundEngine.playWin();
             }
             engine.isGameOver = true;
-            engine.winner = 0;
-            this.showMahjongSettlement(0, huDetails);
+            engine.winner = mySlot;
+            this.showMahjongSettlement(mySlot, huDetails);
+
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(mySlot, -1, extraTile, engine.exportState(), 'HU');
+            }
         }
     }
 
