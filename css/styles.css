@@ -5488,13 +5488,13 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 完美 5:7 比例优雅绒面麻将桌台 (高度微增，兼顾呼吸感与充盈视效) */
+/* 修长 9:14 充盈绒面麻将桌台 (高度扩展至 84vh，大气恢弘) */
 .vertical-mahjong-table {
     width: 100%;
-    max-width: 440px;
-    aspect-ratio: 5 / 7;
-    max-height: 75vh;
-    max-height: 75dvh;
+    max-width: 450px;
+    aspect-ratio: 9 / 14;
+    max-height: 84vh;
+    max-height: 84dvh;
     margin: auto 0;
     flex-shrink: 0;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
