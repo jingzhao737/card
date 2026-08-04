@@ -524,32 +524,62 @@ class MahjongEngine {
         return {
             dealer: this.dealer,
             currentTurn: this.currentTurn,
-            isGameOver: this.isGameOver,
+            isGameOver: !!this.isGameOver,
             winner: this.winner,
-            wall: this.wall,
-            wallCount: this.wall.length,
-            hands: this.hands,
-            discards: this.discards,
-            melds: this.melds,
-            lastDiscard: this.lastDiscard,
-            lastDrawnTile: this.lastDrawnTile
+            wall: this.wall || [],
+            wallCount: this.wall ? this.wall.length : 0,
+            hands: {
+                0: this.hands[0] || [],
+                1: this.hands[1] || [],
+                2: this.hands[2] || [],
+                3: this.hands[3] || []
+            },
+            discards: {
+                0: this.discards[0] || [],
+                1: this.discards[1] || [],
+                2: this.discards[2] || [],
+                3: this.discards[3] || []
+            },
+            melds: {
+                0: this.melds[0] || [],
+                1: this.melds[1] || [],
+                2: this.melds[2] || [],
+                3: this.melds[3] || []
+            },
+            lastDiscard: this.lastDiscard || null,
+            lastDrawnTile: this.lastDrawnTile || null
         };
     }
 
     /**
-     * 导入云端 4 人麻将数据状态
+     * 导入云端 4 人麻将数据状态 (强力兼容 Firebase 自动剔除空数组)
      */
     importState(stateData) {
         if (!stateData) return;
-        this.dealer = stateData.dealer;
-        this.currentTurn = stateData.currentTurn;
-        this.isGameOver = stateData.isGameOver;
-        this.winner = stateData.winner;
+        this.dealer = stateData.dealer !== undefined ? stateData.dealer : 0;
+        this.currentTurn = stateData.currentTurn !== undefined ? stateData.currentTurn : 0;
+        this.isGameOver = !!stateData.isGameOver;
+        this.winner = stateData.winner !== undefined ? stateData.winner : null;
         this.wall = stateData.wall || [];
-        this.wallCount = stateData.wallCount || this.wall.length;
-        this.hands = stateData.hands || { 0: [], 1: [], 2: [], 3: [] };
-        this.discards = stateData.discards || { 0: [], 1: [], 2: [], 3: [] };
-        this.melds = stateData.melds || { 0: [], 1: [], 2: [], 3: [] };
+        this.wallCount = stateData.wallCount !== undefined ? stateData.wallCount : this.wall.length;
+
+        // 强力修复：Firebase 会剥离空数组，必须确保 0, 1, 2, 3 全部初始化为有效 Array
+        this.hands = { 0: [], 1: [], 2: [], 3: [] };
+        this.discards = { 0: [], 1: [], 2: [], 3: [] };
+        this.melds = { 0: [], 1: [], 2: [], 3: [] };
+
+        for (let i = 0; i < 4; i++) {
+            if (stateData.hands && stateData.hands[i]) {
+                this.hands[i] = Array.isArray(stateData.hands[i]) ? [...stateData.hands[i]] : Object.values(stateData.hands[i]);
+            }
+            if (stateData.discards && stateData.discards[i]) {
+                this.discards[i] = Array.isArray(stateData.discards[i]) ? [...stateData.discards[i]] : Object.values(stateData.discards[i]);
+            }
+            if (stateData.melds && stateData.melds[i]) {
+                this.melds[i] = Array.isArray(stateData.melds[i]) ? [...stateData.melds[i]] : Object.values(stateData.melds[i]);
+            }
+        }
+
         this.lastDiscard = stateData.lastDiscard || null;
         this.lastDrawnTile = stateData.lastDrawnTile || null;
     }

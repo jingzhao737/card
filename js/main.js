@@ -1944,6 +1944,8 @@ class GameEngineController {
                     cell.appendChild(previewStone);
                 }
             } else {
+                // 标准大众麻将固定座位风向：0=东风(房主/庄家)、1=南风、2=西风、3=北风
+                const windNames = ['东', '南', '西', '北'];
                 const isLastMove = engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c;
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
 
@@ -2098,7 +2100,7 @@ class GameEngineController {
             }
         }
         // 引擎固定座位风向：0=南(我方/房主)、1=东(右家)、2=北(对家)、3=西(左家)
-        const windNames = ['南', '东', '北', '西'];
+        const windNames = ['东', '南', '西', '北'];
 
         const mNameBottom = document.getElementById('mNameBottom');
         const mNameRight  = document.getElementById('mNameRight');
