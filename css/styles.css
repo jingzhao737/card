@@ -5488,13 +5488,13 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 黄金 3:4 比例紧凑绒面麻将桌 (再也不垂直拉伸过长，居中居中) */
+/* 完美 5:7 比例优雅绒面麻将桌台 (高度微增，兼顾呼吸感与充盈视效) */
 .vertical-mahjong-table {
     width: 100%;
-    max-width: 420px;
-    aspect-ratio: 3 / 4;
-    max-height: 64vh;
-    max-height: 64dvh;
+    max-width: 440px;
+    aspect-ratio: 5 / 7;
+    max-height: 75vh;
+    max-height: 75dvh;
     margin: auto 0;
     flex-shrink: 0;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
