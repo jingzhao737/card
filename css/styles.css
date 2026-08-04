@@ -601,11 +601,11 @@ body:has(#lobbyScreen.active) .app-header,
 .overlay-screen {
     position: absolute;
     inset: 0;
-    /* 斗地主模式：经典深红酒红底色 + 高清清晰 36px 提花菱形网格 */
+    /* 斗地主模式：经典深红酒红底色 + 高清明显 36px 提花菱形网格 */
     background-color: #1a0608;
     background-image:
         radial-gradient(ellipse 85% 65% at 50% 45%, rgba(75, 20, 24, 0.92) 0%, rgba(26, 6, 8, 0.98) 60%, #0c0203 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='none'/%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23ffffff' stroke-width='0.85' stroke-opacity='0.22'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.5' stroke-opacity='0.15'/%3E%3C/svg%3E");
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='none'/%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23ffffff' stroke-width='1.2' stroke-opacity='0.42'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.8' stroke-opacity='0.30'/%3E%3C/svg%3E");
     background-size: cover, 36px 36px;
     display: flex;
     align-items: center;
@@ -617,12 +617,13 @@ body:has(#lobbyScreen.active) .app-header,
     transition: opacity 0.3s ease, background 0.4s ease;
 }
 
-/* 五子棋墨绿主题激活时，外围大屏背景同步为墨绿 36px 菱形网格 */
+/* 五子棋墨绿主题激活时，外围大屏背景同步为墨绿 36px 明显菱形网格 */
 body.theme-gomoku .overlay-screen {
     background-color: #03140e !important;
     background-image:
         radial-gradient(ellipse 85% 65% at 50% 45%, rgba(14, 61, 45, 0.95) 0%, rgba(6, 34, 24, 0.98) 60%, #020d09 100%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='none'/%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%2334d399' stroke-width='0.85' stroke-opacity='0.24'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%236ee7b7' stroke-width='0.5' stroke-opacity='0.15'/%3E%3C/svg%3E") !important;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='none'/%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%2334d399' stroke-width='1.2' stroke-opacity='0.45'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%236ee7b7' stroke-width='0.8' stroke-opacity='0.32'/%3E%3C/svg%3E") !important;
+    background-size: cover, 36px 36px !important;
 }
 
 .overlay-screen.active {
