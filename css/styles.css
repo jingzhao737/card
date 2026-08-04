@@ -4794,9 +4794,19 @@ body.theme-gomoku .overlay-screen {
     animation: winPulse 1s infinite alternate ease-in-out;
 }
 
-@keyframes winPulse {
-    0% { transform: scale(1); box-shadow: 0 0 10px #ffd700; }
-    100% { transform: scale(1.18); box-shadow: 0 0 24px #ffd700, 0 0 12px #34d399; }
+/* 手机端二次确认落子 虚影预选棋子 (Preview Ghost Stone) */
+.gomoku-stone.preview {
+    opacity: 0.65;
+    transform: scale(0.92);
+    box-shadow: 0 0 12px #34d399, 0 0 4px #10b981 !important;
+    border: 2px dashed #34d399 !important;
+    animation: previewPulse 0.8s infinite alternate ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes previewPulse {
+    0% { opacity: 0.5; transform: scale(0.86); }
+    100% { opacity: 0.85; transform: scale(0.98); }
 }
 
 /* 控制按钮栏 (居中单悔棋按钮，向下挪动) */

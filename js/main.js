@@ -1346,8 +1346,9 @@ class GameEngineController {
         const boardContainer = document.getElementById('gomokuBoardContainer');
         if (!boardContainer) return;
 
-        // 重置单局 3 次悔棋计数器与按键状态
+        // 重置单局 3 次悔棋计数器、预选落子与按键状态
         this.gomokuUndoLeft = 3;
+        this.gomokuPendingMove = null;
         const countEl = document.getElementById('gomokuUndoCount');
         if (countEl) countEl.textContent = '3';
         const btnUndo = document.getElementById('btnGomokuUndo');
