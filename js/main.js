@@ -2686,12 +2686,12 @@ class GameEngineController {
 
         this.isMahjongDealingAnim = true;
 
+        // 发牌之前所有人手上均无牌 (完全清空)
+        this.renderMahjongHandTilesPartial(0);
+
         overlay.innerHTML = `
-            <div class="deal-banner-title">
-                <i class="fa-solid fa-rotate fa-spin"></i> 🀄 4人雀局 · 搓牌理牌分发中...
-            </div>
             <div class="deal-wall-center-grid" id="dealCenterGrid">
-                ${Array(28).fill('<div class="deal-tile-back"></div>').join('')}
+                ${Array(24).fill('<div class="deal-tile-back"></div>').join('')}
             </div>
         `;
         overlay.style.display = 'flex';

@@ -6328,24 +6328,22 @@ body.theme-mahjong #lobbyScreen {
 .mahjong-dealing-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(3, 20, 14, 0.85);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 8px;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     z-index: 500;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 10px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
 }
 
 .mahjong-dealing-overlay.active {
     opacity: 1;
-    pointer-events: auto;
 }
 
 .deal-wall-center-grid {
