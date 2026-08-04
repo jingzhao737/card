@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=7.2">
+    <link rel="stylesheet" href="css/styles.css?v=7.3">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -359,6 +359,30 @@
 
         <!-- 游鲸五子棋 专属墨绿棋盘对局室 (Gomoku Game Screen) -->
         <div id="gomokuGameScreen" class="overlay-screen gomoku-screen-wrap" style="display: none;">
+            <!-- 五子棋开局 3秒 抢黑子先手 Overlay -->
+            <div id="gomokuGrabBlackOverlay" class="gomoku-grab-overlay" style="display: none;">
+                <div class="grab-black-card">
+                    <div class="grab-header">
+                        <div class="grab-title"><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> 抢先手黑棋</div>
+                        <div class="grab-sub">五子棋黑子先手优势！3秒内点击抢占先手</div>
+                    </div>
+                    
+                    <div class="grab-countdown-circle">
+                        <span id="grabTimerNum">3</span>
+                        <svg class="grab-timer-svg" viewBox="0 0 100 100">
+                            <circle class="timer-bg" cx="50" cy="50" r="44"></circle>
+                            <circle class="timer-progress" id="grabTimerBar" cx="50" cy="50" r="44"></circle>
+                        </svg>
+                    </div>
+
+                    <button class="btn-grab-black-action" id="btnGrabBlackStone">
+                        <div class="mini-stone-avatar black" style="width:18px;height:18px;"></div>
+                        <span>⚫ 抢先手黑子！</span>
+                    </button>
+                    <div id="grabStatusHint" class="grab-status-hint">无人抢占将随机分配先手</div>
+                </div>
+            </div>
+
             <div class="gomoku-container">
                 <!-- 顶部对局玩家与回合信息 Area (Status Pill Top + Expanded VS Bar) -->
                 <div class="gomoku-header-area">

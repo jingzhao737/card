@@ -730,6 +730,27 @@ class P2PManager {
         if (!this.roomRef) return;
         this.roomRef.child('gomokuRematchVotes').remove();
     }
+
+    sendGomokuClaimBlack(claimedSlot) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuClaimBlack').set({
+            claimedSlot,
+            ts: Date.now()
+        });
+    }
+
+    onGomokuClaimBlack(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuClaimBlack').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    clearGomokuClaimBlack() {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuClaimBlack').remove();
+    }
 }
 
 const NetworkManager = new P2PManager();
