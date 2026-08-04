@@ -4806,19 +4806,12 @@ body.theme-gomoku .overlay-screen {
     }
 }
 
-/* 手机端二次确认落子 虚影预选棋子 (Preview Ghost Stone) */
+/* 手机端二次确认落子 静态虚影预选棋子 (Static Ghost Preview Stone) */
 .gomoku-stone.preview {
-    opacity: 0.65;
-    transform: scale(0.92);
-    box-shadow: 0 0 12px #34d399, 0 0 4px #10b981 !important;
-    border: 2px dashed #34d399 !important;
-    animation: previewPulse 0.8s infinite alternate ease-in-out;
+    opacity: 0.55;
     pointer-events: none;
-}
-
-@keyframes previewPulse {
-    0% { opacity: 0.5; transform: scale(0.86); }
-    100% { opacity: 0.85; transform: scale(0.98); }
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 /* 控制按钮栏 (居中单悔棋按钮，向下挪动) */
