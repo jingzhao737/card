@@ -6289,7 +6289,7 @@ body.theme-mahjong #lobbyScreen {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0px; /* 麻将牌无缝紧贴挨着 */
+    gap: 0.8px; /* 微型自然缝隙，保持精致立体边框线 */
     padding: 3px 8px;
     margin: 2px auto 4px auto;
     width: fit-content;
