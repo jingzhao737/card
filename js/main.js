@@ -2273,7 +2273,7 @@ class GameEngineController {
                 this.checkSelfActionsOnTurn();
             } else if (NetworkManager.isHost) {
                 // 庄家为 AI 座位时，由房主驱动 AI 起手出牌（广播后非房主客户端同步跟上）
-                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方烧烤起手出牌中...`);
                 UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
                 const currDealer = window.mahjongEngine.currentTurn;
                 const dealerPlayer = this.gameState.players[currDealer];
@@ -2281,7 +2281,7 @@ class GameEngineController {
                     this.triggerAiTurnLoop();
                 }
             } else {
-                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方烧烤起手出牌中...`);
                 UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
             }
         });
@@ -2321,7 +2321,7 @@ class GameEngineController {
                 } else {
                     const relativeTurn = (currTurn - mySlot + 4) % 4;
                     const seatLabels = ['你', '右家', '对家', '左家'];
-                    this.updateMahjongStatusUI(`🀄 4人雀局 · ${seatLabels[relativeTurn] || '对方'}思考出牌中...`);
+                    this.updateMahjongStatusUI(`🀄 4人雀局 · ${seatLabels[relativeTurn] || '对方'}烧烤出牌中...`);
                 }
 
                 // 如果下一个轮到 AI 出牌且我是房主，由房主机器驱动 AI 做出决定（跳过 AI 广播回声，避免重复驱动）
@@ -3254,7 +3254,7 @@ class GameEngineController {
         const relativePos = (aiIdx - mySlot + 4) % 4;
         const seatLabels = ['你', '右家', '对家', '左家'];
         const aiName = seatLabels[relativePos] || `AI-${aiIdx}`;
-        this.updateMahjongStatusUI(`🤖 ${aiName} 思考打牌中...`);
+        this.updateMahjongStatusUI(`🍖 ${aiName} 正在烧烤中...`);
 
         // 拟真玩家思维延迟 800ms ~ 1500ms
         const thinkDelay = 800 + Math.floor(Math.random() * 700);
