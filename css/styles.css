@@ -4744,14 +4744,15 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
-/* 棋子 Style */
+/* 棋子 Style (全自然光感，无描边) */
 .gomoku-stone {
-    width: 82%;
-    height: 82%;
+    width: 84%;
+    height: 84%;
     border-radius: 50%;
     z-index: 5;
     position: relative;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+    border: none !important; /* 彻底无描边 */
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.65);
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation: stonePop 0.2s ease;
 }
@@ -4763,13 +4764,13 @@ body.theme-gomoku .overlay-screen {
 }
 
 .gomoku-stone.black {
-    background: radial-gradient(circle at 35% 35%, #4b5563 0%, #111827 70%, #000 100%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none !important;
 }
 
 .gomoku-stone.white {
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    border: none !important;
 }
 
 /* 最近落子指示点 */
@@ -4798,45 +4799,55 @@ body.theme-gomoku .overlay-screen {
     100% { transform: scale(1.18); box-shadow: 0 0 24px #ffd700, 0 0 12px #34d399; }
 }
 
-/* 控制按钮栏 */
+/* 控制按钮栏 (居中单悔棋按钮) */
 .gomoku-actions-bar {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     width: 100%;
+    margin-top: 12px;
 }
 
 .btn-gomoku-action {
-    flex: 1;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 0.8rem;
+    padding: 9px 24px;
+    border-radius: 20px;
+    font-size: 0.88rem;
     font-weight: 800;
     cursor: pointer;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    transition: all 0.15s ease;
+    gap: 8px;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
 .btn-gomoku-action.undo {
-    background: rgba(52, 211, 153, 0.15);
-    border: 1px solid rgba(52, 211, 153, 0.35);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 29, 21, 0.9) 100%);
+    border: 1px solid rgba(52, 211, 153, 0.45);
     color: #34d399;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    width: 100%;
+    max-width: 220px;
 }
 
-.btn-gomoku-action.restart {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #fff;
+.btn-gomoku-action.undo:hover:not(.disabled) {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.38) 0%, rgba(6, 29, 21, 0.95) 100%);
+    border-color: rgba(52, 211, 153, 0.7);
+    color: #6ee7b7;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
 }
 
-.btn-gomoku-action.exit {
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    color: #f87171;
+.btn-gomoku-action.disabled {
+    opacity: 0.4;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    background: rgba(30, 41, 59, 0.5) !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+    color: #64748b !important;
+    box-shadow: none !important;
 }
 
 /* 底部操作栏 极简高级按钮 */

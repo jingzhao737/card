@@ -470,39 +470,38 @@ class GameEngineController {
             btnPlayGomokuAi.addEventListener('click', () => this.startGomokuAiMode());
         }
 
-        // 五子棋对局控制按钮 (悔棋 / 重开 / 退出)
+        // 五子棋对局控制按钮 (单局限悔棋 3 次)
         const btnGomokuUndo = document.getElementById('btnGomokuUndo');
-        const btnGomokuRestart = document.getElementById('btnGomokuRestart');
-        const btnGomokuExit = document.getElementById('btnGomokuExit');
-
         if (btnGomokuUndo) {
             btnGomokuUndo.addEventListener('click', () => {
-                if (window.gomokuEngine) {
-                    window.gomokuEngine.undo();
+                if (!window.gomokuEngine) return;
+                if (this.gomokuUndoLeft === undefined) this.gomokuUndoLeft = 3;
+
+                if (this.gomokuUndoLeft <= 0) {
+                    UIRenderer.showToast('⚠️ 单局最多只能悔棋 3 次哦！');
+                    return;
+                }
+
+                if (window.gomokuEngine.moveHistory.length === 0) {
+                    UIRenderer.showToast('⚠️ 盘面上暂无棋子可撤回');
+                    return;
+                }
+
+                const success = window.gomokuEngine.undo();
+                if (success) {
+                    this.gomokuUndoLeft--;
+                    const countEl = document.getElementById('gomokuUndoCount');
+                    if (countEl) countEl.textContent = this.gomokuUndoLeft;
+
+                    if (this.gomokuUndoLeft <= 0) {
+                        btnGomokuUndo.disabled = true;
+                        btnGomokuUndo.classList.add('disabled');
+                    }
+
                     this.renderGomokuBoard();
-                    this.updateGomokuStatusUI('已撤回，黑方落子中');
+                    this.updateGomokuStatusUI(`已撤回，本局还可悔棋 ${this.gomokuUndoLeft} 次`);
+                    UIRenderer.showToast(`↺ 悔棋成功！单局剩余 ${this.gomokuUndoLeft} 次`);
                 }
-            });
-        }
-
-        if (btnGomokuRestart) {
-            btnGomokuRestart.addEventListener('click', () => {
-                if (window.gomokuEngine) {
-                    window.gomokuEngine.reset(true, 1);
-                    this.initGomokuUI();
-                    this.updateGomokuStatusUI('重新开始，黑方落子中');
-                }
-            });
-        }
-
-        if (btnGomokuExit) {
-            btnGomokuExit.addEventListener('click', () => {
-                const gomokuScr = document.getElementById('gomokuGameScreen');
-                if (gomokuScr) {
-                    gomokuScr.style.display = 'none';
-                    gomokuScr.classList.remove('active');
-                }
-                this.resetToLobby();
             });
         }
 
@@ -1311,6 +1310,16 @@ class GameEngineController {
     initGomokuUI() {
         const boardContainer = document.getElementById('gomokuBoardContainer');
         if (!boardContainer) return;
+
+        // 重置单局 3 次悔棋计数器与按键状态
+        this.gomokuUndoLeft = 3;
+        const countEl = document.getElementById('gomokuUndoCount');
+        if (countEl) countEl.textContent = '3';
+        const btnUndo = document.getElementById('btnGomokuUndo');
+        if (btnUndo) {
+            btnUndo.disabled = false;
+            btnUndo.classList.remove('disabled');
+        }
 
         boardContainer.innerHTML = '';
         const starPoints = ['3,3', '3,11', '7,7', '11,3', '11,11']; // 15x15 盘面星位与天元
