@@ -221,18 +221,27 @@ body:has(#lobbyScreen.active) .app-header,
 
 /* 邮件卡片列表项样式 (克制极简) */
 .mail-item-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 4px;
-    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0;
+    padding: 18px 4px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition: background 0.2s ease;
+}
+.mail-item-card:last-child {
+    border-bottom: none;
+}
+.mail-item-card:hover {
+    background: rgba(255, 255, 255, 0.02);
 }
 .mail-item-card.unread {
-    background: rgba(255, 215, 0, 0.04);
-    border-color: rgba(255, 215, 0, 0.25);
+    background: transparent;
+}
+.mail-item-card.unread:hover {
+    background: rgba(255, 255, 255, 0.03);
 }
 .mail-item-header {
     display: flex;
@@ -240,28 +249,28 @@ body:has(#lobbyScreen.active) .app-header,
     justify-content: space-between;
 }
 .mail-item-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #f1f5f9;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #f4f4f5;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0;
 }
 .mail-item-date {
-    font-size: 0.7rem;
-    color: #64748b;
+    font-size: 0.75rem;
+    color: #71717a;
 }
 .mail-item-body {
-    font-size: 0.78rem;
-    color: #94a3b8;
-    line-height: 1.5;
+    font-size: 0.8rem;
+    color: #a1a1aa;
+    line-height: 1.6;
+    margin-top: 2px;
 }
 .mail-reward-box {
-    margin-top: 4px;
-    background: rgba(255, 215, 0, 0.06);
-    border: 1px solid rgba(255, 215, 0, 0.15);
-    border-radius: 6px;
-    padding: 6px 10px;
+    margin-top: 6px;
+    background: transparent;
+    border: none;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;

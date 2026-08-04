@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=27.4">
+    <link rel="stylesheet" href="css/styles.css?v=27.5">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1390,22 +1390,22 @@
     </div>
 
     <!-- 📬 系统邮件与公告箱弹窗 (Restrained Minimalist Mailbox Modal) -->
-    <div id="mailboxModal" class="card-type-modal" style="display:none;z-index:10001;">
-        <div class="card-type-inner" style="max-width: 440px; border-radius: 6px; background: #121826; border: 1px solid rgba(255, 255, 255, 0.1);">
-            <div class="ct-header" style="background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 18px;">
-                <span class="ct-title" style="color: #f1f5f9; font-size: 0.95rem; font-weight: 700;">
-                    <i class="fa-solid fa-envelope" style="color: #ffd700; margin-right: 6px;"></i> 系统邮件与公告
+    <div id="mailboxModal" class="card-type-modal" style="display:none;z-index:10001; backdrop-filter: blur(8px);">
+        <div class="card-type-inner" style="max-width: 440px; border-radius: 8px; background: rgba(9, 9, 11, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+            <div class="ct-header" style="background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding: 16px 20px;">
+                <span class="ct-title" style="color: #f4f4f5; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.5px;">
+                    系统邮件
                 </span>
-                <button class="ct-close" id="btnCloseMailboxModal" style="color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+                <button class="ct-close" id="btnCloseMailboxModal" style="color: #71717a; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="ct-body" style="padding: 16px 18px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <span style="font-size:0.75rem;color:#94a3b8;">共 <b id="mailTotalCount" style="color:#e2e8f0;">0</b> 封邮件</span>
-                    <button id="btnClaimAllMails" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);color:#ffd700;border-radius:4px;padding:3px 10px;font-size:0.72rem;font-weight:700;cursor:pointer;">
-                        一键领取 / 标为已读
+            <div class="ct-body" style="padding: 16px 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <span style="font-size:0.75rem;color:#71717a;"><b id="mailTotalCount" style="color:#d4d4d8; font-weight: 500;">0</b> 封邮件</span>
+                    <button id="btnClaimAllMails" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color:#a1a1aa; border-radius: 4px; padding: 4px 12px; font-size:0.7rem; font-weight:500; cursor:pointer; transition: all 0.2s;">
+                        全部已读 / 领取
                     </button>
                 </div>
-                <div id="mailboxListContainer" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+                <div id="mailboxListContainer" style="max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:0;">
                     <!-- 动态渲染邮件列表 -->
                 </div>
             </div>

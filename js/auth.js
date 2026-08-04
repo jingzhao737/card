@@ -944,7 +944,7 @@ class MailManager {
                     <div class="mail-item-card ${(!isRead || (hasReward && !isClaimed)) ? 'unread' : ''}">
                         <div class="mail-item-header">
                             <span class="mail-item-title">
-                                ${(!isRead || (hasReward && !isClaimed)) ? '<i class="fa-solid fa-circle" style="font-size:0.42rem;color:#fbbf24;margin-right:2px;"></i>' : ''}
+                                ${(!isRead || (hasReward && !isClaimed)) ? '<i class="fa-solid fa-circle" style="font-size:0.35rem;color:#fbbf24;margin-right:6px;"></i>' : ''}
                                 <span>${mail.title}</span>
                             </span>
                             <span class="mail-item-date">${mail.date}</span>
@@ -952,13 +952,13 @@ class MailManager {
                         <div class="mail-item-body">${mail.content}</div>
                         ${hasReward ? `
                             <div class="mail-reward-box">
-                                <span style="font-size:0.75rem;font-weight:700;color:#ffd700;">
-                                    🪙 +${mail.rewardCoins} 知因币
+                                <span style="font-size:0.75rem;font-weight:500;color:#d4d4d8;">
+                                    +${mail.rewardCoins} 知因币
                                 </span>
                                 ${isClaimed ? `
-                                    <span style="font-size:0.7rem;color:#64748b;"><i class="fa-solid fa-check"></i> 已领取</span>
+                                    <span style="font-size:0.7rem;color:#52525b;"><i class="fa-solid fa-check"></i> 已领取</span>
                                 ` : `
-                                    <button class="btn-claim-single-mail" onclick="MailEngine.claimMailReward('${mail.id}')" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.35);color:#ffd700;border-radius:4px;padding:2px 8px;font-size:0.7rem;font-weight:700;cursor:pointer;">
+                                    <button class="btn-claim-single-mail" onclick="MailEngine.claimMailReward('${mail.id}')" style="background:transparent; border:1px solid rgba(255,215,0,0.3); color:#fbbf24; border-radius:4px; padding:2px 8px; font-size:0.7rem; font-weight:500; cursor:pointer; transition:all 0.2s;">
                                         领取
                                     </button>
                                 `}
