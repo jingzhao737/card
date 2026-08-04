@@ -5708,11 +5708,6 @@ body.theme-mahjong {
     overflow: hidden;
 }
 
-/* 第 14 张新摸入的手牌（右侧单独设 5px 空隙分隔） */
-.mahjong-tile-card.drawn-tile {
-    margin-left: 5px; /* 经典麻将摸牌隔开悬排 */
-}
-
 .mahjong-tile-card:hover, .mahjong-tile-card:active {
     transform: translateY(-12px);
     box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
@@ -6248,6 +6243,31 @@ body.theme-mahjong {
 
 .btn-settle-secondary:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   💻 PC 端 (min-width: 769px) 强制恢复 36px x 54px 正确比例
+   ========================================================================== */
+@media (min-width: 769px) {
+    .mahjong-tiles-bottom {
+        gap: 3px !important;
+    }
+    .mahjong-tile-card {
+        width: 36px !important;
+        height: 54px !important;
+        aspect-ratio: auto !important;
+        flex: 0 0 auto !important;
+        border-radius: 4px !important;
+        box-shadow: 0 5px 0 #047857, 0 8px 15px rgba(0, 0, 0, 0.6) !important;
+    }
+    .mahjong-tile-card .m-face.wan .w-num { font-size: 0.96rem !important; }
+    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.82rem !important; }
+    .mahjong-tile-card .m-face.honor { font-size: 1.3rem !important; }
+    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 18px !important; height: 26px !important; }
+    .mahjong-tile-card .m-face.bing-1 .rosette { width: 22px !important; height: 22px !important; }
+    .mahjong-tile-card .m-face.bing .dot { width: 7px !important; height: 7px !important; }
+    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.4rem !important; }
+    .mahjong-tile-card .m-face.tiao .bar { width: 4px !important; height: 14px !important; }
 }
 
 

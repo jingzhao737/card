@@ -2183,9 +2183,6 @@ class GameEngineController {
             myHand.forEach((tile, index) => {
                 const card = document.createElement('div');
                 card.className = 'mahjong-tile-card';
-                if (myHand.length % 3 === 2 && index === myHand.length - 1) {
-                    card.classList.add('drawn-tile');
-                }
                 card.dataset.index = index;
                 card.innerHTML = this.getMahjongTileFaceHTML(tile);
 
