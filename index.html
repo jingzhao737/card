@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=27.0">
+    <link rel="stylesheet" href="css/styles.css?v=27.1">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,15 +84,10 @@
 
         <!-- 主大厅/大厅模式选择 (Hero Aesthetic Lobby) -->
         <div id="lobbyScreen" class="overlay-screen active" style="flex-direction: column; gap: 12px;">
-            <!-- 📬 主页最上方：系统邮件与公告广播 Bar (位于排行榜上方) -->
-            <div class="top-mail-bar" id="topMailBar">
-                <div class="mail-bar-left">
-                    <i class="fa-solid fa-bullhorn" style="color:#ffd700;"></i>
-                    <span class="top-notice-text" id="topNoticePreviewText">📢 全服福利与系统更新公告已送达</span>
-                </div>
-                <button class="btn-mail-trigger" id="btnOpenMailbox" type="button" title="点击查看系统邮件与领取奖励">
-                    <i class="fa-solid fa-envelope mail-icon"></i>
-                    <span>邮件箱</span>
+            <!-- 📬 主页最上方：极简水平居中邮件图标按钮 (位于排行榜正上方) -->
+            <div class="top-mail-center-wrap">
+                <button class="btn-mail-icon-only" id="btnOpenMailbox" type="button" title="系统邮件与福利公告箱">
+                    <i class="fa-solid fa-envelope"></i>
                     <span class="mail-unread-dot" id="mailUnreadDot" style="display:none;"></span>
                 </button>
             </div>
