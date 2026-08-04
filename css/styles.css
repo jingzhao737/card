@@ -5056,6 +5056,70 @@ body.theme-gomoku .overlay-screen {
 }
 
 /* ==========================================================================
+   五子棋开局先后手大字标语 (你先手 / 你后手 棋盘中央闪现)
+   ========================================================================== */
+.gomoku-center-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 80;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 2px solid rgba(245, 158, 11, 0.6);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(245, 158, 11, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    animation: bannerPopFade 1.6s ease-in-out forwards;
+}
+
+.gomoku-center-banner span {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #ffd700;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.6);
+    white-space: nowrap;
+}
+
+.gomoku-center-banner span.black-first {
+    color: #ffd700;
+}
+
+.gomoku-center-banner span.white-second {
+    color: #38bdf8;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 16px rgba(56, 189, 248, 0.6);
+}
+
+@keyframes bannerPopFade {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0;
+    }
+}
+
+/* ==========================================================================
    五子棋开局 3秒 倒计时后亮起抢先手按键 (居中悬浮于棋盘中央)
    ========================================================================== */
 .gomoku-bidding-bar {

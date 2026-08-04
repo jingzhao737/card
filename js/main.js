@@ -1494,6 +1494,33 @@ class GameEngineController {
     }
 
     /**
+     * 播放棋盘中央开局先后手大字标语 (你先手 / 你后手 1.6 秒闪现)
+     */
+    showGomokuCenterBanner(isMyTurnFirst) {
+        const banner = document.getElementById('gomokuCenterBanner');
+        const textEl = document.getElementById('gomokuCenterBannerText');
+        if (!banner || !textEl) return;
+
+        if (this._bannerTimeout) clearTimeout(this._bannerTimeout);
+
+        banner.style.display = 'none';
+        banner.offsetHeight; // 触发 reflow 重置动画
+        banner.style.display = 'flex';
+
+        if (isMyTurnFirst) {
+            textEl.textContent = '⚫ 你先手';
+            textEl.className = 'black-first';
+        } else {
+            textEl.textContent = '⚪ 你后手';
+            textEl.className = 'white-second';
+        }
+
+        this._bannerTimeout = setTimeout(() => {
+            banner.style.display = 'none';
+        }, 1600);
+    }
+
+    /**
      * 开启在线五子棋真人双人对战模式 (随机先后手，我方固定在左侧)
      */
     startGomokuOnlineGame(roomId, isHost = false) {
@@ -1549,6 +1576,7 @@ class GameEngineController {
         const isMyTurn = window.gomokuEngine.currentTurn === myColor;
         this.updateGomokuStatusUI(isMyTurn ? `⚫ 轮到你落子 (先手黑棋)` : `⚪ 对方思考中 (后手白棋)...`);
         UIRenderer.showToast(isMyTurn ? '🎲 随机先后手：你执先手黑棋！' : '🎲 随机先后手：你执后手白棋！');
+        this.showGomokuCenterBanner(isMyTurn);
 
         // 监听云端落子广播
         NetworkManager.onGomokuMove((move) => {
@@ -1674,6 +1702,8 @@ class GameEngineController {
         window.gomokuEngine.reset(true, myColor);
         this.initGomokuUI();
         this.renderGomokuBoard();
+
+        this.showGomokuCenterBanner(iAmBlack);
 
         if (iAmBlack) {
             this.updateGomokuStatusUI('⚫ 轮到你落子 (先手黑棋)');
