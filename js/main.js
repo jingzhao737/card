@@ -1560,14 +1560,14 @@ class GameEngineController {
                 SoundEngine.playCardPlaySound();
             }
 
-            if (isAiMode) {
-                finishBidding(1, '<span>🎉 抢占成功！你执先手黑棋！</span>');
-            } else if (NetworkManager.myPlayerIndex !== null) {
-                const mySlot = NetworkManager.myPlayerIndex;
-                claimedPlayer = mySlot === 0 ? 1 : 2;
+            const mySlot = (typeof NetworkManager !== 'undefined' && NetworkManager.myPlayerIndex !== null) ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
+            const winnerSlot = (mySlot === 0) ? 1 : 2;
+
+            if (!isAiMode && typeof NetworkManager !== 'undefined' && NetworkManager.sendGomokuClaimBlack) {
                 NetworkManager.sendGomokuClaimBlack(mySlot);
-                finishBidding(claimedPlayer, '<span>🎉 抢占成功！你执先手黑棋！</span>');
             }
+
+            finishBidding(winnerSlot, '<span>🎉 抢占成功！你执先手黑棋！</span>');
         };
 
         let timeLeft = 3000;
@@ -1597,8 +1597,8 @@ class GameEngineController {
                     SoundEngine.playCountdownGo();
                 }
 
-                // 阶段 2：给玩家 2.0 秒拼手速抢。若 2.0 秒内没人点，则自动随机分配！
-                let reactTime = 2000;
+                // 阶段 2：给玩家 3.0 秒拼手速抢。若 3.0 秒内没人点，则自动随机分配！
+                let reactTime = 3000;
                 const reactStep = 50;
                 this._grabReactInterval = setInterval(() => {
                     if (finished) return;
