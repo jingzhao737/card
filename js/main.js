@@ -2664,6 +2664,15 @@ class GameEngineController {
                 this.pendingDiscardRes = aiRes;
                 this.showHumanResponseActionBar(aiRes);
                 this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
+                // 联机多人局：房主 5 秒内未响应则自动过牌，防止 AI 回合被永久卡住
+                if (!NetworkManager.isAiMode) {
+                    if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
+                    this._mahjongResponseTimer = setTimeout(() => {
+                        if (this.pendingDiscardRes) {
+                            this.handleMahjongPassClick();
+                        }
+                    }, 5000);
+                }
                 return;
             }
 
@@ -2736,6 +2745,7 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         const res = this.pendingDiscardRes;
         if (!engine || !res) return;
+        if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (engine.executeChow(mySlot, res.discarded, pair)) {
@@ -2759,6 +2769,7 @@ class GameEngineController {
     handleMahjongPongClick() {
         const engine = window.mahjongEngine;
         if (!engine || !this.pendingDiscardRes) return;
+        if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const discarded = this.pendingDiscardRes.discarded;
@@ -2783,6 +2794,7 @@ class GameEngineController {
     handleMahjongKongClick() {
         const engine = window.mahjongEngine;
         if (!engine) return;
+        if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (this.pendingDiscardRes) {
@@ -2828,6 +2840,7 @@ class GameEngineController {
     handleMahjongHuClick() {
         const engine = window.mahjongEngine;
         if (!engine) return;
+        if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const isSelfDraw = !this.pendingDiscardRes;
@@ -2853,8 +2866,11 @@ class GameEngineController {
      * 点击【过】按钮逻辑
      */
     handleMahjongPassClick() {
+        if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
         const actionBar = document.getElementById('mahjongActionBar');
         if (actionBar) actionBar.style.display = 'none';
+        const chowModal = document.getElementById('mahjongChowModal');
+        if (chowModal) chowModal.style.display = 'none';
 
         const engine = window.mahjongEngine;
         if (!engine) return;
