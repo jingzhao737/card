@@ -195,13 +195,15 @@ body:has(#lobbyScreen.active) .app-header,
     align-items: center;
     justify-content: center;
     padding: 6px;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    opacity: 0.35;
+    transition: opacity 0.2s ease, filter 0.2s ease;
 }
 .btn-mail-icon-only:hover {
+    opacity: 1;
     filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }
 .btn-mail-icon-only.has-unread {
-    /* 完全无动画与呼吸光效，保持纯静止图标 */
+    opacity: 1;
 }
 .mail-unread-dot {
     position: absolute;
