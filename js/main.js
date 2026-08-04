@@ -1494,25 +1494,29 @@ class GameEngineController {
     }
 
     /**
-     * 开启五子棋开局 3秒 抢先手黑棋倒计时 (无人抢则随机分配)
+     * 开启五子棋开局 3秒 抢先手黑棋倒计时 (仿斗地主叫地主操作条，无人抢则随机分配)
      */
     startGomokuGrabBlackCountdown(isAiMode, isHost, onComplete) {
-        const overlay = document.getElementById('gomokuGrabBlackOverlay');
+        const biddingBar = document.getElementById('gomokuBiddingBar');
         const numEl = document.getElementById('grabTimerNum');
-        const barEl = document.getElementById('grabTimerBar');
         const btnGrab = document.getElementById('btnGrabBlackStone');
-        const hintEl = document.getElementById('grabStatusHint');
+        const btnPass = document.getElementById('btnPassBlackStone');
 
-        if (!overlay || !btnGrab) {
+        if (!biddingBar || !btnGrab) {
             if (onComplete) onComplete(isHost ? 1 : 2);
             return;
         }
 
-        overlay.style.display = 'flex';
+        biddingBar.style.display = 'flex';
         btnGrab.disabled = false;
         btnGrab.classList.remove('claimed');
-        btnGrab.innerHTML = '<div class="mini-stone-avatar black" style="width:18px;height:18px;"></div><span>⚫ 抢先手黑子！</span>';
-        if (hintEl) hintEl.textContent = '无人抢占将随机分配先手';
+        btnGrab.style.display = 'flex';
+        btnGrab.innerHTML = '<div class="mini-stone-avatar black" style="width:16px;height:16px;"></div><span>⚫ 抢先手</span>';
+        if (btnPass) {
+            btnPass.disabled = false;
+            btnPass.style.display = 'flex';
+            btnPass.innerHTML = '<span>⚪ 不抢 (随机)</span>';
+        }
 
         let claimedPlayer = null; // 1: Slot0(Host), 2: Slot1(Guest)
         let myClaimed = false;
@@ -1523,10 +1527,6 @@ class GameEngineController {
             NetworkManager.onGomokuClaimBlack((data) => {
                 if (data && !claimedPlayer) {
                     claimedPlayer = data.claimedSlot === 0 ? 1 : 2;
-                    if (hintEl) {
-                        const isMe = (data.claimedSlot === NetworkManager.myPlayerIndex);
-                        hintEl.textContent = isMe ? '⚡ 你已抢占先手黑棋！' : '⚡ 对方已抢占先手黑棋！';
-                    }
                 }
             });
         }
@@ -1536,8 +1536,8 @@ class GameEngineController {
             myClaimed = true;
             btnGrab.classList.add('claimed');
             btnGrab.disabled = true;
-            btnGrab.innerHTML = '<span>✅ 已抢占先手黑棋！</span>';
-            if (hintEl) hintEl.textContent = '🎉 抢占成功！你执先手黑棋！';
+            btnGrab.innerHTML = '<span>✅ 已抢先手</span>';
+            if (btnPass) btnPass.style.display = 'none';
 
             if (typeof SoundEngine !== 'undefined') {
                 SoundEngine.playCardPlaySound();
@@ -1552,10 +1552,20 @@ class GameEngineController {
             }
         };
 
+        const handlePass = () => {
+            if (myClaimed) return;
+            myClaimed = true;
+            if (btnPass) {
+                btnPass.disabled = true;
+                btnPass.innerHTML = '<span>⚪ 已放弃抢先手</span>';
+            }
+            btnGrab.style.display = 'none';
+        };
+
         btnGrab.onclick = handleClaim;
+        if (btnPass) btnPass.onclick = handlePass;
 
         let timeLeft = 3000;
-        const totalTime = 3000;
         const step = 50;
 
         if (this._grabTimerInterval) clearInterval(this._grabTimerInterval);
@@ -1565,11 +1575,6 @@ class GameEngineController {
             const sec = Math.max(1, Math.ceil(timeLeft / 1000));
             if (numEl) numEl.textContent = sec;
 
-            if (barEl) {
-                const progress = (timeLeft / totalTime) * 276;
-                barEl.style.strokeDashoffset = (276 - progress);
-            }
-
             if (timeLeft <= 0) {
                 clearInterval(this._grabTimerInterval);
                 this._grabTimerInterval = null;
@@ -1577,13 +1582,14 @@ class GameEngineController {
                 // 倒计时结束，若没人抢 -> 随机分配！
                 if (!claimedPlayer) {
                     claimedPlayer = Math.random() < 0.5 ? 1 : 2;
-                    if (hintEl) hintEl.textContent = '🎲 无人抢占，已随机分配先手！';
                 }
 
                 setTimeout(() => {
-                    overlay.style.display = 'none';
+                    biddingBar.style.display = 'none';
+                    if (btnGrab) btnGrab.style.display = 'flex';
+                    if (btnPass) btnPass.style.display = 'flex';
                     if (onComplete) onComplete(claimedPlayer);
-                }, 400);
+                }, 300);
             }
         }, step);
     }
