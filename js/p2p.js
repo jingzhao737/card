@@ -709,6 +709,27 @@ class P2PManager {
             if (val && callback) callback(val);
         });
     }
+
+    sendGomokuRematchVote(ready) {
+        if (!this.roomRef || this.myPlayerIndex === null) return;
+        this.roomRef.child(`gomokuRematchVotes/${this.myPlayerIndex}`).set({
+            ready,
+            ts: Date.now()
+        });
+    }
+
+    onGomokuRematchVote(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuRematchVotes').on('value', snap => {
+            const val = snap.val();
+            if (callback) callback(val || {});
+        });
+    }
+
+    clearGomokuRematchVotes() {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuRematchVotes').remove();
+    }
 }
 
 const NetworkManager = new P2PManager();

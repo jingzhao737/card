@@ -540,6 +540,34 @@ class GameEngineController {
             });
         }
 
+        // 绑定五子棋对局结束【重来一局】按钮
+        const btnGomokuRematch = document.getElementById('btnGomokuRematch');
+        if (btnGomokuRematch) {
+            btnGomokuRematch.addEventListener('click', () => {
+                const engine = window.gomokuEngine;
+                if (!engine) return;
+
+                // 单机 AI 模式：直接重置开始新局
+                if (engine.isAiMode) {
+                    engine.reset(true, 1);
+                    this.initGomokuUI();
+                    this.renderGomokuBoard();
+                    this.updateGomokuStatusUI('黑方落子中 (你)');
+                    UIRenderer.showToast('🟢 重新开始！你是先手黑棋');
+                    return;
+                }
+
+                // 在线双人模式：向云端发送准备重来一局信号
+                this.gomokuMyRematchReady = true;
+                btnGomokuRematch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 已准备 (等待对方...)';
+                btnGomokuRematch.disabled = true;
+                btnGomokuRematch.classList.add('disabled');
+
+                NetworkManager.sendGomokuRematchVote(true);
+                UIRenderer.showToast('⌛ 已提交【重来一局】，等待对方回应...');
+            });
+        }
+
         // 代理列表项中的"一键加入/替换AI"按钮点击
         const listContainer = document.getElementById('publicRoomsListContainer');
         if (listContainer) {
@@ -1346,15 +1374,27 @@ class GameEngineController {
         const boardContainer = document.getElementById('gomokuBoardContainer');
         if (!boardContainer) return;
 
-        // 重置单局 3 次悔棋计数器、预选落子与按键状态
+        // 重置单局 3 次悔棋计数器、预选落子与重来一局状态
         this.gomokuUndoLeft = 3;
         this.gomokuPendingMove = null;
+        this.gomokuMyRematchReady = false;
+
         const countEl = document.getElementById('gomokuUndoCount');
         if (countEl) countEl.textContent = '3';
+
         const btnUndo = document.getElementById('btnGomokuUndo');
         if (btnUndo) {
+            btnUndo.style.display = 'flex';
             btnUndo.disabled = false;
             btnUndo.classList.remove('disabled');
+        }
+
+        const btnRematch = document.getElementById('btnGomokuRematch');
+        if (btnRematch) {
+            btnRematch.style.display = 'none';
+            btnRematch.disabled = false;
+            btnRematch.classList.remove('disabled');
+            btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
         }
 
         boardContainer.innerHTML = '';
@@ -1471,6 +1511,36 @@ class GameEngineController {
             } else {
                 UIRenderer.showToast(`❌ 对方拒绝了你的悔棋申请，未扣除悔棋次数 (剩余 ${this.gomokuUndoLeft} 次)`);
                 this.updateGomokuStatusUI(`对方拒绝悔棋，请继续落子`);
+            }
+        });
+
+        // 监听在线双人【重来一局】投票 (双方均准备后自动开启新一局)
+        NetworkManager.onGomokuRematchVote((votes) => {
+            if (!votes) return;
+            const hostVote = votes[0] && votes[0].ready;
+            const joinerVote = votes[1] && votes[1].ready;
+
+            const mySlot = NetworkManager.myPlayerIndex;
+            const oppSlot = mySlot === 0 ? 1 : 0;
+            const myVote = votes[mySlot] && votes[mySlot].ready;
+            const oppVote = votes[oppSlot] && votes[oppSlot].ready;
+
+            if (oppVote && !myVote) {
+                this.updateGomokuStatusUI('🤝 对方已点击【重来一局】，等你准备...');
+                UIRenderer.showToast('🤝 对方已申请【重来一局】，请点击确认！');
+            }
+
+            // 双方都点击了【重来一局】！重置盘面，开启新对局！
+            if (hostVote && joinerVote) {
+                NetworkManager.clearGomokuRematchVotes();
+                const myColor = isHost ? 1 : 2;
+                window.gomokuEngine.reset(false, myColor);
+                this.initGomokuUI();
+                this.renderGomokuBoard();
+
+                const isMyTurn = window.gomokuEngine.currentTurn === myColor;
+                this.updateGomokuStatusUI(isMyTurn ? `⚫ 房间 #${roomId} · 轮到你落子` : `⚪ 房间 #${roomId} · 对方思考中...`);
+                UIRenderer.showToast('⚔️ 双方均已同意，新一局对局开始！');
             }
         });
     }
@@ -1630,7 +1700,19 @@ class GameEngineController {
         else msg = '🤝 盘满平局！';
 
         UIRenderer.showToast(msg);
-        this.updateGomokuStatusUI(winner === 0 ? '平局' : (winner === 1 ? '黑方胜' : '白方胜'));
+        this.updateGomokuStatusUI(winner === 0 ? '平局 · 请点击【重来一局】' : (winner === 1 ? '黑方胜 · 请点击【重来一局】' : '白方胜 · 请点击【重来一局】'));
+
+        // 对局结束：隐藏悔棋按键，开启【重来一局】按键
+        const btnUndo = document.getElementById('btnGomokuUndo');
+        if (btnUndo) btnUndo.style.display = 'none';
+
+        const btnRematch = document.getElementById('btnGomokuRematch');
+        if (btnRematch) {
+            btnRematch.style.display = 'flex';
+            btnRematch.disabled = false;
+            btnRematch.classList.remove('disabled');
+            btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
+        }
     }
 
     /**

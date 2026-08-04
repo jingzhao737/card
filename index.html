@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=5.5">
+    <link rel="stylesheet" href="css/styles.css?v=5.6">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -391,10 +391,13 @@
                     </div>
                 </div>
 
-                <!-- 底部操作控制栏 (仅保留单局限量 3 次悔棋按键) -->
+                <!-- 底部操作控制栏 (悔棋与对局结束双人重来一局按键) -->
                 <div class="gomoku-actions-bar">
                     <button class="btn-gomoku-action undo" id="btnGomokuUndo" title="单局限悔棋 3 次">
                         <i class="fa-solid fa-rotate-left"></i> 悔棋 (<span id="gomokuUndoCount">3</span>/3)
+                    </button>
+                    <button class="btn-gomoku-action rematch" id="btnGomokuRematch" style="display: none;" title="双方均点击后开启新一局">
+                        <i class="fa-solid fa-rotate-right"></i> 重来一局
                     </button>
                 </div>
             </div>
