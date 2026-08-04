@@ -564,6 +564,10 @@ class AuthManager {
         const gUserNick = document.getElementById('gomokuUserNick');
         const gUserSub  = document.getElementById('gomokuUserSub');
         const gBtnAuth  = document.getElementById('btnGomokuAuth');
+        const mAuthAvatar = document.getElementById('mahjongAuthAvatar');
+        const mUserNick = document.getElementById('mahjongUserNick');
+        const mUserSub  = document.getElementById('mahjongUserSub');
+        const mBtnAuth  = document.getElementById('btnMahjongAuth');
         const nickSec   = document.querySelector('.nickname-section');
 
         if (this.userData) {
@@ -588,6 +592,11 @@ class AuthManager {
             if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (gBtnAuth)    gBtnAuth.textContent    = '个人信息';
 
+            if (mAuthAvatar) mAuthAvatar.textContent = this.userData.avatar || '🤠';
+            if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
+            if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
+            if (mBtnAuth)    mBtnAuth.textContent    = '个人信息';
+
             // 登录后隐去随机昵称区块，避免误导
             if (nickSec) nickSec.style.display   = 'none';
 
@@ -610,6 +619,11 @@ class AuthManager {
             if (gUserNick)   gUserNick.textContent   = '未登录 (游客)';
             if (gUserSub)    gUserSub.textContent    = '🪙 知因币: 0';
             if (gBtnAuth)    gBtnAuth.textContent    = '登录 / 注册';
+
+            if (mAuthAvatar) mAuthAvatar.textContent = '👤';
+            if (mUserNick)   mUserNick.textContent   = '未登录 (游客)';
+            if (mUserSub)    mUserSub.textContent    = '🪙 知因币: 0';
+            if (mBtnAuth)    mBtnAuth.textContent    = '登录 / 注册';
 
             // 游客模式显示随机昵称区块
             if (nickSec) nickSec.style.display   = 'block';
