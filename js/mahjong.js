@@ -516,6 +516,43 @@ class MahjongEngine {
 
         return aiHand.length - 1;
     }
+
+    /**
+     * 导出全量 4 人麻将数据状态 (便于多人云端网络同步)
+     */
+    exportState() {
+        return {
+            dealer: this.dealer,
+            currentTurn: this.currentTurn,
+            isGameOver: this.isGameOver,
+            winner: this.winner,
+            wall: this.wall,
+            wallCount: this.wall.length,
+            hands: this.hands,
+            discards: this.discards,
+            melds: this.melds,
+            lastDiscard: this.lastDiscard,
+            lastDrawnTile: this.lastDrawnTile
+        };
+    }
+
+    /**
+     * 导入云端 4 人麻将数据状态
+     */
+    importState(stateData) {
+        if (!stateData) return;
+        this.dealer = stateData.dealer;
+        this.currentTurn = stateData.currentTurn;
+        this.isGameOver = stateData.isGameOver;
+        this.winner = stateData.winner;
+        this.wall = stateData.wall || [];
+        this.wallCount = stateData.wallCount || this.wall.length;
+        this.hands = stateData.hands || { 0: [], 1: [], 2: [], 3: [] };
+        this.discards = stateData.discards || { 0: [], 1: [], 2: [], 3: [] };
+        this.melds = stateData.melds || { 0: [], 1: [], 2: [], 3: [] };
+        this.lastDiscard = stateData.lastDiscard || null;
+        this.lastDrawnTile = stateData.lastDrawnTile || null;
+    }
 }
 
 // 挂载全局对象

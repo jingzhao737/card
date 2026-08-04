@@ -813,6 +813,19 @@ class P2PManager {
             if (val && callback) callback(val);
         });
     }
+
+    sendMahjongInitState(stateData) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongInitData').set(stateData);
+    }
+
+    onMahjongInitState(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongInitData').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
 }
 
 const NetworkManager = new P2PManager();

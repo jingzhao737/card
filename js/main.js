@@ -929,8 +929,7 @@ class GameEngineController {
                 const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
                 if (isMahjong) {
-                    NetworkManager.sendMahjongStart(NetworkManager.roomId);
-                    this.startMahjongAiMode();
+                    this.startMahjongOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
                 } else if (isGomoku) {
                     const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
                     if (hasSecondPlayer) {
@@ -2033,6 +2032,89 @@ class GameEngineController {
     /* ============================================================
        🀄 游鲸麻将 4人围桌 UI 控制与交互逻辑 (4-Player Table Mahjong UI)
        ============================================================ */
+
+    /**
+     * 开启在线多人/补齐 AI 游鲸麻将模式 (真正多人云端同步局)
+     */
+    startMahjongOnlineGame(roomId, isHost = false) {
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const waitingScr = document.getElementById('waitingScreen');
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+
+        if (lobbyScr) { lobbyScr.style.display = 'none'; lobbyScr.classList.remove('active'); }
+        if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
+        if (mahjongScr) { mahjongScr.style.display = 'flex'; mahjongScr.classList.add('active'); }
+        this.updateHeaderVisibility();
+
+        const settlementModal = document.getElementById('mahjongSettlementModal');
+        if (settlementModal) settlementModal.style.display = 'none';
+        const chowModal = document.getElementById('mahjongChowModal');
+        if (chowModal) chowModal.style.display = 'none';
+
+        this.selectedMahjongTileIndex = -1;
+
+        if (isHost) {
+            // 房主初始化麻将引擎并导出全量牌组与庄家状态
+            window.mahjongEngine.reset(false, 0);
+            const initData = window.mahjongEngine.exportState();
+            NetworkManager.sendMahjongInitState(initData);
+            NetworkManager.sendMahjongStart(roomId);
+        } else {
+            // 客户端拉取房主生成的初始牌组状态
+            NetworkManager.onMahjongInitState((initData) => {
+                if (initData && !this._mahjongOnlineInitDone) {
+                    this._mahjongOnlineInitDone = true;
+                    window.mahjongEngine.importState(initData);
+                    this.renderMahjongHandTiles();
+                    this.renderMahjongDiscards();
+                    this.renderMahjongMelds();
+                }
+            });
+        }
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
+        const players = this.gameState.players || [];
+        const mNameBottom = document.getElementById('mNameBottom');
+        const mNameRight  = document.getElementById('mNameRight');
+        const mNameTop    = document.getElementById('mNameTop');
+        const mNameLeft   = document.getElementById('mNameLeft');
+
+        const getPlayerNameAtRelativePos = (offset) => {
+            const absIdx = (mySlot + offset) % 4;
+            const p = players[absIdx];
+            return p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `AI-${absIdx + 1}`;
+        };
+
+        if (mNameBottom) mNameBottom.textContent = getPlayerNameAtRelativePos(0);
+        if (mNameRight)  mNameRight.textContent  = getPlayerNameAtRelativePos(1);
+        if (mNameTop)    mNameTop.textContent    = getPlayerNameAtRelativePos(2);
+        if (mNameLeft)   mNameLeft.textContent   = getPlayerNameAtRelativePos(3);
+
+        const dealerIdx = window.mahjongEngine.dealer;
+        const relativeDealerPos = (dealerIdx - mySlot + 4) % 4;
+        const dealerTags = ['mDealerBottom', 'mDealerRight', 'mDealerTop', 'mDealerLeft'];
+        dealerTags.forEach((tagId, idx) => {
+            const el = document.getElementById(tagId);
+            if (el) el.style.display = (idx === relativeDealerPos) ? 'inline-block' : 'none';
+        });
+
+        this.renderMahjongHandTiles();
+        this.renderMahjongDiscards();
+        this.renderMahjongMelds();
+
+        const isMyTurn = (window.mahjongEngine.currentTurn === mySlot);
+        if (isMyTurn) {
+            this.updateMahjongStatusUI(`🀄 4人雀局 · 轮到你起手出牌`);
+            UIRenderer.showToast(`🎲 你是起手庄家！优先出牌`);
+            this.checkSelfActionsOnTurn();
+        } else {
+            this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+            UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
+        }
+
+        // 绑定吃/碰/杠/胡/过动作按钮
+        this.bindMahjongActionButtons();
+    }
 
     /**
      * 开启正宗 4 人围桌游鲸麻将模式 (单机 AI / 线上)
@@ -3260,7 +3342,7 @@ class GameEngineController {
 
         NetworkManager.onMahjongStart(() => {
             if (!NetworkManager.isHost) {
-                this.startMahjongAiMode();
+                this.startMahjongOnlineGame(roomId, false);
             }
         });
 
