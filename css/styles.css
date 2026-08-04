@@ -5217,9 +5217,9 @@ body.theme-gomoku .overlay-screen {
    🀄 游鲸麻将 桃木沉香 + 翠绿国粹 专属主题 (Peachwood & Jade Emerald Mahjong Theme)
    ========================================================================== */
 
-/* 全局桃木暗红主题背景 */
+/* 全局偏黄琥珀桃木主题网页背景 */
 body.theme-mahjong {
-    background: linear-gradient(135deg, #1c0a07 0%, #3d100a 40%, #170705 100%) !important;
+    background: linear-gradient(135deg, #2b1007 0%, #591e0a 35%, #852e12 65%, #1c0803 100%) !important;
 }
 
 /* 顶部大厅导航按键 绝对定位右上角 NEW 小角标 (防止换行拉高按键) */
@@ -5323,11 +5323,11 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 游鲸麻将 主大厅卡片 桃木质感与精细微阴影 */
+/* 游鲸麻将 主大厅卡片 琥珀桃木质感与精细微阴影 */
 .lobby-card.theme-mahjong {
-    border: 1px solid rgba(245, 158, 11, 0.3) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(139, 58, 43, 0.25) !important;
-    background: rgba(28, 10, 7, 0.95) !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.4) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(180, 83, 9, 0.35) !important;
+    background: rgba(38, 14, 6, 0.96) !important;
 }
 
 .mode-card.primary-card.mahjong-theme {
@@ -5359,10 +5359,10 @@ body.theme-mahjong {
     transform: translateY(-2px);
 }
 
-/* 桃木色主大厅 Header (富贵金边 + 沉香木纹) */
+/* 暖黄琥珀桃木色主大厅 Header (富贵金边 + 沉香木纹) */
 .lobby-header.peachwood-header {
-    background: linear-gradient(135deg, #4a150e 0%, #6e271c 45%, #8b3a2b 75%, #3d100a 100%);
-    border-bottom: 1.5px solid rgba(245, 158, 11, 0.35);
+    background: linear-gradient(135deg, #6e240c 0%, #9a3412 40%, #b45309 75%, #431707 100%) !important;
+    border-bottom: 1.5px solid rgba(245, 158, 11, 0.45);
     position: relative;
     overflow: hidden;
     box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.4);
