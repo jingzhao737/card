@@ -5663,34 +5663,34 @@ body.theme-mahjong #lobbyScreen {
     z-index: 20;
 }
 
-/* 其他三方盖牌背牌 (3D 翡翠背) */
+/* 其他三方盖牌背牌 (3D 翡翠背：小巧精致 + 贴紧排列) */
 .standing-tiles-row.top-row {
     display: flex;
-    gap: 2px;
+    gap: 1px;
 }
 
 .standing-tile-top {
-    width: 18px;
-    height: 26px;
+    width: 14px;
+    height: 20px;
     background: linear-gradient(to bottom, #10b981, #047857);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    box-shadow: 0 2px 0 #022c22;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 1.5px;
+    box-shadow: 0 1.5px 0 #022c22;
 }
 
 .standing-tiles-col {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .standing-tile-left, .standing-tile-right {
-    width: 24px;
-    height: 16px;
+    width: 20px;
+    height: 13px;
     background: linear-gradient(to right, #10b981, #047857);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    box-shadow: 2px 0 0 #022c22;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 1.5px;
+    box-shadow: 1.5px 0 0 #022c22;
 }
 
 /* 4 方弃牌与中央罗盘 (精致规整 6 张一行/一列自动换行) */
@@ -5720,7 +5720,7 @@ body.theme-mahjong #lobbyScreen {
 }
 
 .discard-grid.grid-bottom {
-    bottom: 2px;
+    bottom: -22px; /* 我方出的牌向下方移近，贴近我方 */
     left: 50%;
     transform: translateX(-50%);
     max-width: 108px;
@@ -5728,7 +5728,7 @@ body.theme-mahjong #lobbyScreen {
 }
 
 .discard-grid.grid-top {
-    top: 2px;
+    top: -22px; /* 对家出的牌向上方移近 */
     left: 50%;
     transform: translateX(-50%);
     max-width: 108px;
