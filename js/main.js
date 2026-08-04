@@ -2061,12 +2061,16 @@ class GameEngineController {
         if (chowModal) chowModal.style.display = 'none';
 
         this.selectedMahjongTileIndex = -1;
+        // 每次开局都重置初始化标记，避免重开一局时客户端跳过新的初始牌组
+        this._mahjongOnlineInitDone = false;
 
         if (isHost) {
             // 房主初始化麻将引擎并导出全量牌组与庄家状态
             window.mahjongEngine.reset(false, 0);
             const initData = window.mahjongEngine.exportState();
             NetworkManager.sendMahjongInitState(initData);
+            // 清掉上一局残留的出牌动作，防止重开时客户端误导入旧状态
+            NetworkManager.clearMahjongMoves();
             NetworkManager.sendMahjongStart(roomId);
         } else {
             // 客户端拉取房主生成的初始牌组状态
@@ -2082,8 +2086,9 @@ class GameEngineController {
         }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
-        const players = this.gameState.players || [];
-        const windNames = ['东', '南', '西', '北'];
+        const players = this.latestLobbyPlayers || this.gameState.players || [];
+        // 引擎固定座位风向：0=南(我方/房主)、1=东(右家)、2=北(对家)、3=西(左家)
+        const windNames = ['南', '东', '北', '西'];
 
         const mNameBottom = document.getElementById('mNameBottom');
         const mNameRight  = document.getElementById('mNameRight');
@@ -2130,6 +2135,15 @@ class GameEngineController {
             this.updateMahjongStatusUI(`🀄 4人雀局 · 轮到你起手出牌`);
             UIRenderer.showToast(`🎲 你是起手庄家！优先出牌`);
             this.checkSelfActionsOnTurn();
+        } else if (NetworkManager.isHost) {
+            // 庄家为 AI 座位时，由房主驱动 AI 起手出牌（广播后非房主客户端同步跟上）
+            this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+            UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
+            const currDealer = window.mahjongEngine.currentTurn;
+            const dealerPlayer = this.gameState.players[currDealer];
+            if (dealerPlayer && dealerPlayer.isAi) {
+                this.triggerAiTurnLoop();
+            }
         } else {
             this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
             UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
@@ -2143,6 +2157,12 @@ class GameEngineController {
                 this.renderMahjongHandTiles();
                 this.renderMahjongDiscards();
                 this.renderMahjongMelds();
+
+                // 远程玩家胡牌 / 流局：全员同步弹出结算面板
+                if (window.mahjongEngine.isGameOver) {
+                    this.showMahjongSettlement(window.mahjongEngine.winner, null);
+                    return;
+                }
 
                 const relativeSender = (move.senderSlot - mySlot + 4) % 4;
                 if (move.discardedTile) {
@@ -2164,8 +2184,9 @@ class GameEngineController {
                     this.updateMahjongStatusUI(`🀄 4人雀局 · ${seatLabels[relativeTurn] || '对方'}思考出牌中...`);
                 }
 
-                // 如果下一个轮到 AI 出牌且我是房主，由房主机器驱动 AI 做出决定
-                if (NetworkManager.isHost && this.gameState.players[currTurn] && this.gameState.players[currTurn].isAi) {
+                // 如果下一个轮到 AI 出牌且我是房主，由房主机器驱动 AI 做出决定（跳过 AI 广播回声，避免重复驱动）
+                const senderIsAi = this.gameState.players[move.senderSlot] ? this.gameState.players[move.senderSlot].isAi : false;
+                if (NetworkManager.isHost && !senderIsAi && this.gameState.players[currTurn] && this.gameState.players[currTurn].isAi) {
                     this.triggerAiTurnLoop();
                 }
             }
@@ -2616,6 +2637,11 @@ class GameEngineController {
             const aiMoveIdx = engine.getBestAiMove(aiIdx);
             const aiRes = engine.discardTile(aiIdx, aiMoveIdx);
 
+            // 广播 AI 出牌与最新全量牌桌状态至 Firebase 云端（保证非房主客户端同步）
+            if (!NetworkManager.isAiMode && NetworkManager.roomId && aiRes && aiRes.discarded) {
+                NetworkManager.sendMahjongMove(aiIdx, aiMoveIdx, aiRes.discarded, engine.exportState());
+            }
+
             if (typeof SoundEngine !== 'undefined') {
                 if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
                 else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
@@ -2848,6 +2874,7 @@ class GameEngineController {
      * 展示麻将奢华结算面板
      */
     showMahjongSettlement(winnerIdx, huDetails) {
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const modal = document.getElementById('mahjongSettlementModal');
         const iconEl = document.getElementById('mahjongWinIcon');
         const titleEl = document.getElementById('mahjongWinTitle');
@@ -2864,7 +2891,7 @@ class GameEngineController {
             if (subTitleEl) subTitleEl.textContent = '牌墙已摸完，无家胡牌';
             if (fanBadgeEl) fanBadgeEl.textContent = '平局 0番';
             if (fanListEl) fanListEl.textContent = '· 荒庄流局';
-        } else if (winnerIdx === 0) {
+        } else if (winnerIdx === mySlot) {
             // 我方大胜！
             if (iconEl) iconEl.textContent = '🏆';
             if (titleEl) titleEl.textContent = '胡牌大吉';
@@ -2874,10 +2901,12 @@ class GameEngineController {
             if (fanListEl) fanListEl.innerHTML = details.details.map(d => `<span>· ${d}</span>`).join('<br>');
         } else {
             // 其他 AI 胡牌
-            const seatNames = ['我方玩家', 'AI 东家', 'AI 北家', 'AI 西家'];
+            const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
+            const winnerP = seatPlayers[winnerIdx];
+            const winnerName = winnerP ? (winnerP.isAi ? `🤖 ${winnerP.name}` : winnerP.name) : `玩家${winnerIdx + 1}`;
             if (iconEl) iconEl.textContent = '🀄';
             if (titleEl) titleEl.textContent = '对局结束';
-            if (subTitleEl) subTitleEl.textContent = `${seatNames[winnerIdx]} 抢先胡牌！`;
+            if (subTitleEl) subTitleEl.textContent = `${winnerName} 抢先胡牌！`;
             if (fanBadgeEl) fanBadgeEl.textContent = '推倒胡';
             if (fanListEl) fanListEl.textContent = '· 对方胡牌';
         }
@@ -3509,6 +3538,8 @@ class GameEngineController {
      */
     onReceiveLobbySync(lobbyData) {
         if (!lobbyData || !lobbyData.players) return;
+        // 缓存最新大厅玩家列表，供麻将牌桌座位昵称/风向显示使用
+        this.latestLobbyPlayers = lobbyData.players || null;
         const myIndex = NetworkManager.myPlayerIndex;
 
         const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';

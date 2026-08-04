@@ -773,6 +773,8 @@ class P2PManager {
 
     onMahjongMove(callback) {
         if (!this.roomRef) return;
+        // 先解除旧监听，避免重开一局时监听器累积/旧闭包误判座位
+        this.roomRef.child('mahjongLastMove').off();
         this.roomRef.child('mahjongLastMove').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
@@ -816,6 +818,7 @@ class P2PManager {
 
     onMahjongStart(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('mahjongStart').off();
         this.roomRef.child('mahjongStart').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
@@ -829,6 +832,7 @@ class P2PManager {
 
     onMahjongInitState(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('mahjongInitData').off();
         this.roomRef.child('mahjongInitData').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
