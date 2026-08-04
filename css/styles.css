@@ -5249,12 +5249,12 @@ body.theme-mahjong {
     font-weight: 900 !important;
 }
 
-/* 3. 游鲸麻将：正宗沉香桃木红+描金主题高亮 */
+/* 3. 游鲸麻将：暖黄琥珀桃木+描金主题高亮 (偏黄琥珀桃木) */
 #btnNavMahjong.active {
-    background: linear-gradient(135deg, #8b261b 0%, #6e1e14 50%, #4a130c 100%) !important;
-    color: #fef08a !important;
+    background: linear-gradient(135deg, #d97706 0%, #a13b12 50%, #6e1e14 100%) !important;
+    color: #fffbeb !important;
     border-color: #f59e0b !important;
-    box-shadow: 0 4px 16px rgba(139, 38, 27, 0.75), 0 0 12px rgba(245, 158, 11, 0.4) !important;
+    box-shadow: 0 4px 18px rgba(217, 119, 6, 0.65), 0 0 14px rgba(245, 158, 11, 0.5) !important;
     font-weight: 900 !important;
 }
 
@@ -5272,9 +5272,9 @@ body.theme-mahjong {
 }
 
 #btnNavMahjong:hover:not(.active) {
-    background: rgba(139, 38, 27, 0.35) !important;
-    border-color: rgba(245, 158, 11, 0.45) !important;
-    color: #fde047 !important;
+    background: rgba(217, 119, 6, 0.35) !important;
+    border-color: rgba(245, 158, 11, 0.5) !important;
+    color: #fef08a !important;
 }
 
 .badge-corner-new {
