@@ -2821,13 +2821,6 @@ class GameEngineController {
             }
         }
 
-        // 识别五子棋 1v1 vs 斗地主 3人 模式
-        const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
-        if (isGomoku) {
-            NetworkManager.gameType = 'GOMOKU';
-            this.activeGameType = 'GOMOKU';
-        }
-
         // 初始化房主 slot0
         const nick = NetworkManager.nickname || '房主';
         const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
@@ -2842,14 +2835,43 @@ class GameEngineController {
 
         const connectedCount = document.getElementById('connectedCount');
         const slot2 = document.getElementById('slot2');
+        const slot3 = document.getElementById('slot3');
         const btnStart = document.getElementById('btnStartGame');
         const btnAi = document.getElementById('btnStartWithAi');
 
-        if (isGomoku) {
+        const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
+        const isGomoku  = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
+
+        if (isMahjong) {
+            NetworkManager.gameType = 'MAHJONG';
+            this.activeGameType = 'MAHJONG';
+            if (connectedCount) {
+                connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4 (差人自动补AI)</span>';
+            }
+            if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'flex';
+
+            this._fillSlotWithAi(1);
+            this._fillSlotWithAi(2);
+            this._fillSlotWithAi(3);
+            const slotName1 = document.getElementById('slotName1');
+            const slotName2 = document.getElementById('slotName2');
+            const slotName3 = document.getElementById('slotName3');
+            if (slotName1) slotName1.textContent = 'AI 雀圣 1';
+            if (slotName2) slotName2.textContent = 'AI 雀圣 2';
+            if (slotName3) slotName3.textContent = 'AI 雀圣 3';
+
+            if (btnStart) {
+                btnStart.style.display = 'block';
+                btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启 4 人麻将对局';
+            }
+            if (btnAi) btnAi.style.display = 'none';
+        } else if (isGomoku) {
             if (connectedCount) {
                 connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
             }
             if (slot2) slot2.style.display = 'none'; // 五子棋仅需 1 名对手
+            if (slot3) slot3.style.display = 'none';
 
             this._fillSlotWithAi(1);
             const slotName1 = document.getElementById('slotName1');
@@ -2867,6 +2889,7 @@ class GameEngineController {
                 connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
             }
             if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'none';
 
             this._fillSlotWithAi(1);
             this._fillSlotWithAi(2);
