@@ -5992,9 +5992,11 @@ body.theme-mahjong #lobbyScreen {
     justify-content: center;
 }
 .m-face.tiao-1 .sparrow {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     line-height: 1;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+    color: #15803d !important;
+    font-weight: 900;
+    filter: invert(30%) sepia(95%) saturate(700%) hue-rotate(95deg) brightness(85%) contrast(125%) drop-shadow(0 1px 1.5px rgba(0,0,0,0.6)) !important;
 }
 .m-face.tiao .bar {
     width: 2.8px;
