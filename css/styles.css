@@ -5518,8 +5518,8 @@ body.theme-mahjong #lobbyScreen {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 16px 10px 10px 10px;
-    padding-top: max(18px, env(safe-area-inset-top));
+    padding: 24px 10px 10px 10px;
+    padding-top: max(28px, env(safe-area-inset-top));
     padding-bottom: max(10px, env(safe-area-inset-bottom));
     box-sizing: border-box;
     overflow: hidden;
@@ -5540,28 +5540,31 @@ body.theme-mahjong #lobbyScreen {
     padding: 2px 0;
 }
 
-/* 顶部导航 Bar (增加顶部向下空隙，避开手机刘海/状态栏) */
+/* 顶部对局状态 Bar (纯粹居中，充裕留出 28px+ 刘海空隙) */
 .mahjong-top-bar {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 6px 10px 6px;
-    margin-top: 4px;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 6px 12px 6px;
+    margin-top: 6px;
     flex-shrink: 0;
     z-index: 50;
 }
 
-.btn-mahjong-nav-back, .btn-mahjong-nav-rematch {
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #f1f5f9;
-    padding: 6px 14px;
-    border-radius: 10px;
-    font-size: 0.78rem;
+.mahjong-turn-status.top-status {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.84rem;
     font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    color: #34d399;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .btn-mahjong-nav-rematch {
