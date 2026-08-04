@@ -955,7 +955,7 @@ class AudioSynth {
     }
 
     /**
-     * 播放吃牌配音 (sound/chi.mp3)
+     * 播放吃牌配音 (sound/chi.mp3 - 1.2倍速)
      */
     playMahjongChow() {
         if (!this.enabled) return;
@@ -965,6 +965,7 @@ class AudioSynth {
             try {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.mahjongChowBuffer;
+                source.playbackRate.value = 1.2;
                 const gainNode = this.ctx.createGain();
                 gainNode.gain.value = 1.0;
                 source.connect(gainNode);
@@ -979,6 +980,7 @@ class AudioSynth {
             try {
                 const clone = el.cloneNode(true);
                 clone.volume = 1.0;
+                clone.playbackRate = 1.2;
                 const p = clone.play();
                 if (p !== undefined) p.then(() => {}).catch(() => {});
                 return;
@@ -988,13 +990,14 @@ class AudioSynth {
         try {
             const audio = new Audio('sound/chi.mp3');
             audio.volume = 1.0;
+            audio.playbackRate = 1.2;
             const p = audio.play();
             if (p !== undefined) p.catch(() => {});
         } catch (e) {}
     }
 
     /**
-     * 播放碰牌配音 (sound/peng.mp3)
+     * 播放碰牌配音 (sound/peng.mp3 - 1.2倍速)
      */
     playMahjongPong() {
         if (!this.enabled) return;
@@ -1004,6 +1007,7 @@ class AudioSynth {
             try {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.mahjongPongBuffer;
+                source.playbackRate.value = 1.2;
                 const gainNode = this.ctx.createGain();
                 gainNode.gain.value = 1.0;
                 source.connect(gainNode);
@@ -1018,6 +1022,7 @@ class AudioSynth {
             try {
                 const clone = el.cloneNode(true);
                 clone.volume = 1.0;
+                clone.playbackRate = 1.2;
                 const p = clone.play();
                 if (p !== undefined) p.then(() => {}).catch(() => {});
                 return;
@@ -1027,13 +1032,14 @@ class AudioSynth {
         try {
             const audio = new Audio('sound/peng.mp3');
             audio.volume = 1.0;
+            audio.playbackRate = 1.2;
             const p = audio.play();
             if (p !== undefined) p.catch(() => {});
         } catch (e) {}
     }
 
     /**
-     * 播放杠牌配音 (sound/gang.mp3)
+     * 播放杠牌配音 (sound/gang.mp3 - 1.2倍速)
      */
     playMahjongKong() {
         if (!this.enabled) return;
@@ -1043,6 +1049,7 @@ class AudioSynth {
             try {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.mahjongKongBuffer;
+                source.playbackRate.value = 1.2;
                 const gainNode = this.ctx.createGain();
                 gainNode.gain.value = 1.0;
                 source.connect(gainNode);
@@ -1057,6 +1064,7 @@ class AudioSynth {
             try {
                 const clone = el.cloneNode(true);
                 clone.volume = 1.0;
+                clone.playbackRate = 1.2;
                 const p = clone.play();
                 if (p !== undefined) p.then(() => {}).catch(() => {});
                 return;
@@ -1066,6 +1074,7 @@ class AudioSynth {
         try {
             const audio = new Audio('sound/gang.mp3');
             audio.volume = 1.0;
+            audio.playbackRate = 1.2;
             const p = audio.play();
             if (p !== undefined) p.catch(() => {});
         } catch (e) {}
