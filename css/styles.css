@@ -5222,11 +5222,27 @@ body.theme-mahjong {
     background: linear-gradient(135deg, #1c0a07 0%, #3d100a 40%, #170705 100%) !important;
 }
 
-/* 导航按键 翠绿 Pill */
-.nav-new-pill.jade {
-    background: linear-gradient(135deg, #34d399, #10b981) !important;
-    color: #022c22 !important;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+/* 顶部大厅导航按键 绝对定位右上角 NEW 小角标 (防止换行拉高按键) */
+.game-switch-nav .game-nav-btn {
+    white-space: nowrap !important;
+    position: relative !important;
+}
+
+.badge-corner-new {
+    position: absolute;
+    top: -5px;
+    right: -2px;
+    font-size: 0.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    padding: 1.5px 5px;
+    border-radius: 6px 6px 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.6);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 10;
 }
 
 .badge-tag.jade {
