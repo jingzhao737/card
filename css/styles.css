@@ -5217,9 +5217,15 @@ body.theme-gomoku .overlay-screen {
    🀄 游鲸麻将 桃木沉香 + 翠绿国粹 专属主题 (Peachwood & Jade Emerald Mahjong Theme)
    ========================================================================== */
 
-/* 全局偏黄琥珀桃木主题网页背景 */
-body.theme-mahjong {
-    background: linear-gradient(135deg, #2b1007 0%, #591e0a 35%, #852e12 65%, #1c0803 100%) !important;
+/* 🀄 全局暖黄琥珀桃木提花背景 (Amber Yellow Peachwood Diamond Texture) */
+body.theme-mahjong,
+body.theme-mahjong .game-container {
+    background-color: #2b1007 !important;
+    background-image:
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(180, 83, 9, 0.88) 0%, rgba(89, 30, 10, 0.95) 60%, #1c0803 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23f59e0b' stroke-width='0.75' stroke-opacity='0.22'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.4' stroke-opacity='0.18'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%23fef08a' fill-opacity='0.15'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='2' cy='2' r='0.8' fill='%23fef08a' fill-opacity='0.08'/%3E%3Ccircle cx='8' cy='8' r='0.7' fill='%23fef08a' fill-opacity='0.07'/%3E%3C/svg%3E") !important;
+    background-size: cover, 36px 36px, 12px 12px !important;
 }
 
 /* 顶部大厅导航按键 绝对定位右上角 NEW 小角标 (防止换行拉高按键) */
