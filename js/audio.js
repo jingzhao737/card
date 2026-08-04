@@ -130,7 +130,7 @@ class AudioSynth {
         if (this.mahjongShuffleBuffer || this.isMahjongShuffleBufferLoading) return;
         this.isMahjongShuffleBufferLoading = true;
         try {
-            const response = await fetch('sound/mahjong-shuffle.wav');
+            const response = await fetch('sound/mahjong-shuffle.mp3');
             if (response.ok) {
                 const arrayBuffer = await response.arrayBuffer();
                 if (this.ctx) {
@@ -876,7 +876,7 @@ class AudioSynth {
 
         // 备用方案 2: 动态 Audio 实例
         try {
-            const audio = new Audio('sound/mahjong-shuffle.wav');
+            const audio = new Audio('sound/mahjong-shuffle.mp3');
             audio.volume = 0.95;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
