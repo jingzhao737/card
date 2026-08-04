@@ -922,17 +922,19 @@ class GameEngineController {
         if (tabBarInfo) tabBarInfo.addEventListener('click', () => switchProtrudingTab(true));
         if (tabBarStats) tabBarStats.addEventListener('click', () => switchProtrudingTab(false));
 
-        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU vs MAHJONG 分流)
+        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU vs MAHJONG 分流广播)
         const _btnStartGame = document.getElementById('btnStartGame');
         if (_btnStartGame) {
             _btnStartGame.addEventListener('click', () => {
                 const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
                 if (isMahjong) {
+                    NetworkManager.sendMahjongStart(NetworkManager.roomId);
                     this.startMahjongAiMode();
                 } else if (isGomoku) {
                     const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
                     if (hasSecondPlayer) {
+                        NetworkManager.sendGomokuStart(NetworkManager.roomId);
                         this.startGomokuOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
                     } else {
                         // 如果没有其他真人，自动补齐 AI 棋圣开局
@@ -3226,6 +3228,19 @@ class GameEngineController {
         if (btnGoHome) btnGoHome.style.display = 'inline-flex';
         const menuLeaveBtn2 = document.getElementById('menuBtnLeaveRoom');
         if (menuLeaveBtn2) menuLeaveBtn2.style.display = 'flex';
+
+        // 客户端监听房主开启五子棋 / 麻将对局信号，全员同步进入游戏！
+        NetworkManager.onGomokuStart(() => {
+            if (!NetworkManager.isHost) {
+                this.startGomokuOnlineGame(roomId, false);
+            }
+        });
+
+        NetworkManager.onMahjongStart(() => {
+            if (!NetworkManager.isHost) {
+                this.startMahjongAiMode();
+            }
+        });
 
         UIRenderer.showToast('已进入房间，等待房主开始游戏...');
     }

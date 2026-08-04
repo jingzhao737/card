@@ -774,6 +774,38 @@ class P2PManager {
         if (!this.roomRef) return;
         this.roomRef.child('mahjongLastMove').remove();
     }
+
+    sendGomokuStart(roomId) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuStart').set({
+            ts: Date.now(),
+            hostNick: this.nickname
+        });
+    }
+
+    onGomokuStart(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuStart').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendMahjongStart(roomId) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongStart').set({
+            ts: Date.now(),
+            hostNick: this.nickname
+        });
+    }
+
+    onMahjongStart(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongStart').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
 }
 
 const NetworkManager = new P2PManager();
