@@ -95,9 +95,10 @@ body.theme-gomoku .app-header {
     border-bottom: 1px solid rgba(52, 211, 153, 0.3) !important;
 }
 
-/* 🀄 国粹翡翠金纹主题：游鲸麻将专属全局大背景（带菱形网格）与 Header */
+/* 🀄 国粹翡翠金纹主题：游鲸麻将专属全局大背景（带菱形网格外壳）与 Header */
 body.theme-mahjong,
-body.theme-mahjong .game-container {
+body.theme-mahjong .game-container,
+body.theme-mahjong #lobbyScreen {
     background-color: #031c15 !important;
     background-image:
         radial-gradient(ellipse 85% 65% at 50% 45%, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 60%, #01140e 100%),
@@ -5237,7 +5238,8 @@ body.theme-gomoku .overlay-screen {
 
 /* 🀄 全局深邃帝王墨绿暗金国粹背景 (Deep Imperial Jade Dark Emerald & Gold Diamond Texture) */
 body.theme-mahjong,
-body.theme-mahjong .game-container {
+body.theme-mahjong .game-container,
+body.theme-mahjong #lobbyScreen {
     background-color: #031c15 !important;
     background-image:
         radial-gradient(ellipse 85% 65% at 50% 45%, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 60%, #01140e 100%),
