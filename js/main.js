@@ -2007,6 +2007,13 @@ class GameEngineController {
     /**
      * 开启单机 AI 游鲸麻将切磋模式
      */
+    /* ============================================================
+       🀄 游鲸麻将 4人围桌 UI 控制与交互逻辑 (4-Player Table Mahjong UI)
+       ============================================================ */
+
+    /**
+     * 开启正宗 4 人围桌游鲸麻将模式 (单机 AI / 线上)
+     */
     startMahjongAiMode() {
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
@@ -2019,37 +2026,37 @@ class GameEngineController {
 
         const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
 
-        // 初始化麻将引擎 (单机 AI 模式，我方固定为 0)
+        // 初始化 4 人麻将引擎 (我方 Seat 0 / 南)
         window.mahjongEngine.reset(true, 0);
 
-        // 设置玩家卡片
-        const nameLeft = document.getElementById('mNameLeft');
-        const roleLeft = document.getElementById('mRoleLeft');
-        if (nameLeft) nameLeft.textContent = nick;
-        if (roleLeft) roleLeft.textContent = '东家 (1000分)';
-
-        const nameRight = document.getElementById('mNameRight');
-        const roleRight = document.getElementById('mRoleRight');
-        if (nameRight) nameRight.textContent = 'AI 雀王';
-        if (roleRight) roleRight.textContent = '南家 (1000分)';
+        // 设置 4 个座位玩家信息
+        const mNameBottom = document.getElementById('mNameBottom');
+        if (mNameBottom) mNameBottom.textContent = nick;
 
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
-        this.updateMahjongStatusUI('🀄 东风圈 · 轮到你出牌');
-        UIRenderer.showToast('🀄 游鲸麻将对局开始！你是东家先手出牌');
+        this.updateMahjongStatusUI('🀄 4人雀神对决 · 庄家先手出牌');
+        UIRenderer.showToast('🀄 4人正宗麻将对局开始！你是庄家先手出牌');
+
+        // 绑定底栏与吃碰按键
+        const btnBack = document.getElementById('btnMahjongBackLobby');
+        if (btnBack) btnBack.onclick = () => this.resetToLobby();
+
+        const btnRematch = document.getElementById('btnMahjongRematch');
+        if (btnRematch) btnRematch.onclick = () => this.startMahjongAiMode();
     }
 
     /**
-     * 渲染我方玩家手牌区 (象牙白面 + 翡翠绿背)
+     * 渲染我方及另外 3 方手牌
      */
     renderMahjongHandTiles() {
         const container = document.getElementById('mahjongHandTilesContainer');
         if (!container || !window.mahjongEngine) return;
 
         container.innerHTML = '';
-        const hand = window.mahjongEngine.hands[0] || [];
+        const myHand = window.mahjongEngine.hands[0] || [];
 
-        hand.forEach((tile, index) => {
+        myHand.forEach((tile, index) => {
             const card = document.createElement('div');
             card.className = 'mahjong-tile-card';
             card.dataset.index = index;
@@ -2065,54 +2072,46 @@ class GameEngineController {
     }
 
     /**
-     * 渲染弃牌堆
+     * 渲染 4 方弃牌堆
      */
     renderMahjongDiscards() {
-        const container = document.getElementById('mahjongDiscardArea');
-        if (!container || !window.mahjongEngine) return;
+        const engine = window.mahjongEngine;
+        if (!engine) return;
 
-        container.innerHTML = '';
-        const discards0 = window.mahjongEngine.discards[0] || [];
-        const discards1 = window.mahjongEngine.discards[1] || [];
-        const allDiscards = [...discards0, ...discards1];
-
-        allDiscards.forEach(t => {
-            const tile = document.createElement('div');
-            tile.className = 'discard-tile';
-            tile.textContent = t.name;
-            container.appendChild(tile);
-        });
+        const rowBottom = document.getElementById('discardsBottom');
+        if (rowBottom) {
+            rowBottom.innerHTML = (engine.discards[0] || []).map(t => `<span class="discard-chip">${t.name}</span>`).join('');
+        }
     }
 
     /**
-     * 更新麻将对局状态指示
+     * 更新 3D 局风罗盘与当前出牌回合指示
      */
     updateMahjongStatusUI(msg) {
         const textEl = document.getElementById('mahjongTurnText');
         if (textEl) textEl.textContent = msg;
 
-        const pillLeft = document.getElementById('mahjongPlayerLeft');
-        const pillRight = document.getElementById('mahjongPlayerRight');
         const engine = window.mahjongEngine;
+        if (!engine) return;
 
-        if (pillLeft && pillRight && engine) {
-            if (engine.currentTurn === 0) {
-                pillLeft.classList.add('turn-active');
-                pillRight.classList.remove('turn-active');
-            } else {
-                pillRight.classList.add('turn-active');
-                pillLeft.classList.remove('turn-active');
+        // 亮起当前出牌方风向
+        const winds = ['windSouth', 'windEast', 'windNorth', 'windWest'];
+        winds.forEach((wId, idx) => {
+            const el = document.getElementById(wId);
+            if (el) {
+                if (engine.currentTurn === idx) el.classList.add('active');
+                else el.classList.remove('active');
             }
-        }
+        });
     }
 
     /**
-     * 处理我方点击手牌打牌出牌
+     * 我方打牌与 4 人 AI 顺序轮转
      */
     handleMahjongTileDiscard(tileIndex) {
         const engine = window.mahjongEngine;
         if (!engine || engine.isGameOver || engine.currentTurn !== 0) {
-            UIRenderer.showToast('⏳ 🤖 AI 雀王思考中，请稍候...');
+            UIRenderer.showToast('⏳ 正在等待其他玩家出牌...');
             return;
         }
 
@@ -2132,12 +2131,24 @@ class GameEngineController {
             return;
         }
 
-        // 切换到 AI 思考打牌
-        this.updateMahjongStatusUI('🤖 AI 雀王思考中...');
+        // 自动触发 3 家 AI 依序打牌 (1 -> 2 -> 3 -> 0)
+        this.triggerAiTurnLoop();
+    }
+
+    /**
+     * 3 家 AI 依序打牌循环
+     */
+    triggerAiTurnLoop() {
+        const engine = window.mahjongEngine;
+        if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
+
+        const aiIdx = engine.currentTurn;
+        this.updateMahjongStatusUI(`🤖 AI 座位 ${aiIdx} 思考打牌中...`);
+
         setTimeout(() => {
-            if (engine.isGameOver) return;
-            const aiMoveIdx = engine.getBestAiMove();
-            const aiRes = engine.discardTile(1, aiMoveIdx);
+            if (engine.isGameOver || engine.currentTurn === 0) return;
+            const aiMoveIdx = engine.getBestAiMove(aiIdx);
+            const aiRes = engine.discardTile(aiIdx, aiMoveIdx);
 
             if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) {
                 SoundEngine.playCardPlaySound();
@@ -2149,10 +2160,12 @@ class GameEngineController {
             if (aiRes && aiRes.isGameOver) {
                 UIRenderer.showToast('🤝 牌墙摸完，流局平局！');
                 this.updateMahjongStatusUI('流局平局 · 对局结束');
+            } else if (engine.currentTurn !== 0) {
+                this.triggerAiTurnLoop();
             } else {
                 this.updateMahjongStatusUI('🀄 轮到你出牌');
             }
-        }, 800);
+        }, 600);
     }
 
     /**
