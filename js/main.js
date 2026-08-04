@@ -3229,6 +3229,28 @@ class GameEngineController {
         const menuLeaveBtn2 = document.getElementById('menuBtnLeaveRoom');
         if (menuLeaveBtn2) menuLeaveBtn2.style.display = 'flex';
 
+        // 根据 gameType 动态呈现或隐去槽位 (五子棋 2 人、斗地主 3 人、麻将 4 人)
+        const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
+        const isMahjong = (gameType === 'MAHJONG');
+        const isGomoku  = (gameType === 'GOMOKU');
+        const connectedCount = document.getElementById('connectedCount');
+        const slot2 = document.getElementById('slot2');
+        const slot3 = document.getElementById('slot3');
+
+        if (isMahjong) {
+            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4</span>';
+            if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'flex';
+        } else if (isGomoku) {
+            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+            if (slot2) slot2.style.display = 'none';
+            if (slot3) slot3.style.display = 'none';
+        } else {
+            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
+            if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'none';
+        }
+
         // 客户端监听房主开启五子棋 / 麻将对局信号，全员同步进入游戏！
         NetworkManager.onGomokuStart(() => {
             if (!NetworkManager.isHost) {
@@ -3303,6 +3325,23 @@ class GameEngineController {
     onReceiveLobbySync(lobbyData) {
         if (!lobbyData || !lobbyData.players) return;
         const myIndex = NetworkManager.myPlayerIndex;
+
+        const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
+        const isMahjong = (gameType === 'MAHJONG');
+        const isGomoku  = (gameType === 'GOMOKU');
+        const slot2 = document.getElementById('slot2');
+        const slot3 = document.getElementById('slot3');
+
+        if (isGomoku) {
+            if (slot2) slot2.style.display = 'none';
+            if (slot3) slot3.style.display = 'none';
+        } else if (isMahjong) {
+            if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'flex';
+        } else {
+            if (slot2) slot2.style.display = 'flex';
+            if (slot3) slot3.style.display = 'none';
+        }
 
         let humanCount = 0;
         lobbyData.players.forEach((p, i) => {

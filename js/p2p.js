@@ -449,10 +449,17 @@ class P2PManager {
                     return;
                 }
 
+                const gameType = roomData.gameType || 'DOUDIZHU';
+                this.gameType = gameType;
+                if (window.GameEngine) {
+                    window.GameEngine.activeGameType = gameType;
+                }
+
                 const lobby = roomData.lobbyData || { players: [] };
                 const players = lobby.players || [];
+                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : (gameType === 'GOMOKU' ? 1 : 2);
 
-                // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3)
+                // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3, 3=玩家4)
                 let assignedSlot = -1;
 
                 // 1. 检查是否是房主 (槽位 0) 重连/加入
@@ -463,7 +470,7 @@ class P2PManager {
                     this.isHost = false;
 
                     // 2. 客户端重连：优先匹配相同 sid
-                    for (let i = 1; i < 3; i++) {
+                    for (let i = 1; i <= maxSlotIndex; i++) {
                         if (players[i] && players[i].sid === this.sessionId) {
                             assignedSlot = i;
                             break;
@@ -472,7 +479,7 @@ class P2PManager {
 
                     // 3. 客户端重连：退而求其次匹配相同 nickname (非 AI)
                     if (assignedSlot === -1) {
-                        for (let i = 1; i < 3; i++) {
+                        for (let i = 1; i <= maxSlotIndex; i++) {
                             if (players[i] && !players[i].isAi && players[i].name === nickname) {
                                 assignedSlot = i;
                                 break;
@@ -482,7 +489,7 @@ class P2PManager {
 
                     // 4. 新玩家加入：查找第一个 AI 候补槽位
                     if (assignedSlot === -1) {
-                        for (let i = 1; i < 3; i++) {
+                        for (let i = 1; i <= maxSlotIndex; i++) {
                             if (!players[i] || players[i].isAi) {
                                 assignedSlot = i;
                                 break;
