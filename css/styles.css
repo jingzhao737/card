@@ -5604,14 +5604,14 @@ body.theme-mahjong #lobbyScreen {
     overflow: hidden;
 }
 
-/* 4 人座位及头像名片 (精细 6px 小圆角) */
+/* 4 人座位及头像名片 (精细 3px 微型直角) */
 .seat-user-pill {
     display: flex;
     align-items: center;
     gap: 6px;
     background: rgba(0, 0, 0, 0.55);
     border: 1px solid rgba(52, 211, 153, 0.35);
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 3px 10px 3px 4px;
     color: #fff;
     font-size: 0.72rem;
@@ -5626,12 +5626,12 @@ body.theme-mahjong #lobbyScreen {
     transform: translateY(-8px);
 }
 
-/* 左右两侧玩家 ID 90 度旋转纵向排版 (精细 6px 小圆角) */
+/* 左右两侧玩家 ID 90 度旋转纵向排版 (精细 3px 微型直角) */
 .seat-user-pill.vertical {
     writing-mode: vertical-rl;
     text-orientation: mixed;
     padding: 8px 4px;
-    border-radius: 6px;
+    border-radius: 3px;
     letter-spacing: 1px;
 }
 
@@ -6455,11 +6455,11 @@ body.theme-mahjong #lobbyScreen {
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.95), inset 0 0 45px rgba(0, 0, 0, 0.75), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
     }
 
-    /* PC 端 4 方名片尺寸适度放大 */
+    /* PC 端 4 方名片尺寸适度放大 (精细 3px 微型直角) */
     .seat-user-pill {
         font-size: 0.85rem !important;
         padding: 5px 14px 5px 6px !important;
-        border-radius: 8px !important;
+        border-radius: 3px !important;
     }
 
     /* PC 端 4 方立牌盖牌 (北家/东家/西家) 放大 */
