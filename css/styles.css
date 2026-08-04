@@ -5620,6 +5620,12 @@ body.theme-mahjong #lobbyScreen {
     z-index: 10;
 }
 
+/* 我方 ID 信息框向上偏移拉开距离 */
+.seat-user-pill.bottom-pill {
+    margin-bottom: 8px;
+    transform: translateY(-8px);
+}
+
 /* 左右两侧玩家 ID 90 度旋转纵向排版 (精细 6px 小圆角) */
 .seat-user-pill.vertical {
     writing-mode: vertical-rl;
@@ -5835,6 +5841,14 @@ body.theme-mahjong #lobbyScreen {
 .mahjong-tile-card:hover, .mahjong-tile-card:active {
     transform: translateY(-12px);
     box-shadow: 0 8px 0 #047857, 0 12px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* 🀄 第 1 次点击高亮选中：大幅向上凸起 18px + 富贵金光边框 */
+.mahjong-tile-card.selected {
+    transform: translateY(-18px) !important;
+    border: 1.5px solid #f59e0b !important;
+    box-shadow: 0 10px 0 #047857, 0 0 16px rgba(245, 158, 11, 0.85), 0 14px 22px rgba(0, 0, 0, 0.75) !important;
+    z-index: 20 !important;
 }
 
 /* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台左右加宽 + 上下拉长 */

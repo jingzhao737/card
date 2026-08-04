@@ -2040,6 +2040,7 @@ class GameEngineController {
         if (chowModal) chowModal.style.display = 'none';
 
         // 初始化 4 人麻将引擎 (我方 Seat 0 / 南)
+        this.selectedMahjongTileIndex = -1;
         window.mahjongEngine.reset(true, 0);
 
         // 设置 4 个座位玩家信息
@@ -2201,11 +2202,26 @@ class GameEngineController {
             myHand.forEach((tile, index) => {
                 const card = document.createElement('div');
                 card.className = 'mahjong-tile-card';
+                if (this.selectedMahjongTileIndex === index) {
+                    card.classList.add('selected');
+                }
                 card.dataset.index = index;
                 card.innerHTML = this.getMahjongTileFaceHTML(tile);
 
-                card.addEventListener('click', () => {
-                    this.handleMahjongTileDiscard(index);
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.selectedMahjongTileIndex === index) {
+                        // 第 2 次点击：确认打出此牌！
+                        this.selectedMahjongTileIndex = -1;
+                        this.handleMahjongTileDiscard(index);
+                    } else {
+                        // 第 1 次点击：高亮凸起选中此牌！
+                        this.selectedMahjongTileIndex = index;
+                        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
+                            SoundEngine.playCardFlipSound();
+                        }
+                        this.renderMahjongHandTiles();
+                    }
                 });
 
                 containerBottom.appendChild(card);
