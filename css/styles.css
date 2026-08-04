@@ -4554,55 +4554,112 @@ body.theme-gomoku .overlay-screen {
     gap: 12px;
 }
 
+/* 顶部对局玩家与回合 Bar (Redesigned Modern Glassmorphism Bar) */
 .gomoku-header-bar {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(52, 211, 153, 0.25);
-    border-radius: 6px;
+    background: rgba(8, 20, 15, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(52, 211, 153, 0.28);
+    border-radius: 12px;
     padding: 8px 12px;
     box-sizing: border-box;
-}
-
-.gomoku-player-pill {
-    display: flex;
-    align-items: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     gap: 8px;
 }
 
-.gomoku-player-pill .stone-icon {
-    font-size: 1.4rem;
+/* 玩家卡片 */
+.gomoku-player-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.25s ease;
+    max-width: 38%;
+    overflow: hidden;
 }
 
+.gomoku-player-pill.white {
+    justify-content: flex-end;
+}
+
+/* 轮到落子方的卡片高亮高光 */
+.gomoku-player-pill.turn-active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 29, 21, 0.7) 100%) !important;
+    border-color: rgba(52, 211, 153, 0.6) !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.3) !important;
+    transform: scale(1.02);
+}
+
+/* 3D 迷你棋子头像 */
+.mini-stone-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.mini-stone-avatar.black {
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none;
+}
+
+.mini-stone-avatar.white {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    border: none;
+}
+
+/* 玩家文本信息 */
 .gomoku-player-pill .player-info-text {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+}
+
+.gomoku-player-pill .player-info-text.align-right {
+    text-align: right;
 }
 
 .gomoku-player-pill .p-name {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 800;
-    color: #fff;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .gomoku-player-pill .p-role {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
+    font-weight: 600;
     color: #94a3b8;
+    white-space: nowrap;
+    margin-top: 1px;
 }
 
+/* 中央对局回合指示胶囊 */
 .gomoku-turn-status {
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(52, 211, 153, 0.35);
-    border-radius: 12px;
-    padding: 4px 10px;
-    font-size: 0.75rem;
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    border-radius: 16px;
+    padding: 5px 12px;
+    font-size: 0.76rem;
     font-weight: 800;
     color: #34d399;
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    white-space: nowrap;
 }
 
 /* 15x15 五子棋盘外框 — 经典榧木/红木温润木纹棋盘 */

@@ -1724,11 +1724,28 @@ class GameEngineController {
     }
 
     /**
-     * 更新顶部对局状态指示
+     * 更新顶部对局状态指示与当前回合玩家高亮
      */
     updateGomokuStatusUI(msg) {
         const textEl = document.getElementById('gomokuTurnText');
         if (textEl) textEl.textContent = msg;
+
+        // 根据回合提示同步高亮对应玩家卡片
+        const pillBlack = document.getElementById('gomokuPlayerBlack');
+        const pillWhite = document.getElementById('gomokuPlayerWhite');
+
+        if (pillBlack && pillWhite) {
+            if (msg.includes('黑方') || msg.includes('你的回合') || msg.includes('轮到你')) {
+                pillBlack.classList.add('turn-active');
+                pillWhite.classList.remove('turn-active');
+            } else if (msg.includes('白方') || msg.includes('思考中') || msg.includes('AI')) {
+                pillWhite.classList.add('turn-active');
+                pillBlack.classList.remove('turn-active');
+            } else {
+                pillBlack.classList.remove('turn-active');
+                pillWhite.classList.remove('turn-active');
+            }
+        }
     }
 
     /**
