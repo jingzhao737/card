@@ -742,8 +742,7 @@ class GameEngineController {
         if (menuBtnHelp) {
             menuBtnHelp.addEventListener('click', () => {
                 if (navMenuDropdown) navMenuDropdown.style.display = 'none';
-                const modal = document.getElementById('cardTypeModal');
-                if (modal) modal.style.display = 'flex';
+                this.openRulesModal();
             });
         }
         if (menuBtnSound) {
@@ -1093,7 +1092,7 @@ class GameEngineController {
 
         if (cardHelpBtn && cardTypeModal) {
             cardHelpBtn.addEventListener('click', () => {
-                cardTypeModal.style.display = 'flex';
+                this.openRulesModal();
             });
             closeCardType.addEventListener('click', () => {
                 cardTypeModal.style.display = 'none';
@@ -2754,23 +2753,165 @@ class GameEngineController {
     }
 
     /**
-     * 根据当前界面 (大厅 / 游戏房) 动态切换顶部 app-header 可见性
-     * 主页大厅时彻底隐藏 app-header 导航条，进入房间或打牌时恢复显示
+     * 根据当前游戏动态拉取并展示【规则与牌型/番型说明】弹窗
+     */
+    openRulesModal() {
+        const modal = document.getElementById('cardTypeModal');
+        if (!modal) return;
+
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+        const isMahjong = (this.activeGameType === 'MAHJONG') || (mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none')) || document.body.classList.contains('theme-mahjong');
+
+        const modalTitle = modal.querySelector('.ct-title');
+        const modalBody  = modal.querySelector('.ct-body');
+
+        if (isMahjong) {
+            if (modalTitle) {
+                modalTitle.innerHTML = '<i class="fa-solid fa-square-full" style="color:#34d399;"></i> 国粹麻将规则 & 番型速查';
+            }
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div class="ct-section" style="border-color:rgba(52,211,153,0.3);">
+                        <div class="ct-section-title" style="color:#34d399;">🀄 基础胡牌与动作说明</div>
+                        <div class="ct-row">
+                            <div class="ct-item" style="min-width:110px;">
+                                <div class="ct-name" style="color:#34d399;font-size:0.85rem;font-weight:800;">推倒胡 (3n+2)</div>
+                                <div class="ct-desc">满足 4 组顺子/刻子 + 1 对将牌即可胡牌 (1番)</div>
+                            </div>
+                            <div class="ct-item" style="min-width:110px;">
+                                <div class="ct-name" style="color:#34d399;font-size:0.85rem;font-weight:800;">吃 / 碰 / 杠 / 过</div>
+                                <div class="ct-desc">可吃上家牌组顺子，可碰/杠任意家相同牌组刻子</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ct-section" style="border-color:rgba(245,158,11,0.3);">
+                        <div class="ct-section-title" style="color:#fbbf24;">🔥 高番型特色大胡</div>
+                        <div class="ct-row">
+                            <div class="ct-item" style="min-width:110px;">
+                                <div class="ct-name" style="color:#fbbf24;font-size:0.85rem;font-weight:800;">七对子 (4番)</div>
+                                <div class="ct-desc">手牌 14 张全由 7 个相同对子组成，无需顺子</div>
+                            </div>
+                            <div class="ct-item" style="min-width:110px;">
+                                <div class="ct-name" style="color:#fbbf24;font-size:0.85rem;font-weight:800;">清一色 (4番)</div>
+                                <div class="ct-desc">整副牌全由同一种花色(全万/全筒/全条)组成</div>
+                            </div>
+                            <div class="ct-item" style="min-width:110px;">
+                                <div class="ct-name" style="color:#ef4444;font-size:0.85rem;font-weight:800;">清十八 (6番)</div>
+                                <div class="ct-desc">吃碰杠 4 组同花色刻子/杠子 + 单张将牌</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ct-section" style="border-color:rgba(255,255,255,0.1);">
+                        <div class="ct-section-title" style="color:#60a5fa;">💡 摸牌与结算提示</div>
+                        <div class="ct-row">
+                            <div class="ct-item" style="width:100%;">
+                                <div class="ct-desc" style="color:#cbd5e1;line-height:1.6;font-size:0.78rem;">
+                                    • 自摸胡额外加番，放炮胡由放炮者单赔。<br>
+                                    • 暗杠与明杠可在结算时获得额外杠分收益！
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            if (modalTitle) {
+                modalTitle.innerHTML = '<i class="fa-solid fa-book-open" style="color:#ffd700;"></i> 斗地主牌型速查';
+            }
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div class="ct-section">
+                        <div class="ct-section-title">🔥 特殊牌型（无敌）</div>
+                        <div class="ct-row">
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card joker-big">大王</span><span class="ct-card joker-small">小王</span></div>
+                                <div class="ct-name">火箭</div>
+                                <div class="ct-desc">大小王合一，天下无敌</div>
+                            </div>
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">A</span><span class="ct-card">A</span><span class="ct-card">A</span><span class="ct-card">A</span></div>
+                                <div class="ct-name">炸弹</div>
+                                <div class="ct-desc">4张相同点数，可压任意普通牌型</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ct-section">
+                        <div class="ct-section-title">🃏 基础牌型</div>
+                        <div class="ct-row">
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">K</span></div>
+                                <div class="ct-name">单张</div>
+                                <div class="ct-desc">任意一张牌</div>
+                            </div>
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">8</span><span class="ct-card">8</span></div>
+                                <div class="ct-name">对子</div>
+                                <div class="ct-desc">2张相同点数</div>
+                            </div>
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">J</span><span class="ct-card">J</span><span class="ct-card">J</span></div>
+                                <div class="ct-name">三张</div>
+                                <div class="ct-desc">3张相同点数</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ct-section">
+                        <div class="ct-section-title">🚀 三带系列</div>
+                        <div class="ct-row">
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card red">5</span></div>
+                                <div class="ct-name">三带一</div>
+                                <div class="ct-desc">三张 + 任意1单张</div>
+                            </div>
+                            <div class="ct-item">
+                                <div class="ct-cards"><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card">Q</span><span class="ct-card red">7</span><span class="ct-card red">7</span></div>
+                                <div class="ct-name">三带二</div>
+                                <div class="ct-desc">三张 + 1个对子</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    /**
+     * 根据当前界面 (大厅 / 游戏房) 动态切换顶部 app-header 可见性及品牌标题名称
      */
     updateHeaderVisibility() {
         const appHeader = document.querySelector('.app-header');
         const lobbyScr = document.getElementById('lobbyScreen');
+        const mahjongScr = document.getElementById('mahjongGameScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
 
         const menuBtnHelp = document.getElementById('menuBtnCardHelp');
         const menuBtnLeave = document.getElementById('menuBtnLeaveRoom');
+        const brandTitle = document.getElementById('appHeaderBrandTitle');
 
-        const isGomokuScreen = gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none');
-        const isLobbyScreen = lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none');
+        const isMahjongScreen = mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none');
+        const isGomokuScreen  = gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none');
+        const isLobbyScreen   = lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none');
+
+        // 动态更换 Header 左上角游戏品牌标题 (游鲸斗地主 <-> 游鲸五子棋 <-> 游鲸麻将)
+        if (brandTitle) {
+            if (isMahjongScreen || (isLobbyScreen && this.activeGameType === 'MAHJONG')) {
+                brandTitle.textContent = '游鲸麻将';
+            } else if (isGomokuScreen || (isLobbyScreen && this.activeGameType === 'GOMOKU')) {
+                brandTitle.textContent = '游鲸五子棋';
+            } else {
+                brandTitle.textContent = '游鲸斗地主';
+            }
+        }
 
         // 五子棋界面或五子棋大厅时隐藏“牌型说明”
         if (menuBtnHelp) {
-            menuBtnHelp.style.display = (isGomokuScreen || this.activeGameType === 'GOMOKU') ? 'none' : 'flex';
+            menuBtnHelp.style.display = (isGomokuScreen || (isLobbyScreen && this.activeGameType === 'GOMOKU')) ? 'none' : 'flex';
         }
 
         // 非主界面时在右上角下拉菜单中显示“退出/离开房间”按钮
