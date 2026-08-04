@@ -6161,12 +6161,13 @@ body.theme-mahjong #lobbyScreen {
 }
 
 .yaoji-img {
-    width: 90% !important;
-    height: 90% !important;
+    width: 92% !important;
+    height: 92% !important;
     object-fit: contain !important;
     display: block !important;
     margin: auto !important;
-    filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.35));
+    filter: none !important;
+    border-radius: 2px !important;
     pointer-events: none;
     user-select: none;
 }
