@@ -2529,13 +2529,7 @@ class GameEngineController {
         if (num === 1) {
             return `
                 <div class="m-face tiao tiao-1">
-                    <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 2.5C12.5 2.5 9.5 4.8 9.5 8.8C9.5 10.5 10.5 12.2 12.2 13.2C9.5 14.2 5.5 18 5.5 25C5.5 33 10 40 16 40C22 40 26.5 33 26.5 25C26.5 18 22.5 14.2 19.8 13.2C21.5 12.2 22.5 10.5 22.5 8.8C22.5 4.8 19.5 2.5 16 2.5Z" fill="#15803d"/>
-                        <circle cx="13.8" cy="7.2" r="1.5" fill="#fef08a"/>
-                        <path d="M16 13.5V36" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round"/>
-                        <path d="M9.5 21.5C13 23.5 19 23.5 22.5 21.5" stroke="#f59e0b" stroke-width="2"/>
-                        <path d="M8 28.5C12.5 31 19.5 31 24 28.5" stroke="#2563eb" stroke-width="2"/>
-                    </svg>
+                    <img src="picture/yaoji.webp" class="yaoji-img" alt="幺鸡" />
                 </div>`;
         }
         if (num === 2) {

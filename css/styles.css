@@ -6160,6 +6160,17 @@ body.theme-mahjong #lobbyScreen {
     filter: drop-shadow(0 0.5px 1px rgba(0,0,0,0.35));
 }
 
+.yaoji-img {
+    width: 90% !important;
+    height: 90% !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: auto !important;
+    filter: drop-shadow(0 1px 1.5px rgba(0,0,0,0.35));
+    pointer-events: none;
+    user-select: none;
+}
+
 
 /* 4. 字牌 (红中、发财、白板、风牌) */
 .m-face.honor {
