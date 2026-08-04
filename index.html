@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=28.2">
+    <link rel="stylesheet" href="css/styles.css?v=29.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -500,6 +500,9 @@
                     </div>
                 </div>
 
+                <!-- 🀄 剩余牌墙 3D 微型立体砌牌堆 (位于剩余张数区域下方) -->
+                <div class="mahjong-visual-wall-row" id="mahjongVisualWallRow" title="剩余牌墙（即拿即销）"></div>
+
                 <!-- 🀄 国风金光动作大字报 (吃/碰/杠/胡 特效) -->
                 <div id="mahjongActionToast" class="mahjong-action-toast-banner" style="display: none;">
                     <div class="action-toast-inner" id="mahjongActionToastText">碰！</div>
@@ -507,6 +510,8 @@
 
                 <!-- 🀄 竖屏全景绒面麻将桌 (Vertical Mobile Felt Table) -->
                 <div class="vertical-mahjong-table">
+                    <!-- 🀄 开局前置洗牌摆牌 + 4家发牌动画 Overlay -->
+                    <div class="mahjong-dealing-overlay" id="mahjongDealingOverlay" style="display: none;"></div>
 
                     <!-- 1. 北家 (Top / 对家 / AI-2) -->
                     <div class="table-player-seat seat-top" id="mahjongSeatTop">

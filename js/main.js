@@ -2263,25 +2263,28 @@ class GameEngineController {
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
         this.renderMahjongMelds();
+        this.renderMahjongVisualWall();
 
-        const isMyTurn = (window.mahjongEngine.currentTurn === mySlot);
-        if (isMyTurn) {
-            this.updateMahjongStatusUI(`🀄 4人雀局 · 轮到你起手出牌`);
-            UIRenderer.showToast(`🎲 你是起手庄家！优先出牌`);
-            this.checkSelfActionsOnTurn();
-        } else if (NetworkManager.isHost) {
-            // 庄家为 AI 座位时，由房主驱动 AI 起手出牌（广播后非房主客户端同步跟上）
-            this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
-            UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
-            const currDealer = window.mahjongEngine.currentTurn;
-            const dealerPlayer = this.gameState.players[currDealer];
-            if (dealerPlayer && dealerPlayer.isAi) {
-                this.triggerAiTurnLoop();
+        this.triggerMahjongDealAnimation(() => {
+            const isMyTurn = (window.mahjongEngine.currentTurn === mySlot);
+            if (isMyTurn) {
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 轮到你起手出牌`);
+                UIRenderer.showToast(`🎲 你是起手庄家！优先出牌`);
+                this.checkSelfActionsOnTurn();
+            } else if (NetworkManager.isHost) {
+                // 庄家为 AI 座位时，由房主驱动 AI 起手出牌（广播后非房主客户端同步跟上）
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+                UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
+                const currDealer = window.mahjongEngine.currentTurn;
+                const dealerPlayer = this.gameState.players[currDealer];
+                if (dealerPlayer && dealerPlayer.isAi) {
+                    this.triggerAiTurnLoop();
+                }
+            } else {
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
+                UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
             }
-        } else {
-            this.updateMahjongStatusUI(`🀄 4人雀局 · 对方思考起手出牌中...`);
-            UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
-        }
+        });
 
         // 实时监听其他玩家在云端的打牌动作与全局牌桌同步
         NetworkManager.onMahjongMove((move) => {
@@ -2390,16 +2393,19 @@ class GameEngineController {
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
         this.renderMahjongMelds();
+        this.renderMahjongVisualWall();
 
-        if (dealerIdx === 0) {
-            this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家先手出牌`);
-            UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！优先起手`);
-            this.checkSelfActionsOnTurn();
-        } else {
-            this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家起手出牌中...`);
-            UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！由其优先起手`);
-            this.triggerAiTurnLoop();
-        }
+        this.triggerMahjongDealAnimation(() => {
+            if (dealerIdx === 0) {
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家先手出牌`);
+                UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！优先起手`);
+                this.checkSelfActionsOnTurn();
+            } else {
+                this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家起手出牌中...`);
+                UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！由其优先起手`);
+                this.triggerAiTurnLoop();
+            }
+        });
 
         // 绑定底栏与菜单按键
         const btnBack = document.getElementById('btnMahjongBackLobby');
@@ -2520,9 +2526,10 @@ class GameEngineController {
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
 
-        // 更新剩余牌墙计数器
+        // 更新剩余牌墙计数器与视觉牌墙
         const countEl = document.getElementById('mahjongWallCount');
         if (countEl) countEl.textContent = engine.wallCount;
+        this.renderMahjongVisualWall();
 
         // 1. 渲染我方 (Seat mySlot) 手牌
         const containerBottom = document.getElementById('mahjongHandTilesContainer');
@@ -2591,6 +2598,149 @@ class GameEngineController {
             }
             containerRight.innerHTML = htmlRight;
         }
+    }
+
+    /**
+     * 🀄 渲染剩余张数区域下方的 3D 视觉砌牌墙 (即拿即销动画 Stack)
+     */
+    renderMahjongVisualWall() {
+        const row = document.getElementById('mahjongVisualWallRow');
+        if (!row || !window.mahjongEngine) return;
+
+        const count = window.mahjongEngine.wallCount || 0;
+        const maxCols = 24;
+        const colCount = Math.min(maxCols, Math.max(0, Math.ceil(count / 3.5)));
+
+        let html = '';
+        for (let i = 0; i < colCount; i++) {
+            const isDouble = (i * 3.5 < count);
+            html += `<div class="wall-mini-tile-stack ${isDouble ? 'double-stack' : ''}"></div>`;
+        }
+        row.innerHTML = html;
+    }
+
+    /**
+     * 🀄 发牌动画中渐进渲染 4 家手牌 (按步数递增: 4 -> 8 -> 12 -> 13/14)
+     */
+    renderMahjongHandTilesPartial(step) {
+        const engine = window.mahjongEngine;
+        if (!engine) return;
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const myHand = engine.hands[mySlot] || [];
+        const maxTilesToRender = Math.min(myHand.length, step * 4);
+
+        const containerBottom = document.getElementById('mahjongHandTilesContainer');
+        if (containerBottom) {
+            containerBottom.innerHTML = '';
+            for (let index = 0; index < maxTilesToRender; index++) {
+                const tile = myHand[index];
+                const card = document.createElement('div');
+                card.className = 'mahjong-tile-card';
+                card.innerHTML = this.getMahjongTileFaceHTML(tile);
+                containerBottom.appendChild(card);
+            }
+        }
+
+        const topHand = engine.hands[(mySlot + 2) % 4] || [];
+        const leftHand = engine.hands[(mySlot + 3) % 4] || [];
+        const rightHand = engine.hands[(mySlot + 1) % 4] || [];
+
+        const countTop = Math.min(topHand.length, step * 4);
+        const countLeft = Math.min(leftHand.length, step * 4);
+        const countRight = Math.min(rightHand.length, step * 4);
+
+        const containerTop = document.getElementById('mahjongTilesTop');
+        if (containerTop) {
+            let html = '';
+            for (let i = 0; i < countTop; i++) html += `<div class="standing-tile-top"></div>`;
+            containerTop.innerHTML = html;
+        }
+
+        const containerLeft = document.getElementById('mahjongTilesLeft');
+        if (containerLeft) {
+            let html = '';
+            for (let i = 0; i < countLeft; i++) html += `<div class="standing-tile-left"></div>`;
+            containerLeft.innerHTML = html;
+        }
+
+        const containerRight = document.getElementById('mahjongTilesRight');
+        if (containerRight) {
+            let html = '';
+            for (let i = 0; i < countRight; i++) html += `<div class="standing-tile-right"></div>`;
+            containerRight.innerHTML = html;
+        }
+
+        this.renderMahjongVisualWall();
+    }
+
+    /**
+     * 🀄 开局前置洗牌摆牌 + 上下左右分发 4 家手牌动画
+     */
+    triggerMahjongDealAnimation(onComplete) {
+        const overlay = document.getElementById('mahjongDealingOverlay');
+        if (!overlay) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        this.isMahjongDealingAnim = true;
+
+        overlay.innerHTML = `
+            <div class="deal-banner-title">
+                <i class="fa-solid fa-rotate fa-spin"></i> 🀄 4人雀局 · 搓牌理牌分发中...
+            </div>
+            <div class="deal-wall-center-grid" id="dealCenterGrid">
+                ${Array(28).fill('<div class="deal-tile-back"></div>').join('')}
+            </div>
+        `;
+        overlay.style.display = 'flex';
+        overlay.classList.add('active');
+
+        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardSort === 'function') {
+            SoundEngine.playCardSort();
+        }
+
+        const seats = ['bottom', 'right', 'top', 'left'];
+        let step = 0;
+        const totalRounds = 4;
+
+        const dealTimer = setInterval(() => {
+            step++;
+            if (step <= totalRounds) {
+                // 4 个方向平滑飞牌动画
+                seats.forEach((seat) => {
+                    const flyingTile = document.createElement('div');
+                    flyingTile.className = `flying-deal-tile fly-to-${seat}`;
+                    overlay.appendChild(flyingTile);
+
+                    setTimeout(() => {
+                        flyingTile.classList.add('arrived');
+                        setTimeout(() => flyingTile.remove(), 200);
+                    }, 40);
+                });
+
+                if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playMahjongTile === 'function') {
+                    SoundEngine.playMahjongTile();
+                }
+
+                this.renderMahjongHandTilesPartial(step);
+            } else {
+                clearInterval(dealTimer);
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        this.isMahjongDealingAnim = false;
+                        this.renderMahjongHandTiles();
+                        this.renderMahjongDiscards();
+                        this.renderMahjongMelds();
+                        this.renderMahjongVisualWall();
+                        if (onComplete) onComplete();
+                    }, 250);
+                }, 150);
+            }
+        }, 250);
     }
 
     /**
@@ -2798,6 +2948,7 @@ class GameEngineController {
      * 我方打牌与 4 人 AI 顺序轮转
      */
     handleMahjongTileDiscard(tileIndex) {
+        if (this.isMahjongDealingAnim) return;
         const engine = window.mahjongEngine;
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (!engine || engine.isGameOver || engine.currentTurn !== mySlot) {
