@@ -1154,6 +1154,37 @@ class GameEngineController {
     }
 
     /**
+     * 重置界面并退出当前房间 (无论是人机还是玩家对局，只要无真人玩家立即删除云端房间)
+     */
+    resetToLobby() {
+        const doResetUI = () => {
+            const lobbyScr = document.getElementById('lobbyScreen');
+            const waitingScr = document.getElementById('waitingScreen');
+            const doudizhuScr = document.getElementById('gameScreen');
+            const gomokuScr = document.getElementById('gomokuGameScreen');
+            const mahjongScr = document.getElementById('mahjongGameScreen');
+
+            if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
+            if (doudizhuScr) { doudizhuScr.style.display = 'none'; doudizhuScr.classList.remove('active'); }
+            if (gomokuScr) { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
+            if (mahjongScr) { mahjongScr.style.display = 'none'; mahjongScr.classList.remove('active'); }
+
+            if (lobbyScr) { lobbyScr.style.display = 'flex'; lobbyScr.classList.add('active'); }
+
+            this.updateHeaderVisibility();
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardSort) SoundEngine.playCardSort();
+        };
+
+        if (typeof NetworkManager !== 'undefined' && NetworkManager.leaveRoom) {
+            NetworkManager.leaveRoom(() => {
+                doResetUI();
+            });
+        } else {
+            doResetUI();
+        }
+    }
+
+    /**
      * 打开个人战绩名片与排行榜弹窗 (支持每日改名一次 + 更换头像)
      */
     openStatsModal(activeTab) {

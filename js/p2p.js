@@ -150,17 +150,19 @@ class P2PManager {
                 const room = roomsMap[rId];
                 if (!room) return;
 
-                // 如果该设备是旧房间的房主 -> 直接移除旧房间
-                if (room.hostSid === this.sessionId) {
-                    console.log('[CleanRoom] 自动清除同设备的旧房主房间:', rId);
+                const players = (room.lobbyData && room.lobbyData.players) ? room.lobbyData.players : [];
+                const remainingHumans = players.filter(p => p && !p.isAi && p.sid !== this.sessionId && p.name);
+
+                // 规则：只要该房间内没有其他真人玩家了（无论是房主还是客户端退出），立即彻底销毁删除该房间！
+                if (room.hostSid === this.sessionId || remainingHumans.length === 0) {
+                    console.log('[CleanRoom] 房间内无其他真人玩家，自动销毁云端房间:', rId);
                     updatePromises.push(this.db.ref('rooms/' + rId).remove());
-                } else if (room.lobbyData && room.lobbyData.players) {
-                    // 如果该设备是旧房间的客户端 -> 将其槽位重置为 AI 候补
-                    const players = room.lobbyData.players;
+                } else {
+                    // 有其他真人玩家：仅将本设备槽位重置为 AI
                     let modified = false;
-                    for (let i = 1; i < 3; i++) {
+                    for (let i = 1; i < players.length; i++) {
                         if (players[i] && players[i].sid === this.sessionId) {
-                            console.log(`[CleanRoom] 自动清除同设备在旧房间 ${rId} 的槽位 ${i}`);
+                            console.log(`[CleanRoom] 自动重置旧房间 ${rId} 的槽位 ${i} 为 AI`);
                             players[i] = { name: `🤖 机器人 AI_${i}`, avatar: '🤖', isAi: true, isHost: false };
                             modified = true;
                         }
@@ -652,6 +654,52 @@ class P2PManager {
         } else if (window.GameEngine) {
             window.GameEngine.processChatPhrase(senderIndex, text);
         }
+    }
+
+    /**
+     * 主动退出房间 (只要房间内没有其他真人玩家了，无论人机还是对局，立即在 Firebase 销毁移除房间)
+     */
+    leaveRoom(callback) {
+        const finish = () => {
+            this.clearSession();
+            this._removeAllListeners();
+            this.roomId = null;
+            if (callback) callback();
+        };
+
+        if (!this.db || !this.roomId) {
+            finish();
+            return;
+        }
+
+        const currentRoomId = this.roomId;
+        const currentSid = this.sessionId;
+
+        this.db.ref('rooms/' + currentRoomId).once('value').then(snapshot => {
+            const roomData = snapshot.val();
+            if (!roomData) {
+                finish();
+                return;
+            }
+
+            const players = (roomData.lobbyData && roomData.lobbyData.players) ? roomData.lobbyData.players : [];
+            const remainingHumans = players.filter(p => p && !p.isAi && p.sid !== currentSid && p.name);
+
+            if (this.isHost || remainingHumans.length === 0) {
+                // 房主退出，或者房间内已无其他真人玩家 -> 瞬间彻底关掉删除房间！
+                console.log(`[LeaveRoom] 房间 ${currentRoomId} 内无其他真人玩家，立即彻底关掉销毁`);
+                this.db.ref('rooms/' + currentRoomId).remove().then(finish).catch(finish);
+            } else {
+                // 还有其他真人玩家：仅将本设备槽位重置为 AI
+                const updatedPlayers = players.map(p => {
+                    if (p && p.sid === currentSid) {
+                        return { name: '🤖 机器人 AI', avatar: '🤖', isAi: true, isHost: false };
+                    }
+                    return p;
+                });
+                this.db.ref(`rooms/${currentRoomId}/lobbyData/players`).set(updatedPlayers).then(finish).catch(finish);
+            }
+        }).catch(finish);
     }
 
     /* ====================================================================
