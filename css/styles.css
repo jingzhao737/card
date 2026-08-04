@@ -5492,6 +5492,19 @@ body.theme-mahjong {
     z-index: 10;
 }
 
+/* 左右两侧玩家 ID 90 度旋转纵向排版 (极度节省横向空间) */
+.seat-user-pill.vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    padding: 8px 4px;
+    border-radius: 12px;
+    letter-spacing: 1px;
+}
+
+.seat-user-pill.vertical .player-avatar-badge {
+    writing-mode: horizontal-tb;
+}
+
 .table-player-seat.seat-top {
     display: flex;
     flex-direction: column;
@@ -5502,23 +5515,23 @@ body.theme-mahjong {
 
 .table-player-seat.seat-left {
     position: absolute;
-    left: 6px;
-    top: 45%;
+    left: 4px;
+    top: 42%;
     transform: translateY(-50%);
     display: flex;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: center;
+    gap: 4px;
 }
 
 .table-player-seat.seat-right {
     position: absolute;
-    right: 6px;
-    top: 45%;
+    right: 4px;
+    top: 42%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: row-reverse;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: center;
+    gap: 4px;
 }
 
 .table-player-seat.seat-bottom {
