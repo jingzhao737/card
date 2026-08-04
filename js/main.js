@@ -2046,8 +2046,11 @@ class GameEngineController {
         const mNameBottom = document.getElementById('mNameBottom');
         if (mNameBottom) mNameBottom.textContent = nick;
 
-        // 设置庄家标识
+        // 设置庄家标识与先手引导
         const dealerIdx = window.mahjongEngine.dealer;
+        const dealerNames = ['你 (南风)', '右家 (东风)', '对家 (北风)', '左家 (西风)'];
+        const dealerName = dealerNames[dealerIdx];
+
         const dealerTags = ['mDealerBottom', 'mDealerRight', 'mDealerTop', 'mDealerLeft'];
         dealerTags.forEach((tagId, idx) => {
             const el = document.getElementById(tagId);
@@ -2057,8 +2060,16 @@ class GameEngineController {
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
         this.renderMahjongMelds();
-        this.updateMahjongStatusUI('🀄 4人雀神对决 · 庄家先手出牌');
-        UIRenderer.showToast('🀄 4人大众推倒胡麻将开局！你是庄家先手出牌');
+
+        if (dealerIdx === 0) {
+            this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家先手出牌`);
+            UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！优先起手`);
+            this.checkSelfActionsOnTurn();
+        } else {
+            this.updateMahjongStatusUI(`🀄 4人雀局 · 随机选定 👑【${dealerName}】庄家起手出牌中...`);
+            UIRenderer.showToast(`🎲 随机选定 👑【${dealerName}】为庄家！由其优先起手`);
+            this.triggerAiTurnLoop();
+        }
 
         // 绑定底栏与菜单按键
         const btnBack = document.getElementById('btnMahjongBackLobby');
@@ -2377,8 +2388,9 @@ class GameEngineController {
         const res = engine.discardTile(0, tileIndex);
         if (!res) return;
 
-        if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) {
-            SoundEngine.playCardPlaySound();
+        if (typeof SoundEngine !== 'undefined') {
+            if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
+            else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
         }
 
         this.animateTileThrow(res.discarded, 0);
@@ -2408,8 +2420,9 @@ class GameEngineController {
             const aiMoveIdx = engine.getBestAiMove(aiIdx);
             const aiRes = engine.discardTile(aiIdx, aiMoveIdx);
 
-            if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) {
-                SoundEngine.playCardPlaySound();
+            if (typeof SoundEngine !== 'undefined') {
+                if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
+                else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
             }
 
             if (aiRes && aiRes.discarded) {

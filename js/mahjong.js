@@ -14,8 +14,9 @@ class MahjongEngine {
     reset(isAiMode = true, playerPosition = 0) {
         this.isAiMode = isAiMode;
         this.playerPosition = playerPosition; // 我方固定座位 (0: 我方/南)
-        this.currentTurn = 0; // 0:我方(南), 1:右家(东), 2:对家(北), 3:左家(西)
-        this.dealer = 0; // 庄家 0
+        // 多人/单人对局随机掷骰分配庄家 (0:我方/南, 1:右家/东, 2:对家/北, 3:左家/西)
+        this.dealer = Math.floor(Math.random() * 4);
+        this.currentTurn = this.dealer;
         this.isGameOver = false;
         this.winner = null;
         this.huDetails = null; // 胡牌番型详情
@@ -38,10 +39,10 @@ class MahjongEngine {
 
         this.lastDrawnTile = null;
 
-        // 庄家 (Seat 0) 抓开局第 14 张牌
+        // 随机庄家抓开局第 14 张牌并优先起手出牌
         if (this.wall.length > 0) {
             const firstTile = this.wall.pop();
-            this.hands[this.currentTurn].push(firstTile);
+            this.hands[this.dealer].push(firstTile);
             this.lastDrawnTile = firstTile;
         }
 

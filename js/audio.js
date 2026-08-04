@@ -728,6 +728,76 @@ class AudioSynth {
             }
         }
     }
+
+    /**
+     * 播放国粹麻将清脆出牌/落牌碰撞音效 (Mahjong Clatter Sound)
+     * 模拟高密度玉石麻将牌落地产生的清脆回响与卡哒声 (Crisp Jade Impact + Metallic Resonant Resonance)
+     */
+    playMahjongTile() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+
+        // 1. 麻将主撞击音调 (1450Hz 清脆高音)
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(1450, now);
+        osc1.frequency.exponentialRampToValueAtTime(520, now + 0.04);
+
+        gain1.gain.setValueAtTime(0.001, now);
+        gain1.gain.linearRampToValueAtTime(0.35, now + 0.002);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.04);
+
+        // 2. 玉石余震回响 (2800Hz 极硬脆响)
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(2850, now + 0.003);
+        osc2.frequency.exponentialRampToValueAtTime(890, now + 0.035);
+
+        gain2.gain.setValueAtTime(0.001, now + 0.003);
+        gain2.gain.linearRampToValueAtTime(0.22, now + 0.005);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now + 0.003);
+        osc2.stop(now + 0.035);
+
+        // 3. 麻将牌面摩擦物理噪点
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.02);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(3200, now);
+        filter.Q.value = 3.0;
+
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.001, now);
+        noiseGain.gain.linearRampToValueAtTime(0.18, now + 0.002);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+        noise.start(now);
+    }
 }
 
 const SoundEngine = new AudioSynth();
