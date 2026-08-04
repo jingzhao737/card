@@ -3168,9 +3168,13 @@ class GameEngineController {
      */
     _fillSlotWithAi(slotIndex) {
         const aiName = `AI-${slotIndex}`;
-        this.gameState.players[slotIndex].name = aiName;
-        this.gameState.players[slotIndex].avatar = '🤖';
-        this.gameState.players[slotIndex].isAi = true;
+        if (!this.gameState.players[slotIndex]) {
+            this.gameState.players[slotIndex] = { id: slotIndex, name: aiName, hand: [], isAi: true, isHost: false, role: 'FARMER', avatar: '🤖' };
+        } else {
+            this.gameState.players[slotIndex].name = aiName;
+            this.gameState.players[slotIndex].avatar = '🤖';
+            this.gameState.players[slotIndex].isAi = true;
+        }
 
         const nameEl = document.getElementById(`slotName${slotIndex}`);
         const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
