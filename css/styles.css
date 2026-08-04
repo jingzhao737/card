@@ -5487,12 +5487,13 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 竖屏全景绒面麻将桌台 (自适应 100% 视口高度，严禁溢出越界) */
+/* 竖屏全景绒面麻将桌台 (高度微缩调优，留出舒适呼吸感) */
 .vertical-mahjong-table {
     width: 100%;
     flex: 1;
     min-height: 0;
-    max-height: 100%;
+    max-height: calc(100% - 12px);
+    margin-bottom: 6px;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
     border: 6px solid #4a150e;
     border-radius: 14px;
