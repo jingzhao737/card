@@ -1494,10 +1494,11 @@ class GameEngineController {
     }
 
     /**
-     * 播放棋盘中央开局先后手微标语 (极简克制版: 1.2秒轻柔滑入滑出)
+     * 播放棋盘中央开局先后手 苹果级奢华微标语 (1.4秒影院级微滑入滑出)
      */
     showGomokuCenterBanner(isMyTurnFirst) {
         const banner = document.getElementById('gomokuCenterBanner');
+        const badgeEl = document.getElementById('gomokuBannerBadge');
         const textEl = document.getElementById('gomokuCenterBannerText');
         if (!banner || !textEl) return;
 
@@ -1508,16 +1509,18 @@ class GameEngineController {
         banner.style.display = 'flex';
 
         if (isMyTurnFirst) {
-            textEl.textContent = '⚫ 你先手';
+            if (badgeEl) badgeEl.className = 'stone-badge black';
+            textEl.textContent = '你先手';
             textEl.className = 'black-first';
         } else {
-            textEl.textContent = '⚪ 你后手';
+            if (badgeEl) badgeEl.className = 'stone-badge white';
+            textEl.textContent = '你后手';
             textEl.className = 'white-second';
         }
 
         this._bannerTimeout = setTimeout(() => {
             banner.style.display = 'none';
-        }, 1200);
+        }, 1400);
     }
 
     /**
