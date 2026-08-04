@@ -551,6 +551,69 @@ class AuthManager {
         });
     }
 
+    /**
+     * 更新/结算玩家【知因币】资产 (支持增加正值、扣除负值，强制带零分保底保值)
+     */
+    updateCoins(deltaCoins, reason = '') {
+        if (!this.userData) return 0;
+
+        const currentCoins = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
+        let newCoins = currentCoins + deltaCoins;
+
+        // 🛡️ 零分保底法则：绝不产生负数积分
+        if (newCoins < 0) newCoins = 0;
+
+        this.userData.yinCoins = newCoins;
+
+        if (this.db && this.userData.accountKey) {
+            this.db.ref('users/' + this.userData.accountKey + '/yinCoins').set(newCoins);
+        }
+
+        this.updateUserHeaderUI();
+
+        if (reason && typeof UIRenderer !== 'undefined') {
+            const sign = deltaCoins >= 0 ? '+' : '';
+            const colorStr = deltaCoins >= 0 ? '#4cd964' : '#ff3b30';
+            UIRenderer.showToast(`🪙 知因币: <span style="color:${colorStr};font-weight:bold;">${sign}${deltaCoins}</span> (${reason})`);
+        }
+
+        return newCoins;
+    }
+
+    /**
+     * 领取破产救济金 (+100 知因币，每天限 3 次)
+     */
+    claimBankruptcyAid() {
+        if (!this.userData) {
+            if (typeof UIRenderer !== 'undefined') UIRenderer.showToast('⚠️ 请先登录账号再领取破产补助！');
+            return false;
+        }
+
+        const currentCoins = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
+        if (currentCoins >= 50) {
+            if (typeof UIRenderer !== 'undefined') UIRenderer.showToast('💡 知因币余额仍充足 (≥50)，暂无需领取破产补助');
+            return false;
+        }
+
+        const today = this.getTodayDateString();
+        const countKey = 'bankruptcyCount_' + today;
+
+        let claimCount = (this.userData[countKey] || 0);
+        if (claimCount >= 3) {
+            if (typeof UIRenderer !== 'undefined') UIRenderer.showToast('🛑 今日 3 次破产补助额度已用完，明天 0点 自动恢复！');
+            return false;
+        }
+
+        claimCount += 1;
+        this.userData[countKey] = claimCount;
+        this.updateCoins(100, `破产补助 ${claimCount}/3`);
+
+        if (this.db && this.userData.accountKey) {
+            this.db.ref('users/' + this.userData.accountKey + '/' + countKey).set(claimCount);
+        }
+        return true;
+    }
+
     /* ====================================================================
        刷新顶部栏与大厅用户信息组件
        ==================================================================== */

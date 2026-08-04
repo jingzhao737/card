@@ -1229,9 +1229,9 @@ class GameEngineController {
                 </div>
 
                 <div class="profile-grid" style="margin-top:10px;">
-                    <div class="profile-stat-box">
+                    <div class="profile-stat-box" style="cursor:pointer;" id="btnClaimBankruptcyInModal" title="点击领取破产救济 (+100 知因币)">
                         <div class="stat-val" style="color:#ffd700;">🪙 ${currentYin}</div>
-                        <div class="stat-lbl">知因币</div>
+                        <div class="stat-lbl">${currentYin < 50 ? '🆘 领破产补助(+100)' : '知因币'}</div>
                     </div>
                     <div class="profile-stat-box">
                         <div class="stat-val">${winRate}</div>
@@ -1243,6 +1243,16 @@ class GameEngineController {
                     </div>
                 </div>
             `;
+
+            // 点击领取破产救济金
+            const btnClaimBank = document.getElementById('btnClaimBankruptcyInModal');
+            if (btnClaimBank) {
+                btnClaimBank.addEventListener('click', () => {
+                    if (AuthEngine.claimBankruptcyAid()) {
+                        this.openStatsModal('MY_STATS');
+                    }
+                });
+            }
 
             // 头像点击展开/收起选择面板
             const avatarBtn = document.getElementById('btnChangeAvatar');
@@ -2008,7 +2018,6 @@ class GameEngineController {
         UIRenderer.showToast(msg);
         this.updateGomokuStatusUI(winner === 0 ? '平局 · 请点击【重来一局】' : (winner === 1 ? '黑方胜 · 请点击【重来一局】' : '白方胜 · 请点击【重来一局】'));
 
-        // 独立保存五子棋战绩记录 (区分胜、负、平局)
         const myColor = window.gomokuEngine ? window.gomokuEngine.playerColor : 1;
         if (typeof AuthEngine !== 'undefined' && AuthEngine.recordGomokuMatchResult) {
             if (winner === 0) {
@@ -2017,6 +2026,22 @@ class GameEngineController {
                 AuthEngine.recordGomokuMatchResult(true, false); // 胜利
             } else {
                 AuthEngine.recordGomokuMatchResult(false, false); // 失败
+            }
+
+            // 💰 结算五子棋【知因币】 (零分保底，PVE 25% 比例)
+            if (AuthEngine.updateCoins) {
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const ratio = isPve ? 0.25 : 1.0;
+
+                if (winner === myColor) {
+                    const totalMoves = window.gomokuEngine ? window.gomokuEngine.moveHistory.length : 20;
+                    const quickBonus = (totalMoves <= 15) ? 10 : 0;
+                    const winCoins = Math.ceil((30 + quickBonus) * ratio);
+                    AuthEngine.updateCoins(winCoins, isPve ? '五子棋切磋胜 (PVE)' : '五子棋胜 (PVP)');
+                } else if (winner !== 0) {
+                    const loseCoins = -Math.ceil(20 * ratio);
+                    AuthEngine.updateCoins(loseCoins, isPve ? '五子棋切磋负 (PVE)' : '五子棋负 (PVP)');
+                }
             }
         }
 
@@ -3008,6 +3033,22 @@ class GameEngineController {
             if (subTitleEl) subTitleEl.textContent = `${winnerName} 抢先胡牌！`;
             if (fanBadgeEl) fanBadgeEl.textContent = '推倒胡';
             if (fanListEl) fanListEl.textContent = '· 对方胡牌';
+        }
+
+        // 💰 结算麻将【知因币】 (带 PVE 25% 比例和零分保底)
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins && winnerIdx !== -1) {
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const ratio = isPve ? 0.25 : 1.0;
+            const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
+            const baseAmount = 100 * fanCount;
+
+            if (winnerIdx === mySlot) {
+                const winCoins = Math.ceil(baseAmount * ratio);
+                AuthEngine.updateCoins(winCoins, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
+            } else {
+                const loseCoins = -Math.ceil((baseAmount / 3) * ratio);
+                AuthEngine.updateCoins(loseCoins, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
+            }
         }
 
         modal.style.display = 'flex';
@@ -4552,11 +4593,25 @@ class GameEngineController {
 
                 // 战绩结算与天梯积分更新
                 if (typeof AuthEngine !== 'undefined') {
-                    const myIdx = NetworkManager.myPlayerIndex;
+                    const myIdx = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
                     const winnerRole = this.gameState.players[playerIndex].role;
                     const myRole = (this.gameState.players[myIdx]) ? this.gameState.players[myIdx].role : 'FARMER';
                     const isWin = (playerIndex === myIdx) || (winnerRole === 'FARMER' && myRole === 'FARMER');
                     AuthEngine.updateStats(isWin, myRole, 0, this.gameState.multiplier || 1);
+
+                    // 💰 结算斗地主【知因币】 (带 PVE 25% 比例和零分保底)
+                    if (AuthEngine.updateCoins) {
+                        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                        const ratio = isPve ? 0.25 : 1.0;
+                        const baseScore = 50 * (this.gameState.multiplier || 1);
+                        if (isWin) {
+                            const winAmount = Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);
+                            AuthEngine.updateCoins(winAmount, isPve ? '斗地主切磋胜 (PVE)' : '斗地主胜 (PVP)');
+                        } else {
+                            const loseAmount = -Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);
+                            AuthEngine.updateCoins(loseAmount, isPve ? '斗地主切磋负 (PVE)' : '斗地主负 (PVP)');
+                        }
+                    }
                 }
                 return;
             }
