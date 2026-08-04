@@ -2240,6 +2240,10 @@ class GameEngineController {
      * 开启正宗 4 人围桌游鲸麻将模式 (单机 AI / 线上)
      */
     startMahjongAiMode() {
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee && !AuthEngine.checkAndDeductEntryFee('MAHJONG', true)) {
+            return;
+        }
+
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const mahjongScr = document.getElementById('mahjongGameScreen');

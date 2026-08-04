@@ -581,6 +581,35 @@ class AuthManager {
     }
 
     /**
+     * 校验并扣除游戏开局【对局入场费】
+     * 五子棋: 10 币 (PVE 3 币)
+     * 斗地主: 20 币 (PVE 5 币)
+     * 麻将:   30 币 (PVE 8 币)
+     */
+    checkAndDeductEntryFee(gameType = 'DOUDIZHU', isPve = false) {
+        if (!this.userData) return true;
+
+        const currentCoins = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
+        let fee = 20;
+        if (gameType === 'GOMOKU') fee = isPve ? 3 : 10;
+        else if (gameType === 'MAHJONG') fee = isPve ? 8 : 30;
+        else fee = isPve ? 5 : 20;
+
+        if (currentCoins < fee) {
+            if (typeof UIRenderer !== 'undefined') {
+                UIRenderer.showToast(`⚠️ 知因币不足！开启对局需缴发入场费 ${fee} 币 (当前余额: ${currentCoins})`, 4000);
+            }
+            if (currentCoins < 50) {
+                this.claimBankruptcyAid();
+            }
+            return false;
+        }
+
+        this.updateCoins(-fee, `对局入场费 (-${fee}币)`);
+        return true;
+    }
+
+    /**
      * 领取破产救济金 (+100 知因币，每天限 3 次)
      */
     claimBankruptcyAid() {
