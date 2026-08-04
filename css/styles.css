@@ -5301,6 +5301,11 @@ body.theme-mahjong {
     position: relative;
     overflow: hidden;
     box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.4);
+    padding: 16px 20px 16px 26px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-align: left !important;
 }
 
 .lobby-header.peachwood-header::after {
@@ -5311,13 +5316,16 @@ body.theme-mahjong {
     pointer-events: none;
 }
 
-/* 麻将主大厅 Header 右侧 3D 实物精细挂饰 (红中/发财/八万) */
+/* 麻将主大厅 Header 右侧 3D 实物精细挂饰 (红中/发财/八万 - 靠右对齐) */
 .mahjong-tiles-decoration {
     display: flex;
     gap: 8px;
     align-items: center;
     perspective: 800px;
     padding-right: 6px;
+    margin-left: auto;
+    margin-right: 6px;
+    flex-shrink: 0;
 }
 
 .master-mahjong-tile {
