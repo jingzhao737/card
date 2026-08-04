@@ -1450,8 +1450,8 @@ class GameEngineController {
 
         const nameBlack = document.getElementById('gNameBlack');
         const nameWhite = document.getElementById('gNameWhite');
-        if (nameBlack) nameBlack.textContent = isHost ? `${NetworkManager.nickname} (黑方)` : '房主 (黑方)';
-        if (nameWhite) nameWhite.textContent = !isHost ? `${NetworkManager.nickname} (白方)` : '对手 (白方)';
+        if (nameBlack) nameBlack.textContent = isHost ? NetworkManager.nickname : '房主';
+        if (nameWhite) nameWhite.textContent = !isHost ? NetworkManager.nickname : '对手';
 
         window.gomokuEngine.reset(false, myColor); // 双人在线模式
         this.initGomokuUI();
@@ -1564,8 +1564,8 @@ class GameEngineController {
         const nick = (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
         const nameBlack = document.getElementById('gNameBlack');
         const nameWhite = document.getElementById('gNameWhite');
-        if (nameBlack) nameBlack.textContent = `${nick} (黑方)`;
-        if (nameWhite) nameWhite.textContent = 'AI 棋圣 (白方)';
+        if (nameBlack) nameBlack.textContent = nick;
+        if (nameWhite) nameWhite.textContent = 'AI 棋圣';
 
         window.gomokuEngine.reset(true, 1); // 玩家先手执黑
         this.initGomokuUI();
