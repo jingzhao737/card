@@ -2083,6 +2083,8 @@ class GameEngineController {
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
         const players = this.gameState.players || [];
+        const windNames = ['东', '南', '西', '北'];
+
         const mNameBottom = document.getElementById('mNameBottom');
         const mNameRight  = document.getElementById('mNameRight');
         const mNameTop    = document.getElementById('mNameTop');
@@ -2091,13 +2093,25 @@ class GameEngineController {
         const getPlayerNameAtRelativePos = (offset) => {
             const absIdx = (mySlot + offset) % 4;
             const p = players[absIdx];
-            return p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `AI-${absIdx + 1}`;
+            const name = p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `AI-${absIdx + 1}`;
+            return `${name} (${windNames[absIdx]}风)`;
         };
 
         if (mNameBottom) mNameBottom.textContent = getPlayerNameAtRelativePos(0);
         if (mNameRight)  mNameRight.textContent  = getPlayerNameAtRelativePos(1);
         if (mNameTop)    mNameTop.textContent    = getPlayerNameAtRelativePos(2);
         if (mNameLeft)   mNameLeft.textContent   = getPlayerNameAtRelativePos(3);
+
+        // 设置 3D 局风罗盘风向标签 (映射到玩家视角：底部为我方风向，右/顶/左依序顺时针排列)
+        const windSouth = document.getElementById('windSouth');
+        const windEast  = document.getElementById('windEast');
+        const windNorth = document.getElementById('windNorth');
+        const windWest  = document.getElementById('windWest');
+
+        if (windSouth) windSouth.textContent = windNames[mySlot];
+        if (windEast)  windEast.textContent  = windNames[(mySlot + 1) % 4];
+        if (windNorth) windNorth.textContent = windNames[(mySlot + 2) % 4];
+        if (windWest)  windWest.textContent  = windNames[(mySlot + 3) % 4];
 
         const dealerIdx = window.mahjongEngine.dealer;
         const relativeDealerPos = (dealerIdx - mySlot + 4) % 4;
@@ -2332,15 +2346,17 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+
         // 更新剩余牌墙计数器
         const countEl = document.getElementById('mahjongWallCount');
         if (countEl) countEl.textContent = engine.wallCount;
 
-        // 1. 渲染我方 (Seat 0 / 南) 手牌
+        // 1. 渲染我方 (Seat mySlot) 手牌
         const containerBottom = document.getElementById('mahjongHandTilesContainer');
         if (containerBottom) {
             containerBottom.innerHTML = '';
-            const myHand = engine.hands[0] || [];
+            const myHand = engine.hands[mySlot] || [];
 
             myHand.forEach((tile, index) => {
                 const card = document.createElement('div');
@@ -2371,10 +2387,10 @@ class GameEngineController {
             });
         }
 
-        // 2. 渲染北家 (Seat 2 / Top) 盖牌背牌
+        // 2. 渲染北家 (Top) 盖牌背牌
         const containerTop = document.getElementById('mahjongTilesTop');
         if (containerTop) {
-            const countTop = (engine.hands[2] || []).length;
+            const countTop = (engine.hands[(mySlot + 2) % 4] || []).length;
             let htmlTop = '';
             for (let i = 0; i < countTop; i++) {
                 htmlTop += `<div class="standing-tile-top"></div>`;
@@ -2382,10 +2398,10 @@ class GameEngineController {
             containerTop.innerHTML = htmlTop;
         }
 
-        // 3. 渲染西家 (Seat 3 / Left) 盖牌背牌
+        // 3. 渲染西家 (Left) 盖牌背牌
         const containerLeft = document.getElementById('mahjongTilesLeft');
         if (containerLeft) {
-            const countLeft = (engine.hands[3] || []).length;
+            const countLeft = (engine.hands[(mySlot + 3) % 4] || []).length;
             let htmlLeft = '';
             for (let i = 0; i < countLeft; i++) {
                 htmlLeft += `<div class="standing-tile-left"></div>`;
@@ -2393,10 +2409,10 @@ class GameEngineController {
             containerLeft.innerHTML = htmlLeft;
         }
 
-        // 4. 渲染东家 (Seat 1 / Right) 盖牌背牌
+        // 4. 渲染东家 (Right) 盖牌背牌
         const containerRight = document.getElementById('mahjongTilesRight');
         if (containerRight) {
-            const countRight = (engine.hands[1] || []).length;
+            const countRight = (engine.hands[(mySlot + 1) % 4] || []).length;
             let htmlRight = '';
             for (let i = 0; i < countRight; i++) {
                 htmlRight += `<div class="standing-tile-right"></div>`;
