@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=4.7">
+    <link rel="stylesheet" href="css/styles.css?v=4.8">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -395,6 +395,28 @@
                 <div class="gomoku-actions-bar">
                     <button class="btn-gomoku-action undo" id="btnGomokuUndo" title="单局限悔棋 3 次">
                         <i class="fa-solid fa-rotate-left"></i> 悔棋 (<span id="gomokuUndoCount">3</span>/3)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 五子棋双人对战悔棋申请确认弹窗 -->
+        <div id="gomokuUndoModal" class="modal-overlay" style="display: none;">
+            <div class="modal-card hero-modal-card" style="max-width: 360px; padding: 24px;">
+                <div class="modal-header" style="justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+                    <h3 class="modal-title" style="color: #ffd700; font-size: 1.1rem;"><i class="fa-solid fa-handshake-simple"></i> 悔棋申请</h3>
+                </div>
+                <div class="modal-body" style="padding: 16px 0;">
+                    <p id="gomokuUndoModalText" style="font-size: 0.95rem; color: #e2e8f0; text-align: center; margin: 0; line-height: 1.5;">
+                        对方申请悔棋，是否同意？
+                    </p>
+                </div>
+                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: center; width: 100%; margin-top: 8px;">
+                    <button class="btn-action secondary" id="btnRejectGomokuUndo" style="flex: 1; border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+                        <i class="fa-solid fa-xmark"></i> 拒绝
+                    </button>
+                    <button class="btn-action primary" id="btnAgreeGomokuUndo" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); border-color: #34d399; color: #fff;">
+                        <i class="fa-solid fa-check"></i> 同意
                     </button>
                 </div>
             </div>

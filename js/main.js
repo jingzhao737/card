@@ -470,11 +470,12 @@ class GameEngineController {
             btnPlayGomokuAi.addEventListener('click', () => this.startGomokuAiMode());
         }
 
-        // 五子棋对局控制按钮 (单局限悔棋 3 次)
+        // 五子棋对局控制按钮 (单局限悔棋 3 次，需对方确认)
         const btnGomokuUndo = document.getElementById('btnGomokuUndo');
         if (btnGomokuUndo) {
             btnGomokuUndo.addEventListener('click', () => {
-                if (!window.gomokuEngine) return;
+                const engine = window.gomokuEngine;
+                if (!engine) return;
                 if (this.gomokuUndoLeft === undefined) this.gomokuUndoLeft = 3;
 
                 if (this.gomokuUndoLeft <= 0) {
@@ -482,26 +483,60 @@ class GameEngineController {
                     return;
                 }
 
-                if (window.gomokuEngine.moveHistory.length === 0) {
+                if (engine.moveHistory.length === 0) {
                     UIRenderer.showToast('⚠️ 盘面上暂无棋子可撤回');
                     return;
                 }
 
-                const success = window.gomokuEngine.undo();
-                if (success) {
-                    this.gomokuUndoLeft--;
-                    const countEl = document.getElementById('gomokuUndoCount');
-                    if (countEl) countEl.textContent = this.gomokuUndoLeft;
+                // 如果是单机 AI 模式，AI 自动同意悔棋，直接撤回并扣除次数
+                if (engine.isAiMode) {
+                    const success = engine.undo();
+                    if (success) {
+                        this.gomokuUndoLeft--;
+                        const countEl = document.getElementById('gomokuUndoCount');
+                        if (countEl) countEl.textContent = this.gomokuUndoLeft;
 
-                    if (this.gomokuUndoLeft <= 0) {
-                        btnGomokuUndo.disabled = true;
-                        btnGomokuUndo.classList.add('disabled');
+                        if (this.gomokuUndoLeft <= 0) {
+                            btnGomokuUndo.disabled = true;
+                            btnGomokuUndo.classList.add('disabled');
+                        }
+
+                        this.renderGomokuBoard();
+                        this.updateGomokuStatusUI(`已撤回，本局还可悔棋 ${this.gomokuUndoLeft} 次`);
+                        UIRenderer.showToast(`↺ 悔棋成功！单局剩余 ${this.gomokuUndoLeft} 次`);
                     }
-
-                    this.renderGomokuBoard();
-                    this.updateGomokuStatusUI(`已撤回，本局还可悔棋 ${this.gomokuUndoLeft} 次`);
-                    UIRenderer.showToast(`↺ 悔棋成功！单局剩余 ${this.gomokuUndoLeft} 次`);
+                    return;
                 }
+
+                // 在线双人模式：向对方发送悔棋申请
+                UIRenderer.showToast('📩 已向对方发送悔棋申请，请等待回应...');
+                NetworkManager.sendGomokuUndoRequest(NetworkManager.nickname);
+            });
+        }
+
+        // 绑定五子棋悔棋申请弹窗按钮
+        const btnAgreeGomokuUndo = document.getElementById('btnAgreeGomokuUndo');
+        const btnRejectGomokuUndo = document.getElementById('btnRejectGomokuUndo');
+        const undoModal = document.getElementById('gomokuUndoModal');
+
+        if (btnAgreeGomokuUndo) {
+            btnAgreeGomokuUndo.addEventListener('click', () => {
+                if (undoModal) undoModal.style.display = 'none';
+                if (window.gomokuEngine) {
+                    window.gomokuEngine.undo();
+                    this.renderGomokuBoard();
+                    this.updateGomokuStatusUI('已同意悔棋，局面已更新');
+                }
+                NetworkManager.sendGomokuUndoResponse(true);
+                UIRenderer.showToast('✅ 你已同意对方悔棋');
+            });
+        }
+
+        if (btnRejectGomokuUndo) {
+            btnRejectGomokuUndo.addEventListener('click', () => {
+                if (undoModal) undoModal.style.display = 'none';
+                NetworkManager.sendGomokuUndoResponse(false);
+                UIRenderer.showToast('❌ 你拒绝了对方的悔棋申请');
             });
         }
 
@@ -1397,6 +1432,44 @@ class GameEngineController {
                     const isNowMyTurn = engine.currentTurn === myColor;
                     this.updateGomokuStatusUI(isNowMyTurn ? (myColor === 1 ? '⚫ 轮到你落子' : '⚪ 轮到你落子') : '⏳ 对方思考中...');
                 }
+            }
+        });
+
+        // 监听在线悔棋申请广播
+        NetworkManager.onGomokuUndoRequest((req) => {
+            if (!req || req.senderSlot === NetworkManager.myPlayerIndex) return;
+            const undoModal = document.getElementById('gomokuUndoModal');
+            const modalText = document.getElementById('gomokuUndoModalText');
+            if (undoModal && modalText) {
+                modalText.textContent = `玩家 ${req.applicantNick || '对方'} 申请悔棋一步，是否同意？`;
+                undoModal.style.display = 'flex';
+            }
+        });
+
+        // 监听在线悔棋响应广播 (同意才扣次数，拒绝不扣次数)
+        NetworkManager.onGomokuUndoResponse((resp) => {
+            if (!resp || resp.senderSlot === NetworkManager.myPlayerIndex) return;
+            if (resp.approved) {
+                const engine = window.gomokuEngine;
+                if (engine) {
+                    engine.undo();
+                    this.renderGomokuBoard();
+                }
+                if (this.gomokuUndoLeft > 0) {
+                    this.gomokuUndoLeft--;
+                    const countEl = document.getElementById('gomokuUndoCount');
+                    if (countEl) countEl.textContent = this.gomokuUndoLeft;
+                    const btnUndo = document.getElementById('btnGomokuUndo');
+                    if (this.gomokuUndoLeft <= 0 && btnUndo) {
+                        btnUndo.disabled = true;
+                        btnUndo.classList.add('disabled');
+                    }
+                }
+                UIRenderer.showToast(`🎉 对方同意了你的悔棋申请！本局还剩 ${this.gomokuUndoLeft} 次`);
+                this.updateGomokuStatusUI(`对方同意悔棋！本局还可悔棋 ${this.gomokuUndoLeft} 次`);
+            } else {
+                UIRenderer.showToast(`❌ 对方拒绝了你的悔棋申请，未扣除悔棋次数 (剩余 ${this.gomokuUndoLeft} 次)`);
+                this.updateGomokuStatusUI(`对方拒绝悔棋，请继续落子`);
             }
         });
     }

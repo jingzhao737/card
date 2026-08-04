@@ -675,6 +675,40 @@ class P2PManager {
             if (val && callback) callback(val);
         });
     }
+
+    sendGomokuUndoRequest(applicantNick) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoReq').set({
+            applicantNick,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onGomokuUndoRequest(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoReq').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendGomokuUndoResponse(approved) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoResp').set({
+            approved,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onGomokuUndoResponse(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoResp').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
 }
 
 const NetworkManager = new P2PManager();
