@@ -765,10 +765,11 @@ class AudioSynth {
             try {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.mahjongTileBuffer;
-                source.playbackRate.value = 1.0;
+                // 自然微随机变调 0.98~1.04 (模仿真实物理麻将碰撞声差异)
+                source.playbackRate.value = 0.98 + Math.random() * 0.06;
 
                 const gainNode = this.ctx.createGain();
-                gainNode.gain.value = 0.95;
+                gainNode.gain.value = 1.0;
 
                 source.connect(gainNode);
                 gainNode.connect(this.ctx.destination);
