@@ -759,11 +759,13 @@ class P2PManager {
         this.roomRef.child('gomokuClaimBlack').remove();
     }
 
-    sendMahjongMove(tileIndex, actionType = 'DISCARD') {
+    sendMahjongMove(senderSlot, tileIndex, discardedTile, stateData, actionType = 'DISCARD') {
         if (!this.roomRef) return;
         this.roomRef.child('mahjongLastMove').set({
-            senderSlot: this.myPlayerIndex,
+            senderSlot,
             tileIndex,
+            discardedTile,
+            stateData,
             actionType,
             ts: Date.now()
         });

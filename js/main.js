@@ -2112,6 +2112,42 @@ class GameEngineController {
             UIRenderer.showToast(`🎲 庄家优先起手出牌中...`);
         }
 
+        // 实时监听其他玩家在云端的打牌动作与全局牌桌同步
+        NetworkManager.onMahjongMove((move) => {
+            if (!move || move.senderSlot === mySlot) return;
+            if (move.stateData) {
+                window.mahjongEngine.importState(move.stateData);
+                this.renderMahjongHandTiles();
+                this.renderMahjongDiscards();
+                this.renderMahjongMelds();
+
+                const relativeSender = (move.senderSlot - mySlot + 4) % 4;
+                if (move.discardedTile) {
+                    this.animateTileThrow(move.discardedTile, relativeSender);
+                }
+                if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playMahjongTile === 'function') {
+                    SoundEngine.playMahjongTile();
+                }
+
+                const currTurn = window.mahjongEngine.currentTurn;
+                const isMyTurnNow = (currTurn === mySlot);
+                if (isMyTurnNow) {
+                    this.updateMahjongStatusUI('🀄 4人雀局 · 轮到你出牌！');
+                    UIRenderer.showToast('🎲 轮到你出牌！');
+                    this.checkSelfActionsOnTurn();
+                } else {
+                    const relativeTurn = (currTurn - mySlot + 4) % 4;
+                    const seatLabels = ['你', '右家', '对家', '左家'];
+                    this.updateMahjongStatusUI(`🀄 4人雀局 · ${seatLabels[relativeTurn] || '对方'}思考出牌中...`);
+                }
+
+                // 如果下一个轮到 AI 出牌且我是房主，由房主机器驱动 AI 做出决定
+                if (NetworkManager.isHost && this.gameState.players[currTurn] && this.gameState.players[currTurn].isAi) {
+                    this.triggerAiTurnLoop();
+                }
+            }
+        });
+
         // 绑定吃/碰/杠/胡/过动作按钮
         this.bindMahjongActionButtons();
     }
@@ -2367,11 +2403,12 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const meldMap = [
-            { id: 'meldsBottom', idx: 0 },
-            { id: 'meldsRight',  idx: 1 },
-            { id: 'meldsTop',    idx: 2 },
-            { id: 'meldsLeft',   idx: 3 }
+            { id: 'meldsBottom', idx: mySlot },
+            { id: 'meldsRight',  idx: (mySlot + 1) % 4 },
+            { id: 'meldsTop',    idx: (mySlot + 2) % 4 },
+            { id: 'meldsLeft',   idx: (mySlot + 3) % 4 }
         ];
 
         meldMap.forEach(item => {
@@ -2393,11 +2430,12 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const map = [
-            { id: 'discardsBottom', idx: 0 },
-            { id: 'discardsRight',  idx: 1 },
-            { id: 'discardsTop',    idx: 2 },
-            { id: 'discardsLeft',   idx: 3 }
+            { id: 'discardsBottom', idx: mySlot },
+            { id: 'discardsRight',  idx: (mySlot + 1) % 4 },
+            { id: 'discardsTop',    idx: (mySlot + 2) % 4 },
+            { id: 'discardsLeft',   idx: (mySlot + 3) % 4 }
         ];
 
         const lastTile = engine.lastDiscard ? engine.lastDiscard.tile : null;
@@ -2445,11 +2483,14 @@ class GameEngineController {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const relativeTurn = (engine.currentTurn - mySlot + 4) % 4;
+
         const winds = ['windSouth', 'windEast', 'windNorth', 'windWest'];
         winds.forEach((wId, idx) => {
             const el = document.getElementById(wId);
             if (el) {
-                if (engine.currentTurn === idx) el.classList.add('active');
+                if (relativeTurn === idx) el.classList.add('active');
                 else el.classList.remove('active');
             }
         });
@@ -2460,7 +2501,8 @@ class GameEngineController {
      */
     checkSelfActionsOnTurn() {
         const engine = window.mahjongEngine;
-        if (!engine || engine.isGameOver || engine.currentTurn !== 0) return;
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        if (!engine || engine.isGameOver || engine.currentTurn !== mySlot) return;
 
         const actionBar = document.getElementById('mahjongActionBar');
         const btnChow = document.getElementById('btnMahjongChow');
@@ -2469,8 +2511,8 @@ class GameEngineController {
         const btnHu = document.getElementById('btnMahjongHu');
         const btnPass = document.getElementById('btnMahjongPass');
 
-        const canSelfHu = engine.checkCanHu(engine.hands[0]);
-        const selfKongOptions = engine.getSelfKongOptions(0);
+        const canSelfHu = engine.checkCanHu(engine.hands[mySlot] || []);
+        const selfKongOptions = engine.getSelfKongOptions(mySlot);
         const canSelfKong = selfKongOptions.length > 0;
 
         if (canSelfHu || canSelfKong) {
@@ -2490,7 +2532,8 @@ class GameEngineController {
      */
     handleMahjongTileDiscard(tileIndex) {
         const engine = window.mahjongEngine;
-        if (!engine || engine.isGameOver || engine.currentTurn !== 0) {
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        if (!engine || engine.isGameOver || engine.currentTurn !== mySlot) {
             UIRenderer.showToast('⏳ 正在等待其他玩家出牌...');
             return;
         }
@@ -2499,7 +2542,7 @@ class GameEngineController {
         const actionBar = document.getElementById('mahjongActionBar');
         if (actionBar) actionBar.style.display = 'none';
 
-        const res = engine.discardTile(0, tileIndex);
+        const res = engine.discardTile(mySlot, tileIndex);
         if (!res) return;
 
         if (typeof SoundEngine !== 'undefined') {
@@ -2511,12 +2554,21 @@ class GameEngineController {
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
 
+        // 广播出牌与最新全量牌桌状态至 Firebase 云端
+        if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+            NetworkManager.sendMahjongMove(mySlot, tileIndex, res.discarded, engine.exportState());
+        }
+
         if (res.isGameOver) {
             this.showMahjongSettlement(-1, null);
             return;
         }
 
-        this.triggerAiTurnLoop();
+        const nextTurn = engine.currentTurn;
+        const isNextAi = this.gameState.players[nextTurn] ? this.gameState.players[nextTurn].isAi : (nextTurn !== 0);
+        if (NetworkManager.isHost && isNextAi) {
+            this.triggerAiTurnLoop();
+        }
     }
 
     /**
