@@ -1575,11 +1575,30 @@ class GameEngineController {
     }
 
     /**
-     * 处理五子棋棋盘单元格点击落子
+     * 处理五子棋棋盘单元格点击落子 (手机端支持 2 次点击二次确认落子)
      */
     handleGomokuCellClick(r, c) {
         const engine = window.gomokuEngine;
         if (!engine || engine.isGameOver) return;
+        if (engine.board[r][c] !== 0) return; // 该位置已有棋子
+
+        // 判断是否为移动端设备/触摸屏/小屏 (包括手机及 Chrome 模拟器)
+        const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+        // 📱 手机端 2-Tap 二次确认落子流程
+        if (isMobile) {
+            if (!this.gomokuPendingMove || this.gomokuPendingMove.r !== r || this.gomokuPendingMove.c !== c) {
+                // 第一次点击：预选该位置，渲染虚影预览并提示再次点击确定
+                this.gomokuPendingMove = { r, c };
+                this.renderGomokuBoard();
+                UIRenderer.showToast('🎯 已选定位置，再次点击确定落子');
+                return;
+            }
+            // 第二次点击同一位置：清除预选，正式确认落子！
+            this.gomokuPendingMove = null;
+        } else {
+            this.gomokuPendingMove = null;
+        }
 
         // 双人在线模式
         if (!engine.isAiMode) {
@@ -1652,13 +1671,25 @@ class GameEngineController {
             let stone = cell.querySelector('.gomoku-stone');
 
             if (val === 0) {
-                // 如果格子上无棋子 (例如悔棋/重开)，移除旧棋子
-                if (stone) stone.remove();
+                // 如果格子上无正式棋子
+                if (stone) {
+                    stone.remove();
+                    stone = null;
+                }
+
+                // 如果该格被选中作为 2-Tap 预选位置，渲染半透明预览虚影棋子
+                if (this.gomokuPendingMove && this.gomokuPendingMove.r === r && this.gomokuPendingMove.c === c) {
+                    const currentTurn = engine.currentTurn;
+                    const previewStone = document.createElement('div');
+                    previewStone.className = `gomoku-stone ${currentTurn === 1 ? 'black' : 'white'} preview`;
+                    cell.appendChild(previewStone);
+                }
             } else {
                 const isLastMove = engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c;
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
 
-                if (!stone) {
+                if (!stone || stone.classList.contains('preview')) {
+                    if (stone) stone.remove();
                     // 仅当这颗棋子是新落下的，新建 DOM 节点并播放微随机物理落子音效
                     stone = document.createElement('div');
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
@@ -1669,7 +1700,6 @@ class GameEngineController {
                         soundObj.playStoneDrop(val === 2); // 白棋音高更高脆，黑棋更沉稳，带±12%微随机音调！
                     }
                 } else {
-                    // 若棋子已存在，仅更新基础类名，不重复销毁与新建节点
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
                 }
 
