@@ -4640,23 +4640,25 @@ body.theme-gomoku .overlay-screen {
     transform: scale(1.02);
 }
 
-/* 3D 迷你棋子头像 */
+/* 3D 迷你棋子头像 (黑棋加大物理尺寸防止视觉偏小) */
 .mini-stone-avatar {
-    width: 20px;
-    height: 20px;
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
 .mini-stone-avatar.black {
-    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
-    border: none;
+    width: 22px;
+    height: 22px;
+    background: radial-gradient(circle at 35% 35%, #64748b 0%, #27272a 50%, #000000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .mini-stone-avatar.white {
+    width: 19px;
+    height: 19px;
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
-    border: none;
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 /* 玩家 ID / 昵称 (精致字号 0.72rem，去冗余高精简) */
@@ -4841,16 +4843,16 @@ body.theme-gomoku .overlay-screen {
 }
 
 .gomoku-stone.black {
-    width: 89%;
-    height: 89%;
-    background: radial-gradient(circle at 35% 35%, #64748b 0%, #27272a 50%, #09090b 85%, #000000 100%);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.75), inset 0 0 1px rgba(255, 255, 255, 0.25);
+    width: 92%;
+    height: 92%;
+    background: radial-gradient(circle at 35% 35%, #64748b 0%, #27272a 45%, #09090b 80%, #000000 100%);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.18);
     border: none !important;
 }
 
 .gomoku-stone.white {
-    width: 84%;
-    height: 84%;
+    width: 83%;
+    height: 83%;
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.55);
     border: none !important;
