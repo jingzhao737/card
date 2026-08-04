@@ -4787,11 +4787,23 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 0 6px #ff2a2a;
 }
 
-/* 获胜 5 连子闪耀光圈效果 */
+/* 获胜 5 连子闪耀墨绿细描边与光圈效果 (保持原尺寸不缩微) */
 .gomoku-stone.win-stone {
-    box-shadow: 0 0 16px #ffd700, 0 0 8px #34d399 !important;
-    border: 2px solid #ffd700 !important;
-    animation: winPulse 1s infinite alternate ease-in-out;
+    box-sizing: border-box !important;
+    border: 1px solid #34d399 !important; /* 精致细墨绿描边 */
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.85), 0 0 6px rgba(16, 185, 129, 0.6) !important;
+    animation: winPulse 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes winPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+    }
+    100% {
+        transform: scale(1.08);
+        box-shadow: 0 0 22px rgba(52, 211, 153, 0.95), 0 0 10px rgba(16, 185, 129, 0.8);
+    }
 }
 
 /* 手机端二次确认落子 虚影预选棋子 (Preview Ghost Stone) */
