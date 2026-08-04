@@ -77,11 +77,11 @@ class AudioSynth {
                 if (this.ctx) {
                     this.cardFlipBuffer = await this.ctx.decodeAudioData(arrayBuffer);
                 }
+            } else {
+                this.isBufferLoading = 'failed';
             }
         } catch (e) {
-            // 静默容错
-        } finally {
-            this.isBufferLoading = false;
+            this.isBufferLoading = 'failed';
         }
     }
 
@@ -95,11 +95,11 @@ class AudioSynth {
                 if (this.ctx) {
                     this.stoneDropBuffer = await this.ctx.decodeAudioData(arrayBuffer);
                 }
+            } else {
+                this.isStoneBufferLoading = 'failed';
             }
         } catch (e) {
-            // 静默容错
-        } finally {
-            this.isStoneBufferLoading = false;
+            this.isStoneBufferLoading = 'failed';
         }
     }
 
@@ -113,11 +113,11 @@ class AudioSynth {
                 if (this.ctx) {
                     this.mahjongTileBuffer = await this.ctx.decodeAudioData(arrayBuffer);
                 }
+            } else {
+                this.isMahjongBufferLoading = 'failed';
             }
         } catch (e) {
-            // 静默容错
-        } finally {
-            this.isMahjongBufferLoading = false;
+            this.isMahjongBufferLoading = 'failed';
         }
     }
 
