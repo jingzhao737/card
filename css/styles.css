@@ -6126,19 +6126,15 @@ body.theme-mahjong #lobbyScreen {
     flex-wrap: nowrap !important;
     align-items: center;
     justify-content: center;
-    width: 86%;
-    height: 86%;
+    width: 100%;
+    height: 100%;
     margin: auto;
+    padding: 1px;
 }
 
-.m-face.tiao-1 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 .tiao-svg {
-    width: 86%;
-    height: 86%;
+    width: 95%;
+    height: 95%;
     margin: auto;
     display: block;
     filter: drop-shadow(0 0.5px 1px rgba(0,0,0,0.35));

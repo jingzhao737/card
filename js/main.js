@@ -2519,11 +2519,11 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-1">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 4C13 4 10.5 6 10.5 9.5C10.5 11 11.5 12.5 13 13.5C10.5 14.5 7 18 7 24C7 31 11 37 16 37C21 37 25 31 25 24C25 18 21.5 14.5 19 13.5C20.5 12.5 21.5 11 21.5 9.5C21.5 6 19 4 16 4Z" fill="#15803d"/>
-                        <circle cx="14" cy="8.5" r="1.2" fill="#fef08a"/>
-                        <path d="M16 14V34" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M10.5 21C13.5 22.8 18.5 22.8 21.5 21" stroke="#f59e0b" stroke-width="1.6"/>
-                        <path d="M9 27C13 29 19 29 23 27" stroke="#2563eb" stroke-width="1.6"/>
+                        <path d="M16 2.5C12.5 2.5 9.5 4.8 9.5 8.8C9.5 10.5 10.5 12.2 12.2 13.2C9.5 14.2 5.5 18 5.5 25C5.5 33 10 40 16 40C22 40 26.5 33 26.5 25C26.5 18 22.5 14.2 19.8 13.2C21.5 12.2 22.5 10.5 22.5 8.8C22.5 4.8 19.5 2.5 16 2.5Z" fill="#15803d"/>
+                        <circle cx="13.8" cy="7.2" r="1.5" fill="#fef08a"/>
+                        <path d="M16 13.5V36" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round"/>
+                        <path d="M9.5 21.5C13 23.5 19 23.5 22.5 21.5" stroke="#f59e0b" stroke-width="2"/>
+                        <path d="M8 28.5C12.5 31 19.5 31 24 28.5" stroke="#2563eb" stroke-width="2"/>
                     </svg>
                 </div>`;
         }
@@ -2531,8 +2531,8 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-2">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="9.5" y="10" width="3.8" height="24" rx="1.5" fill="#16a34a"/>
-                        <rect x="18.7" y="10" width="3.8" height="24" rx="1.5" fill="#dc2626"/>
+                        <rect x="8.5" y="7.5" width="4.8" height="29" rx="2" fill="#16a34a"/>
+                        <rect x="18.7" y="7.5" width="4.8" height="29" rx="2" fill="#dc2626"/>
                     </svg>
                 </div>`;
         }
@@ -2540,9 +2540,9 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-3">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="5.7" y="11" width="3.6" height="22" rx="1.5" fill="#2563eb"/>
-                        <rect x="14.2" y="11" width="3.6" height="22" rx="1.5" fill="#16a34a"/>
-                        <rect x="22.7" y="11" width="3.6" height="22" rx="1.5" fill="#dc2626"/>
+                        <rect x="4.8" y="8.5" width="4.5" height="27" rx="1.8" fill="#2563eb"/>
+                        <rect x="13.75" y="8.5" width="4.5" height="27" rx="1.8" fill="#16a34a"/>
+                        <rect x="22.7" y="8.5" width="4.5" height="27" rx="1.8" fill="#dc2626"/>
                     </svg>
                 </div>`;
         }
@@ -2550,23 +2550,22 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-4">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="7.5" y="7" width="3.8" height="13.5" rx="1.2" fill="#16a34a"/>
-                        <rect x="20.7" y="7" width="3.8" height="13.5" rx="1.2" fill="#dc2626"/>
-                        <rect x="7.5" y="23.5" width="3.8" height="13.5" rx="1.2" fill="#dc2626"/>
-                        <rect x="20.7" y="23.5" width="3.8" height="13.5" rx="1.2" fill="#16a34a"/>
+                        <rect x="6.5" y="4.5" width="4.6" height="16.5" rx="1.6" fill="#16a34a"/>
+                        <rect x="20.9" y="4.5" width="4.6" height="16.5" rx="1.6" fill="#dc2626"/>
+                        <rect x="6.5" y="23" width="4.6" height="16.5" rx="1.6" fill="#dc2626"/>
+                        <rect x="20.9" y="23" width="4.6" height="16.5" rx="1.6" fill="#16a34a"/>
                     </svg>
                 </div>`;
         }
         if (num === 5) {
-            // 五条：4角 (16a34a绿) + 1中心 (dc2626红)，5 根竹条 100% 绝对相同尺寸 (width=3.6, height=13)
             return `
                 <div class="m-face tiao tiao-5">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="6.5" y="6.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
-                        <rect x="21.9" y="6.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
-                        <rect x="14.2" y="15.5" width="3.6" height="13" rx="1.2" fill="#dc2626"/>
-                        <rect x="6.5" y="24.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
-                        <rect x="21.9" y="24.5" width="3.6" height="13" rx="1.2" fill="#16a34a"/>
+                        <rect x="5.5" y="4.5" width="4.4" height="15.5" rx="1.5" fill="#16a34a"/>
+                        <rect x="22.1" y="4.5" width="4.4" height="15.5" rx="1.5" fill="#16a34a"/>
+                        <rect x="13.8" y="14.25" width="4.4" height="15.5" rx="1.5" fill="#dc2626"/>
+                        <rect x="5.5" y="24" width="4.4" height="15.5" rx="1.5" fill="#16a34a"/>
+                        <rect x="22.1" y="24" width="4.4" height="15.5" rx="1.5" fill="#16a34a"/>
                     </svg>
                 </div>`;
         }
@@ -2574,12 +2573,12 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-6">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8.5" y="5.5" width="3.5" height="9.5" rx="1" fill="#16a34a"/>
-                        <rect x="20" y="5.5" width="3.5" height="9.5" rx="1" fill="#16a34a"/>
-                        <rect x="8.5" y="17.25" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
-                        <rect x="20" y="17.25" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
-                        <rect x="8.5" y="29" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
-                        <rect x="20" y="29" width="3.5" height="9.5" rx="1" fill="#dc2626"/>
+                        <rect x="7.5" y="4" width="4.2" height="11.5" rx="1.4" fill="#16a34a"/>
+                        <rect x="20.3" y="4" width="4.2" height="11.5" rx="1.4" fill="#16a34a"/>
+                        <rect x="7.5" y="16.25" width="4.2" height="11.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="20.3" y="16.25" width="4.2" height="11.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="7.5" y="28.5" width="4.2" height="11.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="20.3" y="28.5" width="4.2" height="11.5" rx="1.4" fill="#dc2626"/>
                     </svg>
                 </div>`;
         }
@@ -2587,13 +2586,13 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-7">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="7" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
-                        <rect x="14.3" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
-                        <rect x="21.6" y="5.5" width="3.4" height="11.5" rx="1" fill="#16a34a"/>
-                        <rect x="9.5" y="20" width="3.4" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="19.1" y="20" width="3.4" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="9.5" y="31" width="3.4" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="19.1" y="31" width="3.4" height="9" rx="1" fill="#dc2626"/>
+                        <rect x="6" y="4" width="4.2" height="13.5" rx="1.4" fill="#16a34a"/>
+                        <rect x="13.9" y="4" width="4.2" height="13.5" rx="1.4" fill="#16a34a"/>
+                        <rect x="21.8" y="4" width="4.2" height="13.5" rx="1.4" fill="#16a34a"/>
+                        <rect x="8.5" y="19.5" width="4.2" height="10.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="19.3" y="19.5" width="4.2" height="10.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="8.5" y="31" width="4.2" height="10.5" rx="1.4" fill="#dc2626"/>
+                        <rect x="19.3" y="31" width="4.2" height="10.5" rx="1.4" fill="#dc2626"/>
                     </svg>
                 </div>`;
         }
@@ -2601,14 +2600,14 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-8">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8.5" y="4.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="20.1" y="4.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="8.5" y="14" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="20.1" y="14" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="8.5" y="23.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="20.1" y="23.5" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="8.5" y="33" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
-                        <rect x="20.1" y="33" width="3.4" height="7.2" rx="1" fill="#16a34a"/>
+                        <rect x="7.5" y="3.5" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="20.3" y="3.5" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="7.5" y="13.3" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="20.3" y="13.3" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="7.5" y="23.1" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="20.3" y="23.1" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="7.5" y="32.9" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
+                        <rect x="20.3" y="32.9" width="4.2" height="8.8" rx="1.2" fill="#16a34a"/>
                     </svg>
                 </div>`;
         }
@@ -2616,15 +2615,15 @@ class GameEngineController {
             return `
                 <div class="m-face tiao tiao-9">
                     <svg class="tiao-svg" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="5.5" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
-                        <rect x="14.35" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
-                        <rect x="23.2" y="5" width="3.3" height="9" rx="1" fill="#2563eb"/>
-                        <rect x="5.5" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="14.35" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="23.2" y="17.5" width="3.3" height="9" rx="1" fill="#dc2626"/>
-                        <rect x="5.5" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
-                        <rect x="14.35" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
-                        <rect x="23.2" y="30" width="3.3" height="9" rx="1" fill="#16a34a"/>
+                        <rect x="4.8" y="4" width="4.2" height="11" rx="1.2" fill="#2563eb"/>
+                        <rect x="13.9" y="4" width="4.2" height="11" rx="1.2" fill="#2563eb"/>
+                        <rect x="23" y="4" width="4.2" height="11" rx="1.2" fill="#2563eb"/>
+                        <rect x="4.8" y="16.5" width="4.2" height="11" rx="1.2" fill="#dc2626"/>
+                        <rect x="13.9" y="16.5" width="4.2" height="11" rx="1.2" fill="#dc2626"/>
+                        <rect x="23" y="16.5" width="4.2" height="11" rx="1.2" fill="#dc2626"/>
+                        <rect x="4.8" y="29" width="4.2" height="11" rx="1.2" fill="#16a34a"/>
+                        <rect x="13.9" y="29" width="4.2" height="11" rx="1.2" fill="#16a34a"/>
+                        <rect x="23" y="29" width="4.2" height="11" rx="1.2" fill="#16a34a"/>
                     </svg>
                 </div>`;
         }
