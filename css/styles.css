@@ -6440,76 +6440,101 @@ body.theme-mahjong #lobbyScreen {
    ========================================================================== */
 @media (min-width: 769px) {
     .mahjong-table-vertical-container {
-        max-width: 880px !important;
-        width: 90vw !important;
+        max-width: 1060px !important;
+        width: 95vw !important;
     }
 
-    /* 4:3 大气宽屏横向绿绒桌台 */
+    /* 4:3 阔气豪华绿绒桌台 (比例全面放大) */
     .vertical-mahjong-table {
-        max-width: 780px !important;
+        max-width: 940px !important;
         aspect-ratio: 4 / 3 !important;
-        max-height: 76vh !important;
-        max-height: 76dvh !important;
-        border: 10px solid #4a150e !important;
-        border-radius: 12px !important;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), inset 0 0 40px rgba(0, 0, 0, 0.75), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
+        max-height: 82vh !important;
+        max-height: 82dvh !important;
+        border: 12px solid #4a150e !important;
+        border-radius: 14px !important;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.95), inset 0 0 45px rgba(0, 0, 0, 0.75), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
     }
 
-    /* PC 端左右两侧玩家名片恢复横向读取与宽边距 */
-    .table-player-seat.seat-left {
-        left: 14px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        flex-direction: row !important;
-        gap: 8px !important;
+    /* PC 端 4 方名片尺寸适度放大 */
+    .seat-user-pill {
+        font-size: 0.85rem !important;
+        padding: 5px 14px 5px 6px !important;
+        border-radius: 8px !important;
     }
 
-    .table-player-seat.seat-right {
-        right: 14px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        flex-direction: row-reverse !important;
-        gap: 8px !important;
+    /* PC 端 4 方立牌盖牌 (北家/东家/西家) 放大 */
+    .standing-tile-top {
+        width: 18px !important;
+        height: 26px !important;
+    }
+    .standing-tile-left, .standing-tile-right {
+        width: 26px !important;
+        height: 18px !important;
     }
 
-    .seat-user-pill.vertical {
-        writing-mode: horizontal-tb !important;
-        padding: 4px 10px 4px 4px !important;
-        border-radius: 6px !important;
+    /* PC 端中央 4 方弃牌桌中区 & 弃牌放大 */
+    .table-center-zone {
+        width: 320px !important;
+        height: 320px !important;
     }
 
-    .seat-user-pill.vertical .dealer-tag {
-        writing-mode: horizontal-tb !important;
-        transform: none !important;
-        margin-left: 3px !important;
-        margin-top: 0 !important;
+    .discard-grid.grid-bottom { max-width: 156px !important; bottom: -30px !important; }
+    .discard-grid.grid-top { max-width: 156px !important; top: -30px !important; }
+    .discard-grid.grid-left { max-width: 140px !important; max-height: 120px !important; }
+    .discard-grid.grid-right { max-width: 140px !important; max-height: 120px !important; }
+
+    .discard-chip {
+        width: 22px !important;
+        height: 30px !important;
+        border-radius: 2.5px !important;
+    }
+    .discard-chip .m-face.wan .w-num { font-size: 0.65rem !important; }
+    .discard-chip .m-face.wan .w-char { font-size: 0.55rem !important; }
+    .discard-chip .m-face.honor { font-size: 0.9rem !important; }
+    .discard-chip .m-face.bing-1 .rosette { width: 14px !important; height: 14px !important; }
+    .discard-chip .m-face.tiao-1 .sparrow { font-size: 0.95rem !important; }
+
+    /* PC 端中央 3D 局风罗盘放大 */
+    .mahjong-compass-center {
+        width: 86px !important;
+        height: 86px !important;
+    }
+    .compass-wind {
+        font-size: 0.95rem !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+    .compass-timer {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
     }
 
-    /* PC 端独立精致样式：36px 宽 x 48px 高 (黄金 3:4 沉稳比例，修长匀称，告别太胖太宽感) */
+    /* PC 端我方沉底手牌：44px 宽 x 60px 高 (清晰大号霸气牌面) */
     .mahjong-tiles-bottom {
-        gap: 2.5px !important;
+        gap: 3.5px !important;
     }
 
     .mahjong-tile-card {
-        width: 36px !important;
-        height: 48px !important;
+        width: 44px !important;
+        height: 60px !important;
         max-width: none !important;
         min-width: 0 !important;
         aspect-ratio: auto !important;
         flex: 0 0 auto !important;
         margin: 0 !important;
-        border-radius: 4px !important;
-        box-shadow: 0 4.5px 0 #047857, 0 8px 15px rgba(0, 0, 0, 0.6) !important;
+        border-radius: 5px !important;
+        box-shadow: 0 5.5px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.6) !important;
     }
 
-    .mahjong-tile-card .m-face.wan .w-num { font-size: 0.95rem !important; }
-    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.8rem !important; }
-    .mahjong-tile-card .m-face.honor { font-size: 1.25rem !important; }
-    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 17px !important; height: 25px !important; }
-    .mahjong-tile-card .m-face.bing-1 .rosette { width: 20px !important; height: 20px !important; }
-    .mahjong-tile-card .m-face.bing .dot { width: 6.5px !important; height: 6.5px !important; }
-    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.35rem !important; }
-    .mahjong-tile-card .m-face.tiao .bar { width: 3.8px !important; height: 13px !important; }
+    .mahjong-tile-card .m-face.wan .w-num { font-size: 1.15rem !important; }
+    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.95rem !important; }
+    .mahjong-tile-card .m-face.honor { font-size: 1.5rem !important; }
+    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 20px !important; height: 30px !important; }
+    .mahjong-tile-card .m-face.bing-1 .rosette { width: 24px !important; height: 24px !important; }
+    .mahjong-tile-card .m-face.bing .dot { width: 8px !important; height: 8px !important; }
+    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.6rem !important; }
+    .mahjong-tile-card .m-face.tiao .bar { width: 4.5px !important; height: 15px !important; }
 }
 
 /* ==========================================================================
