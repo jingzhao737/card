@@ -5258,46 +5258,149 @@ body.theme-mahjong {
     color: #34d399;
 }
 
-/* 桃木色主大厅 Header */
+/* 游鲸麻将 主大厅卡片 桃木质感与精细微阴影 */
+.lobby-card.theme-mahjong {
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(139, 58, 43, 0.25) !important;
+    background: rgba(28, 10, 7, 0.95) !important;
+}
+
+.mode-card.primary-card.mahjong-theme {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.22) 100%) !important;
+    border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15) !important;
+}
+
+.mode-card.primary-card.mahjong-theme:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.32) 100%) !important;
+    border-color: rgba(52, 211, 153, 0.6) !important;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.28) !important;
+    transform: translateY(-2px);
+}
+
+.mode-card.join-card.mahjong-join {
+    background: rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.mode-card.ai-card.mahjong-ai {
+    background: rgba(16, 185, 129, 0.05) !important;
+    border: 1px solid rgba(52, 211, 153, 0.25) !important;
+}
+
+.mode-card.ai-card.mahjong-ai:hover {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(52, 211, 153, 0.5) !important;
+    transform: translateY(-2px);
+}
+
+/* 桃木色主大厅 Header (富贵金边 + 沉香木纹) */
 .lobby-header.peachwood-header {
-    background: linear-gradient(135deg, #5c1d15 0%, #8b3a2b 50%, #3d100a 100%);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    background: linear-gradient(135deg, #4a150e 0%, #6e271c 45%, #8b3a2b 75%, #3d100a 100%);
+    border-bottom: 1.5px solid rgba(245, 158, 11, 0.35);
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 -4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .lobby-header.peachwood-header::after {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.03), rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 8px);
+    background: repeating-linear-gradient(45deg, rgba(245, 158, 11, 0.04), rgba(245, 158, 11, 0.04) 2px, transparent 2px, transparent 10px);
     pointer-events: none;
 }
 
-/* 麻将牌 Mini Decorative Badges in Lobby */
+/* 麻将主大厅 Header 右侧 3D 实物精细挂饰 (红中/发财/八万) */
 .mahjong-tiles-decoration {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
+    perspective: 800px;
+    padding-right: 6px;
 }
 
-.mini-mahjong-tile {
-    width: 28px;
-    height: 38px;
-    border-radius: 4px;
-    background: linear-gradient(to bottom, #ffffff 0%, #f1f5f9 60%, #e2e8f0 100%);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0 4px 0 #059669, 0 6px 12px rgba(0, 0, 0, 0.4);
+.master-mahjong-tile {
+    width: 34px;
+    height: 48px;
+    position: relative;
+    border-radius: 5px;
+    user-select: none;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    transform: rotateY(-10deg) rotateX(5deg);
+}
+
+.master-mahjong-tile.hero-tile {
+    transform: rotateY(0deg) scale(1.1);
+    z-index: 2;
+}
+
+.master-mahjong-tile:hover {
+    transform: translateY(-6px) rotateY(0deg) scale(1.15);
+    z-index: 5;
+}
+
+/* 象牙白正面雕刻牌面 */
+.tile-face-ivory {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #ffffff 0%, #fdfbf7 70%, #f3eee3 100%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 5px 5px 3px 3px;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.08),
+        0 4px 0 #059669,
+        0 8px 18px rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    user-select: none;
-    transition: transform 0.2s ease;
+    position: relative;
+    box-sizing: border-box;
 }
 
-.mini-mahjong-tile:hover {
-    transform: translateY(-3px);
+/* 翡翠绿背面衬底厚度层 */
+.tile-back-jade {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to bottom, #10b981, #047857);
+    border-radius: 0 0 4px 4px;
+}
+
+/* 文字雕刻字体与雕琢感 */
+.char-red-zhong {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #dc2626;
+    text-shadow: 0 1px 0 #991b1b, 0 0 1px rgba(220, 38, 38, 0.5);
+    font-family: 'Kaiti SC', 'STKaiti', 'SimKai', serif;
+}
+
+.char-green-fa {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #059669;
+    text-shadow: 0 1px 0 #047857, 0 0 1px rgba(5, 150, 105, 0.5);
+    font-family: 'Kaiti SC', 'STKaiti', 'SimKai', serif;
+}
+
+.char-double-wan {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 0.95;
+    font-family: 'Kaiti SC', 'STKaiti', 'SimKai', serif;
+}
+
+.char-double-wan .num-red, .char-double-wan .type-red {
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: #dc2626;
+    text-shadow: 0 1px 0 #991b1b;
 }
 
 /* ==========================================================================
