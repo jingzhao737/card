@@ -1275,12 +1275,11 @@ class GameEngineController {
                 <div class="profile-top" style="padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);">
                     <div class="profile-avatar-big" id="btnChangeAvatar" title="点击更换头像" style="cursor:pointer;position:relative;">
                         <span>${data.avatar || '🤠'}</span>
-                        <div style="position:absolute;bottom:-2px;right:-2px;font-size:0.6rem;background:#ffd700;color:#000;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-pen"></i></div>
+                        <div class="avatar-level-tag" style="bottom:-2px;right:-2px;width:18px;height:18px;font-size:0.65rem;border-width:2px;">${level}</div>
                     </div>
                     <div class="profile-names">
                         <div class="profile-nick" style="display:flex;align-items:center;gap:8px;">
                             <span>${data.nickname}</span>
-                            <span style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:10px;padding:1px 7px;font-size:0.68rem;font-weight:800;">Lv.${level}</span>
                             ${canRename ? `
                                 <button id="btnEditNick" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);color:#ffd700;border-radius:3px;padding:2px 6px;font-size:0.72rem;cursor:pointer;font-weight:700;">
                                     <i class="fa-solid fa-pen-to-square"></i> 改名

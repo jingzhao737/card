@@ -770,31 +770,37 @@ class AuthManager {
             const level = this.userData.level || 1;
             const title = this.getLevelTitle(level);
 
+            const setAvatarWithLevel = (el, emojiStr) => {
+                if (!el) return;
+                el.style.position = 'relative';
+                el.innerHTML = `<span>${emojiStr}</span><div class="avatar-level-tag">${level}</div>`;
+            };
+
             if (badge) {
                 badge.innerHTML = `
-                    <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
+                    <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+                        <span class="user-avatar-text">${this.userData.avatar || '🤠'}</span>
+                        <div class="avatar-level-tag">${level}</div>
+                    </div>
                     <div class="user-header-info">
-                        <div style="display:flex;align-items:center;">
-                            <span class="user-header-nick">${this.userData.nickname}</span>
-                            <span style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:10px;padding:0px 5px;font-size:0.62rem;font-weight:800;margin-left:4px;line-height:1.2;">Lv.${level}</span>
-                        </div>
+                        <span class="user-header-nick">${this.userData.nickname}</span>
                         <span class="user-header-score">🪙 ${currentYin} 知因币</span>
                     </div>
                 `;
             }
-            if (lAuthAvatar) lAuthAvatar.textContent = this.userData.avatar || '🤠';
+            setAvatarWithLevel(lAuthAvatar, this.userData.avatar || '🤠');
             if (lUserNick)   lUserNick.textContent   = this.userData.nickname;
-            if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
+            if (lUserSub)    lUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (lBtnAuth)    lBtnAuth.textContent    = '个人信息';
 
-            if (gAuthAvatar) gAuthAvatar.textContent = this.userData.avatar || '🤠';
+            setAvatarWithLevel(gAuthAvatar, this.userData.avatar || '🤠');
             if (gUserNick)   gUserNick.textContent   = this.userData.nickname;
-            if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
+            if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (gBtnAuth)    gBtnAuth.textContent    = '个人信息';
 
-            if (mAuthAvatar) mAuthAvatar.textContent = this.userData.avatar || '🤠';
+            setAvatarWithLevel(mAuthAvatar, this.userData.avatar || '🤠');
             if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
-            if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin} · Lv.${level} (${title})`;
+            if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (mBtnAuth)    mBtnAuth.textContent    = '个人信息';
 
             // 登录后隐去随机昵称区块，避免误导
