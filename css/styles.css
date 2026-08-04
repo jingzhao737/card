@@ -6297,31 +6297,31 @@ body.theme-mahjong {
         border-radius: 20px !important;
     }
 
-    /* PC 端独立样式：44px 宽 x 52px 高 (宽阔厚实大牌视感，与手机端物理隔离) */
+    /* PC 端独立精致样式：36px 宽 x 48px 高 (黄金 3:4 沉稳比例，修长匀称，告别太胖太宽感) */
     .mahjong-tiles-bottom {
-        gap: 2px !important;
+        gap: 2.5px !important;
     }
 
     .mahjong-tile-card {
-        width: 44px !important;
-        height: 52px !important;
+        width: 36px !important;
+        height: 48px !important;
         max-width: none !important;
         min-width: 0 !important;
         aspect-ratio: auto !important;
         flex: 0 0 auto !important;
         margin: 0 !important;
-        border-radius: 5px !important;
-        box-shadow: 0 5.5px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.65) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4.5px 0 #047857, 0 8px 15px rgba(0, 0, 0, 0.6) !important;
     }
 
-    .mahjong-tile-card .m-face.wan .w-num { font-size: 1rem !important; }
-    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.85rem !important; }
-    .mahjong-tile-card .m-face.honor { font-size: 1.3rem !important; }
-    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 20px !important; height: 27px !important; }
-    .mahjong-tile-card .m-face.bing-1 .rosette { width: 22px !important; height: 22px !important; }
-    .mahjong-tile-card .m-face.bing .dot { width: 7px !important; height: 7px !important; }
-    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.45rem !important; }
-    .mahjong-tile-card .m-face.tiao .bar { width: 4px !important; height: 14px !important; }
+    .mahjong-tile-card .m-face.wan .w-num { font-size: 0.95rem !important; }
+    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.8rem !important; }
+    .mahjong-tile-card .m-face.honor { font-size: 1.25rem !important; }
+    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 17px !important; height: 25px !important; }
+    .mahjong-tile-card .m-face.bing-1 .rosette { width: 20px !important; height: 20px !important; }
+    .mahjong-tile-card .m-face.bing .dot { width: 6.5px !important; height: 6.5px !important; }
+    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.35rem !important; }
+    .mahjong-tile-card .m-face.tiao .bar { width: 3.8px !important; height: 13px !important; }
 }
 
 
