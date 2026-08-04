@@ -2413,7 +2413,12 @@ class GameEngineController {
         if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
 
         const aiIdx = engine.currentTurn;
-        this.updateMahjongStatusUI(`🤖 AI 座位 ${aiIdx} 思考打牌中...`);
+        const seatNames = ['你', '右家', '对家', '左家'];
+        const aiName = seatNames[aiIdx] || `AI-${aiIdx}`;
+        this.updateMahjongStatusUI(`🤖 ${aiName} 思考打牌中...`);
+
+        // 拟真玩家思维延迟 800ms ~ 1700ms
+        const thinkDelay = 800 + Math.floor(Math.random() * 900);
 
         setTimeout(() => {
             if (engine.isGameOver || engine.currentTurn === 0) return;
@@ -2452,7 +2457,7 @@ class GameEngineController {
                 this.updateMahjongStatusUI('🀄 轮到你出牌');
                 this.checkSelfActionsOnTurn();
             }
-        }, 600);
+        }, thinkDelay);
     }
 
     /**
