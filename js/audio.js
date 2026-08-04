@@ -758,7 +758,11 @@ class AudioSynth {
      */
     playMahjongTile() {
         if (!this.enabled) return;
-        this.init();
+        try {
+            this.init();
+        } catch (e) {
+            // 音频初始化失败(如浏览器策略限制)绝不影响游戏流程
+        }
 
         // 优先使用 Web Audio API 解码 Buffer (0 延迟、100% 免疫阻断)
         if (this.ctx && this.mahjongTileBuffer) {

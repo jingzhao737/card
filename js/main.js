@@ -2072,6 +2072,11 @@ class GameEngineController {
             // 清掉上一局残留的出牌动作，防止重开时客户端误导入旧状态
             NetworkManager.clearMahjongMoves();
             NetworkManager.sendMahjongStart(roomId);
+            // 房主启动 AI 回合看门狗：任何异常/竞态导致 AI 回合卡住都会自动恢复
+            if (this._mahjongWatchdogId) clearInterval(this._mahjongWatchdogId);
+            this._mahjongWatchdogId = setInterval(() => {
+                this._checkMahjongAiWatchdog();
+            }, 4000);
         } else {
             // 客户端拉取房主生成的初始牌组状态
             NetworkManager.onMahjongInitState((initData) => {
@@ -2592,8 +2597,10 @@ class GameEngineController {
         if (!res) return;
 
         if (typeof SoundEngine !== 'undefined') {
-            if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
-            else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
+            try {
+                if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
+                else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
+            } catch (e) {}
         }
 
         this.animateTileThrow(res.discarded, 0);
@@ -2604,6 +2611,7 @@ class GameEngineController {
         if (!NetworkManager.isAiMode && NetworkManager.roomId) {
             NetworkManager.sendMahjongMove(mySlot, tileIndex, res.discarded, engine.exportState());
         }
+        this._mahjongLastMoveTs = Date.now();
 
         if (res.isGameOver) {
             this.showMahjongSettlement(-1, null);
@@ -2623,6 +2631,9 @@ class GameEngineController {
     triggerAiTurnLoop() {
         const engine = window.mahjongEngine;
         if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
+        // 防重入守卫：同一时刻只允许一条 AI 链运行，避免回声/自动过牌等重复调度导致 AI 连出两张
+        if (this._mahjongAiBusy) return;
+        this._mahjongAiBusy = true;
 
         const aiIdx = engine.currentTurn;
         const seatNames = ['你', '右家', '对家', '左家'];
@@ -2633,57 +2644,99 @@ class GameEngineController {
         const thinkDelay = 800 + Math.floor(Math.random() * 900);
 
         setTimeout(() => {
-            if (engine.isGameOver || engine.currentTurn === 0) return;
-            const aiMoveIdx = engine.getBestAiMove(aiIdx);
-            const aiRes = engine.discardTile(aiIdx, aiMoveIdx);
+            // 回合即将执行，释放守卫，让递归/看门狗可正常重新调度
+            this._mahjongAiBusy = false;
+            try {
+                if (engine.isGameOver || engine.currentTurn === 0) return;
+                const curIdx = engine.currentTurn;
+                const aiMoveIdx = engine.getBestAiMove(curIdx);
+                const aiRes = engine.discardTile(curIdx, aiMoveIdx);
 
-            // 广播 AI 出牌与最新全量牌桌状态至 Firebase 云端（保证非房主客户端同步）
-            if (!NetworkManager.isAiMode && NetworkManager.roomId && aiRes && aiRes.discarded) {
-                NetworkManager.sendMahjongMove(aiIdx, aiMoveIdx, aiRes.discarded, engine.exportState());
-            }
-
-            if (typeof SoundEngine !== 'undefined') {
-                if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
-                else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
-            }
-
-            if (aiRes && aiRes.discarded) {
-                this.animateTileThrow(aiRes.discarded, aiIdx);
-            }
-
-            this.renderMahjongHandTiles();
-            this.renderMahjongDiscards();
-
-            if (aiRes && aiRes.isGameOver) {
-                this.showMahjongSettlement(-1, null);
-                return;
-            }
-
-            // 检查我方 (Seat 0) 对 AI 打出的牌是否有 碰/杠/吃/胡 响应
-            if (aiRes && (aiRes.canHu || aiRes.canPong || aiRes.canKong || aiRes.canChow)) {
-                this.pendingDiscardRes = aiRes;
-                this.showHumanResponseActionBar(aiRes);
-                this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
-                // 联机多人局：房主 5 秒内未响应则自动过牌，防止 AI 回合被永久卡住
-                if (!NetworkManager.isAiMode) {
-                    if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
-                    this._mahjongResponseTimer = setTimeout(() => {
-                        if (this.pendingDiscardRes) {
-                            this.handleMahjongPassClick();
-                        }
-                    }, 5000);
+                // 广播 AI 出牌与最新全量牌桌状态至 Firebase 云端（保证非房主客户端同步）
+                if (!NetworkManager.isAiMode && NetworkManager.roomId && aiRes && aiRes.discarded) {
+                    NetworkManager.sendMahjongMove(curIdx, aiMoveIdx, aiRes.discarded, engine.exportState());
                 }
-                return;
-            }
+                this._mahjongLastMoveTs = Date.now();
 
-            // 轮到下一家
-            if (engine.currentTurn !== 0) {
-                this.triggerAiTurnLoop();
-            } else {
-                this.updateMahjongStatusUI('🀄 轮到你出牌');
-                this.checkSelfActionsOnTurn();
+                if (typeof SoundEngine !== 'undefined') {
+                    try {
+                        if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
+                        else if (typeof SoundEngine.playCardPlaySound === 'function') SoundEngine.playCardPlaySound();
+                    } catch (e) {
+                        console.warn('[Mahjong] 音效播放异常(已忽略):', e);
+                    }
+                }
+
+                if (aiRes && aiRes.discarded) {
+                    this.animateTileThrow(aiRes.discarded, curIdx);
+                }
+
+                this.renderMahjongHandTiles();
+                this.renderMahjongDiscards();
+
+                if (aiRes && aiRes.isGameOver) {
+                    this.showMahjongSettlement(-1, null);
+                    return;
+                }
+
+                // 检查我方 (Seat 0) 对 AI 打出的牌是否有 碰/杠/吃/胡 响应
+                if (aiRes && (aiRes.canHu || aiRes.canPong || aiRes.canKong || aiRes.canChow)) {
+                    this.pendingDiscardRes = aiRes;
+                    this.showHumanResponseActionBar(aiRes);
+                    this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
+                    // 联机多人局：房主 5 秒内未响应则自动过牌，防止 AI 回合被永久卡住
+                    if (!NetworkManager.isAiMode) {
+                        if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
+                        this._mahjongResponseTimer = setTimeout(() => {
+                            if (this.pendingDiscardRes) {
+                                this.handleMahjongPassClick();
+                            }
+                        }, 5000);
+                    }
+                    return;
+                }
+
+                // 轮到下一家
+                if (engine.currentTurn !== 0) {
+                    this.triggerAiTurnLoop();
+                } else {
+                    this.updateMahjongStatusUI('🀄 轮到你出牌');
+                    this.checkSelfActionsOnTurn();
+                }
+            } catch (err) {
+                console.error('[Mahjong] AI 回合执行异常，自动恢复轮转:', err);
+                // 兜底：渲染/动画/音效等任何一步出错都不能让 AI 链永久卡死
+                try {
+                    if (engine.isGameOver) return;
+                    if (engine.currentTurn !== 0) {
+                        this.triggerAiTurnLoop();
+                    } else {
+                        this.updateMahjongStatusUI('🀄 轮到你出牌');
+                        this.checkSelfActionsOnTurn();
+                    }
+                } catch (e2) {
+                    console.error('[Mahjong] AI 回合恢复失败:', e2);
+                }
             }
         }, thinkDelay);
+    }
+
+    /**
+     * 房主 AI 回合看门狗：若 AI 回合因任何原因卡住(异常/竞态)，自动重新驱动，保证对局不死锁
+     */
+    _checkMahjongAiWatchdog() {
+        const engine = window.mahjongEngine;
+        if (!engine || engine.isGameOver || engine.currentTurn === 0) return;
+        if (!NetworkManager.isHost || NetworkManager.isAiMode || !NetworkManager.roomId) return;
+        if (this._mahjongAiBusy) return;
+
+        const p = this.gameState.players[engine.currentTurn];
+        const isAiTurn = p ? !!p.isAi : (engine.currentTurn !== 0);
+        if (!isAiTurn) return;
+        if (Date.now() - (this._mahjongLastMoveTs || 0) < 6000) return;
+
+        console.warn('[Mahjong] 检测到 AI 回合疑似卡住，看门狗自动恢复驱动');
+        this.triggerAiTurnLoop();
     }
 
     /**
@@ -3667,6 +3720,7 @@ class GameEngineController {
         const isGomokuExit  = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
 
         this._stopKeepAlive();
+        if (this._mahjongWatchdogId) { clearInterval(this._mahjongWatchdogId); this._mahjongWatchdogId = null; }
         NetworkManager.clearSession();
 
         // 1. 如果在房间中，清除云端对应的槽位或房间
