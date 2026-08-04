@@ -430,6 +430,7 @@ class GameEngineController {
         if (btnCreateMahjongRoom) {
             btnCreateMahjongRoom.addEventListener('click', () => {
                 const nickname = getNickname();
+                this.activeGameType = 'MAHJONG';
                 NetworkManager.createRoom(nickname, (roomId) => {
                     UIRenderer.showToast(`✅ 游鲸麻将在线房间创建成功：#${roomId}`);
                     this.setupWaitingScreen(roomId);
@@ -914,13 +915,15 @@ class GameEngineController {
         if (tabBarInfo) tabBarInfo.addEventListener('click', () => switchProtrudingTab(true));
         if (tabBarStats) tabBarStats.addEventListener('click', () => switchProtrudingTab(false));
 
-        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU 分流)
-        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU 分流)
+        // 房主点击开局按钮 (按游戏类型 DOUDIZHU vs GOMOKU vs MAHJONG 分流)
         const _btnStartGame = document.getElementById('btnStartGame');
         if (_btnStartGame) {
             _btnStartGame.addEventListener('click', () => {
+                const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
-                if (isGomoku) {
+                if (isMahjong) {
+                    this.startMahjongAiMode();
+                } else if (isGomoku) {
                     const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
                     if (hasSecondPlayer) {
                         this.startGomokuOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
@@ -938,8 +941,12 @@ class GameEngineController {
         const _btnStartWithAi = document.getElementById('btnStartWithAi');
         if (_btnStartWithAi) {
             _btnStartWithAi.addEventListener('click', () => {
+                const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
-                if (isGomoku) {
+
+                if (isMahjong) {
+                    this.startMahjongAiMode();
+                } else if (isGomoku) {
                     this.startGomokuAiMode();
                 } else {
                     this.fillAiAndStart();
