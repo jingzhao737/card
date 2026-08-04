@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=26.1">
+    <link rel="stylesheet" href="css/styles.css?v=27.0">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,6 +84,19 @@
 
         <!-- 主大厅/大厅模式选择 (Hero Aesthetic Lobby) -->
         <div id="lobbyScreen" class="overlay-screen active" style="flex-direction: column; gap: 12px;">
+            <!-- 📬 主页最上方：系统邮件与公告广播 Bar (位于排行榜上方) -->
+            <div class="top-mail-bar" id="topMailBar">
+                <div class="mail-bar-left">
+                    <i class="fa-solid fa-bullhorn" style="color:#ffd700;"></i>
+                    <span class="top-notice-text" id="topNoticePreviewText">📢 全服福利与系统更新公告已送达</span>
+                </div>
+                <button class="btn-mail-trigger" id="btnOpenMailbox" type="button" title="点击查看系统邮件与领取奖励">
+                    <i class="fa-solid fa-envelope mail-icon"></i>
+                    <span>邮件箱</span>
+                    <span class="mail-unread-dot" id="mailUnreadDot" style="display:none;"></span>
+                </button>
+            </div>
+
             <!-- 独立的简略排行榜卡片 (完全独立解耦置于游鲸斗地主主卡片之上) -->
             <div class="mini-leaderboard-bar" id="lobbyMiniLeaderboard" title="点击查看全网详细高手榜">
                 <div class="mini-lb-left">
@@ -1377,6 +1390,27 @@
                 <button class="btn-primary" id="btnConfirmLevelUp" onclick="document.getElementById('levelUpModal').style.display='none';" style="width:100%;padding:12px 0;font-size:1rem;font-weight:800;background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border:none;border-radius:8px;cursor:pointer;">
                     🚀 领取升级奖励
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📬 系统邮件与公告箱弹窗 (Mailbox Modal) -->
+    <div id="mailboxModal" class="card-type-modal" style="display:none;z-index:10001;">
+        <div class="card-type-inner" style="max-width: 480px;">
+            <div class="ct-header" style="background:linear-gradient(135deg,#1e1e2f,#16213e);">
+                <span class="ct-title" style="color:#ffd700;"><i class="fa-solid fa-envelope-open-text"></i> 系统邮件与福利公告箱</span>
+                <button class="ct-close" id="btnCloseMailboxModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ct-body" style="padding: 16px 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:0.78rem;color:#94a3b8;"><i class="fa-solid fa-inbox"></i> 共 <b id="mailTotalCount" style="color:#ffd700;">0</b> 封邮件</span>
+                    <button id="btnClaimAllMails" style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border:none;border-radius:4px;padding:4px 10px;font-size:0.75rem;font-weight:800;cursor:pointer;">
+                        🎁 一键全部领取/标为已读
+                    </button>
+                </div>
+                <div id="mailboxListContainer" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+                    <!-- 动态渲染邮件列表 -->
+                </div>
             </div>
         </div>
     </div>

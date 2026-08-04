@@ -175,6 +175,136 @@ body:has(#lobbyScreen.active) .app-header,
     box-shadow: 0 0 8px rgba(255,215,0,0.1);
 }
 
+/* 📬 顶部邮件中心 Bar (位于全网排行榜上方) */
+.top-mail-bar {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+    transition: all 0.3s ease;
+}
+.top-mail-bar:hover {
+    border-color: rgba(255, 215, 0, 0.55);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+}
+.mail-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.top-notice-text {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.btn-mail-trigger {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(243, 156, 18, 0.28));
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+.btn-mail-trigger:hover {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+.btn-mail-trigger.has-unread {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #000;
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.8);
+    animation: mailGlowPulse 1.5s infinite alternate;
+}
+@keyframes mailGlowPulse {
+    0% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.4); transform: scale(1); }
+    100% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.9); transform: scale(1.03); }
+}
+.mail-unread-dot {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    background: #fbbf24;
+    border: 2px solid #0f172a;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #fbbf24;
+}
+
+/* 邮件卡片列表项样式 */
+.mail-item-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.mail-item-card.unread {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(251, 191, 36, 0.35);
+}
+.mail-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.mail-item-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.mail-item-date {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+.mail-item-body {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+}
+.mail-reward-box {
+    margin-top: 4px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px dashed rgba(255, 215, 0, 0.3);
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .brand {
     display: flex;
     align-items: center;

@@ -838,3 +838,206 @@ class AuthManager {
 }
 
 const AuthEngine = new AuthManager();
+
+/* ====================================================================
+   系统邮件与公告中心管理器 (MailEngine)
+   ==================================================================== */
+class MailManager {
+    constructor() {
+        this.systemMails = [
+            {
+                id: 'mail_v26_level_system',
+                title: '⭐ 全服 60 级等级成长与荣誉徽章上线！',
+                sender: '游鲸官方运营组',
+                date: '2026-08-05',
+                content: '亲爱的牌友：全服全新【60级等级成长系统】与【头像右下角等级圆徽章】已上线！每局对局无论胜负皆可斩获经验升阶！附赠全新版本上线问候礼包，祝您牌运昌隆！',
+                rewardCoins: 300
+            },
+            {
+                id: 'mail_welcome_gift',
+                title: '🎁 游鲸游戏全家桶到场欢迎礼',
+                sender: '游鲸大厅客服处',
+                date: '2026-08-01',
+                content: '欢迎来到游鲸斗地主·五子棋·麻将三合一大厅！开局即赠 500 知因币金币包，祝您对对大胜、连珠成线、喜胡牌局！',
+                rewardCoins: 500
+            },
+            {
+                id: 'mail_pve_zero_fee',
+                title: '🤖 单机人机切磋低门槛通告',
+                sender: '系统开发组',
+                date: '2026-08-04',
+                content: '大厅单机人机切磋模式统一调整为【固定 1 知因币】超低入场费！随时随地与高智能 AI 轻松切磋提升牌技！',
+                rewardCoins: 0
+            }
+        ];
+        this.readMailIds = new Set();
+        this.claimedMailIds = new Set();
+        this.loadStatus();
+    }
+
+    loadStatus() {
+        try {
+            const rawRead = localStorage.getItem('youjing_read_mails');
+            if (rawRead) JSON.parse(rawRead).forEach(id => this.readMailIds.add(id));
+
+            const rawClaimed = localStorage.getItem('youjing_claimed_mails');
+            if (rawClaimed) JSON.parse(rawClaimed).forEach(id => this.claimedMailIds.add(id));
+        } catch (e) {
+            console.error('MailManager load error', e);
+        }
+    }
+
+    saveStatus() {
+        try {
+            localStorage.setItem('youjing_read_mails', JSON.stringify([...this.readMailIds]));
+            localStorage.setItem('youjing_claimed_mails', JSON.stringify([...this.claimedMailIds]));
+        } catch (e) {
+            console.error('MailManager save error', e);
+        }
+    }
+
+    getUnreadCount() {
+        let count = 0;
+        this.systemMails.forEach(mail => {
+            if (!this.readMailIds.has(mail.id) || (mail.rewardCoins > 0 && !this.claimedMailIds.has(mail.id))) {
+                count++;
+            }
+        });
+        return count;
+    }
+
+    updateMailUI() {
+        const btnTrigger = document.getElementById('btnOpenMailbox');
+        const dotEl = document.getElementById('mailUnreadDot');
+        const unreadCount = this.getUnreadCount();
+
+        if (dotEl) dotEl.style.display = unreadCount > 0 ? 'block' : 'none';
+        if (btnTrigger) {
+            if (unreadCount > 0) {
+                btnTrigger.classList.add('has-unread');
+            } else {
+                btnTrigger.classList.remove('has-unread');
+            }
+        }
+
+        const noticeText = document.getElementById('topNoticePreviewText');
+        if (noticeText && this.systemMails.length > 0) {
+            const latestMail = this.systemMails[0];
+            noticeText.textContent = `${latestMail.title}`;
+        }
+    }
+
+    openMailboxModal() {
+        const modal = document.getElementById('mailboxModal');
+        const listContainer = document.getElementById('mailboxListContainer');
+        const countEl = document.getElementById('mailTotalCount');
+
+        if (countEl) countEl.textContent = this.systemMails.length;
+
+        if (listContainer) {
+            listContainer.innerHTML = this.systemMails.map(mail => {
+                const isRead = this.readMailIds.has(mail.id);
+                const isClaimed = this.claimedMailIds.has(mail.id);
+                const hasReward = mail.rewardCoins > 0;
+
+                return `
+                    <div class="mail-item-card ${(!isRead || (hasReward && !isClaimed)) ? 'unread' : ''}">
+                        <div class="mail-item-header">
+                            <span class="mail-item-title">
+                                ${(!isRead || (hasReward && !isClaimed)) ? '<i class="fa-solid fa-envelope" style="color:#fbbf24;"></i>' : '<i class="fa-solid fa-envelope-open" style="color:#94a3b8;"></i>'}
+                                <span>${mail.title}</span>
+                            </span>
+                            <span class="mail-item-date">${mail.date}</span>
+                        </div>
+                        <div class="mail-item-body">${mail.content}</div>
+                        ${hasReward ? `
+                            <div class="mail-reward-box">
+                                <span style="font-size:0.78rem;font-weight:700;color:#ffd700;">
+                                    🪙 附加奖励: +${mail.rewardCoins} 知因币
+                                </span>
+                                ${isClaimed ? `
+                                    <span style="font-size:0.72rem;color:#94a3b8;font-weight:700;"><i class="fa-solid fa-check"></i> 已领取</span>
+                                ` : `
+                                    <button class="btn-claim-single-mail" onclick="MailEngine.claimMailReward('${mail.id}')" style="background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border:none;border-radius:4px;padding:3px 10px;font-size:0.72rem;font-weight:800;cursor:pointer;">
+                                        🎁 领取奖励
+                                    </button>
+                                `}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 标记所有已展示邮件为已读
+        this.systemMails.forEach(mail => this.readMailIds.add(mail.id));
+        this.saveStatus();
+        this.updateMailUI();
+
+        if (modal) modal.style.display = 'flex';
+    }
+
+    claimMailReward(mailId) {
+        const mail = this.systemMails.find(m => m.id === mailId);
+        if (!mail || mail.rewardCoins <= 0) return;
+        if (this.claimedMailIds.has(mailId)) {
+            if (typeof UIRenderer !== 'undefined') UIRenderer.showToast('⚠️ 该邮件奖励已领取过！');
+            return;
+        }
+
+        this.claimedMailIds.add(mailId);
+        this.saveStatus();
+
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins) {
+            AuthEngine.updateCoins(mail.rewardCoins, `邮件奖励 (${mail.title})`);
+        }
+
+        if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) SoundEngine.playWin();
+
+        this.openMailboxModal();
+    }
+
+    claimAllMails() {
+        let totalClaimedCoins = 0;
+        let count = 0;
+
+        this.systemMails.forEach(mail => {
+            this.readMailIds.add(mail.id);
+            if (mail.rewardCoins > 0 && !this.claimedMailIds.has(mail.id)) {
+                this.claimedMailIds.add(mail.id);
+                totalClaimedCoins += mail.rewardCoins;
+                count++;
+            }
+        });
+
+        this.saveStatus();
+
+        if (totalClaimedCoins > 0 && typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins) {
+            AuthEngine.updateCoins(totalClaimedCoins, `一键领取 ${count} 封邮件福利`);
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) SoundEngine.playWin();
+        } else if (typeof UIRenderer !== 'undefined') {
+            UIRenderer.showToast('✅ 所有邮件已全部标为已读！');
+        }
+
+        this.openMailboxModal();
+    }
+}
+
+const MailEngine = new MailManager();
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        MailEngine.updateMailUI();
+    }, 500);
+
+    const btnOpen = document.getElementById('btnOpenMailbox');
+    const btnClose = document.getElementById('btnCloseMailboxModal');
+    const btnClaimAll = document.getElementById('btnClaimAllMails');
+
+    if (btnOpen) btnOpen.addEventListener('click', () => MailEngine.openMailboxModal());
+    if (btnClose) btnClose.addEventListener('click', () => {
+        const modal = document.getElementById('mailboxModal');
+        if (modal) modal.style.display = 'none';
+    });
+    if (btnClaimAll) btnClaimAll.addEventListener('click', () => MailEngine.claimAllMails());
+});
