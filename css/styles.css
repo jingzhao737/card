@@ -5678,7 +5678,7 @@ body.theme-mahjong {
 /* 沉底我方 3D 手牌区 (手机端紧密无缝密排，固定黄金 1:1.32 宽高比防拉伸) */
 .mahjong-tiles-bottom {
     display: flex;
-    gap: 1.5px !important; /* 严格一致的 1.5px 极小微缝隙 */
+    gap: 1px !important; /* 手机端严格统一 1px 微缝隙 */
     align-items: flex-end;
     justify-content: center;
     width: 100%;
@@ -5689,11 +5689,11 @@ body.theme-mahjong {
 
 .mahjong-tile-card {
     flex: 0 0 auto !important;
-    margin: 0 !important; /* 确保所有手牌间距 100% 绝对一致 */
-    width: calc((100% - 18px) / 14.2);
-    max-width: 30px;
+    margin: 0 !important; /* 保证 100% 间距统一无偏斜 */
+    width: calc((100% - 16px) / 14.2);
+    max-width: 25px;
     min-width: 18px;
-    aspect-ratio: 1 / 0.95; /* 宽大于高，极度宽阔饱满矮胖身材 */
+    aspect-ratio: 1 / 1.34; /* 手机端独立 1:1.34 拟真身材（告别“变扁”，展现立柱沉稳感） */
     height: auto;
     background: linear-gradient(145deg, #ffffff 0%, #fffdfa 70%, #f3eee3 100%);
     border-radius: 3px;
@@ -6289,29 +6289,29 @@ body.theme-mahjong {
         border-radius: 20px !important;
     }
 
-    /* PC 端我方手牌：48px 宽 x 46px 高 (宽度大于高度！极度宽大开阔，间距统一锁定 2px) */
+    /* PC 端独立样式：44px 宽 x 52px 高 (宽阔厚实大牌视感，与手机端独立隔离) */
     .mahjong-tiles-bottom {
-        gap: 2px !important; /* 严格统一一致的 2px 微缝隙 */
+        gap: 2px !important; /* 严格统一一致的 2px 缝隙 */
     }
 
     .mahjong-tile-card {
-        width: 48px !important;
-        height: 46px !important;
+        width: 44px !important;
+        height: 52px !important;
         aspect-ratio: auto !important;
         flex: 0 0 auto !important;
-        margin: 0 !important; /* 100% 统一间距 */
+        margin: 0 !important; /* 100% 绝对统一缝隙 */
         border-radius: 5px !important;
         box-shadow: 0 5.5px 0 #047857, 0 10px 18px rgba(0, 0, 0, 0.65) !important;
     }
 
-    .mahjong-tile-card .m-face.wan .w-num { font-size: 1.05rem !important; }
-    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.9rem !important; }
-    .mahjong-tile-card .m-face.honor { font-size: 1.35rem !important; }
-    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 22px !important; height: 26px !important; }
-    .mahjong-tile-card .m-face.bing-1 .rosette { width: 24px !important; height: 24px !important; }
-    .mahjong-tile-card .m-face.bing .dot { width: 7.5px !important; height: 7.5px !important; }
-    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.5rem !important; }
-    .mahjong-tile-card .m-face.tiao .bar { width: 4.2px !important; height: 13px !important; }
+    .mahjong-tile-card .m-face.wan .w-num { font-size: 1rem !important; }
+    .mahjong-tile-card .m-face.wan .w-char { font-size: 0.85rem !important; }
+    .mahjong-tile-card .m-face.honor { font-size: 1.3rem !important; }
+    .mahjong-tile-card .m-face.honor.baiban .baiban-inner { width: 20px !important; height: 27px !important; }
+    .mahjong-tile-card .m-face.bing-1 .rosette { width: 22px !important; height: 22px !important; }
+    .mahjong-tile-card .m-face.bing .dot { width: 7px !important; height: 7px !important; }
+    .mahjong-tile-card .m-face.tiao-1 .sparrow { font-size: 1.45rem !important; }
+    .mahjong-tile-card .m-face.tiao .bar { width: 4px !important; height: 14px !important; }
 }
 
 
