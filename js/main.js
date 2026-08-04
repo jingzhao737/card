@@ -2116,6 +2116,54 @@ class GameEngineController {
     }
 
     /**
+     * 生成正宗国粹 3D 浮雕麻将牌面图案 HTML (万、筒/饼、条/索、字/风/箭)
+     */
+    getMahjongTileFaceHTML(tile) {
+        if (!tile) return '';
+        const { type, num, name } = tile;
+
+        // 1. 字牌 (红中、发财、白板、东南西北)
+        if (type === '字') {
+            if (name === '红中') return `<div class="m-face honor red-zhong">中</div>`;
+            if (name === '发财') return `<div class="m-face honor green-fa">發</div>`;
+            if (name === '白板') return `<div class="m-face honor baiban"><div class="baiban-inner"></div></div>`;
+            return `<div class="m-face honor wind">${name.replace('风', '')}</div>`;
+        }
+
+        // 2. 万字牌 (1-9万)
+        if (type === '万') {
+            const cn = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+            return `<div class="m-face wan"><span class="w-num">${cn[num] || num}</span><span class="w-char">萬</span></div>`;
+        }
+
+        // 3. 饼/筒牌 (1-9饼)
+        if (type === '筒' || type === '饼') {
+            if (num === 1) {
+                return `<div class="m-face bing bing-1"><div class="rosette"><div class="rosette-inner"></div></div></div>`;
+            }
+            let dots = '';
+            for (let i = 1; i <= num; i++) {
+                dots += `<span class="dot d-${i}"></span>`;
+            }
+            return `<div class="m-face bing bing-${num}">${dots}</div>`;
+        }
+
+        // 4. 条/索牌 (1-9条)
+        if (type === '条' || type === '索') {
+            if (num === 1) {
+                return `<div class="m-face tiao tiao-1"><div class="sparrow">🀐</div></div>`;
+            }
+            let bars = '';
+            for (let i = 1; i <= num; i++) {
+                bars += `<span class="bar b-${i}"></span>`;
+            }
+            return `<div class="m-face tiao tiao-${num}">${bars}</div>`;
+        }
+
+        return `<div class="m-face fallback">${name}</div>`;
+    }
+
+    /**
      * 渲染我方手牌及另外 3 家盖牌背牌 (Top, Left, Right)
      */
     renderMahjongHandTiles() {
@@ -2136,7 +2184,7 @@ class GameEngineController {
                 const card = document.createElement('div');
                 card.className = 'mahjong-tile-card';
                 card.dataset.index = index;
-                card.innerHTML = `<span class="mahjong-tile-name">${tile.name}</span>`;
+                card.innerHTML = this.getMahjongTileFaceHTML(tile);
 
                 card.addEventListener('click', () => {
                     this.handleMahjongTileDiscard(index);
@@ -2199,7 +2247,7 @@ class GameEngineController {
             if (el) {
                 const list = engine.melds[item.idx] || [];
                 el.innerHTML = list.map(m => {
-                    const tilesHtml = m.tiles.map(t => `<span class="meld-tile">${t.name}</span>`).join('');
+                    const tilesHtml = m.tiles.map(t => `<div class="meld-tile">${this.getMahjongTileFaceHTML(t)}</div>`).join('');
                     return `<div class="meld-group">${tilesHtml}</div>`;
                 }).join('');
             }
@@ -2229,7 +2277,7 @@ class GameEngineController {
                 const list = engine.discards[item.idx] || [];
                 el.innerHTML = list.map((t, index) => {
                     const isLatest = (item.idx === lastPlayer && index === list.length - 1);
-                    return `<span class="discard-chip ${isLatest ? 'latest-discard' : ''}">${t.name}</span>`;
+                    return `<div class="discard-chip ${isLatest ? 'latest-discard' : ''}">${this.getMahjongTileFaceHTML(t)}</div>`;
                 }).join('');
             }
         });
@@ -2244,7 +2292,7 @@ class GameEngineController {
 
         const animTile = document.createElement('div');
         animTile.className = `throwing-mahjong-tile player-${playerIdx}`;
-        animTile.textContent = tile ? tile.name : '🀄';
+        animTile.innerHTML = tile ? this.getMahjongTileFaceHTML(tile) : '🀄';
 
         table.appendChild(animTile);
 
