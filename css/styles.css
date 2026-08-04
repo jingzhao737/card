@@ -5320,33 +5320,35 @@ body.theme-mahjong #lobbyScreen {
     z-index: 10;
 }
 
+/* 国粹沉稳翡翠翠绿 (Rich Authentic Mahjong Emerald Green) */
 .badge-tag.jade {
-    background: rgba(16, 185, 129, 0.15) !important;
-    color: #34d399 !important;
-    border: 1px solid rgba(52, 211, 153, 0.35) !important;
+    background: rgba(4, 120, 87, 0.22) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
 }
 
 .pill-badge.jade {
-    background: rgba(16, 185, 129, 0.2) !important;
-    color: #34d399 !important;
-    border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    background: rgba(4, 120, 87, 0.3) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.5) !important;
 }
 
 .card-icon-wrap.jade {
-    background: rgba(16, 185, 129, 0.15) !important;
-    color: #34d399 !important;
-    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    background: rgba(4, 120, 87, 0.25) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
 }
 
 .btn-join-action.jade, .btn-auth-action.jade {
-    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%) !important;
-    color: #022c22 !important;
+    background: linear-gradient(135deg, #059669 0%, #047857 60%, #064e3b 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #10b981 !important;
     font-weight: 800 !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45) !important;
 }
 
 .divider.mahjong-divider span {
-    color: #34d399;
+    color: #10b981;
 }
 
 /* 游鲸麻将 主大厅卡片 暖金桃木质感与精细微阴影 */
@@ -5357,31 +5359,31 @@ body.theme-mahjong #lobbyScreen {
 }
 
 .mode-card.primary-card.mahjong-theme {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.22) 100%) !important;
-    border: 1px solid rgba(52, 211, 153, 0.35) !important;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15) !important;
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.18) 0%, rgba(6, 78, 59, 0.3) 100%) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(4, 120, 87, 0.2) !important;
 }
 
 .mode-card.primary-card.mahjong-theme:hover {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.32) 100%) !important;
-    border-color: rgba(52, 211, 153, 0.6) !important;
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.28) !important;
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.3) 0%, rgba(6, 78, 59, 0.45) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.7) !important;
+    box-shadow: 0 6px 20px rgba(4, 120, 87, 0.35) !important;
     transform: translateY(-2px);
 }
 
 .mode-card.join-card.mahjong-join {
     background: rgba(0, 0, 0, 0.35) !important;
-    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
 }
 
 .mode-card.ai-card.mahjong-ai {
-    background: rgba(16, 185, 129, 0.05) !important;
-    border: 1px solid rgba(52, 211, 153, 0.25) !important;
+    background: rgba(4, 120, 87, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
 }
 
 .mode-card.ai-card.mahjong-ai:hover {
-    background: rgba(16, 185, 129, 0.12) !important;
-    border-color: rgba(52, 211, 153, 0.5) !important;
+    background: rgba(4, 120, 87, 0.2) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
     transform: translateY(-2px);
 }
 
