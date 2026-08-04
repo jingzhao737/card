@@ -5693,14 +5693,14 @@ body.theme-mahjong #lobbyScreen {
     box-shadow: 2px 0 0 #022c22;
 }
 
-/* 4 方弃牌与中央罗盘 */
+/* 4 方弃牌与中央罗盘 (精致规整 6 张一行/一列自动换行) */
 .table-center-zone {
     position: absolute;
     top: 42%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5717,32 +5717,66 @@ body.theme-mahjong #lobbyScreen {
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
-    max-width: 110px;
 }
 
-.discard-grid.grid-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
-.discard-grid.grid-top { top: 0; left: 50%; transform: translateX(-50%); }
-.discard-grid.grid-left { left: 0; top: 50%; transform: translateY(-50%); flex-direction: column; }
-.discard-grid.grid-right { right: 0; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.discard-grid.grid-bottom {
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 108px;
+    justify-content: center;
+}
 
+.discard-grid.grid-top {
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 108px;
+    justify-content: center;
+}
+
+.discard-grid.grid-left {
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 98px;
+    max-height: 80px;
+    flex-direction: row;
+    align-content: flex-start;
+    justify-content: flex-start;
+}
+
+.discard-grid.grid-right {
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 98px;
+    max-height: 80px;
+    flex-direction: row-reverse;
+    align-content: flex-start;
+    justify-content: flex-start;
+}
+
+/* 缩减弃牌尺寸：从 20x28 缩小为 15x21，紧凑规整防拥挤 */
 .discard-chip {
-    width: 20px;
-    height: 28px;
+    width: 15px;
+    height: 21px;
     background: #ffffff;
-    border-radius: 2px;
-    box-shadow: 0 2px 0 #059669;
+    border-radius: 1.5px;
+    box-shadow: 0 1.5px 0 #059669;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
-.discard-chip .m-face.wan .w-num { font-size: 0.62rem; }
-.discard-chip .m-face.wan .w-char { font-size: 0.55rem; }
-.discard-chip .m-face.honor { font-size: 0.85rem; }
-.discard-chip .m-face.honor.baiban .baiban-inner { width: 11px; height: 16px; }
-.discard-chip .m-face.bing-1 .rosette { width: 14px; height: 14px; }
-.discard-chip .m-face.tiao-1 .sparrow { font-size: 0.85rem; }
+.discard-chip .m-face.wan .w-num { font-size: 0.48rem; line-height: 1; }
+.discard-chip .m-face.wan .w-char { font-size: 0.42rem; line-height: 1; }
+.discard-chip .m-face.honor { font-size: 0.65rem; }
+.discard-chip .m-face.honor.baiban .baiban-inner { width: 8px; height: 12px; }
+.discard-chip .m-face.bing-1 .rosette { width: 10px; height: 10px; }
+.discard-chip .m-face.tiao-1 .sparrow { font-size: 0.65rem; }
 
 .meld-tile {
     width: 22px;
