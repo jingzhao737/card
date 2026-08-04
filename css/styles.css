@@ -4623,14 +4623,16 @@ body.theme-gomoku .overlay-screen {
     border: none;
 }
 
-/* 玩家 ID / 昵称 (单独一行，长 ID 完整展示不截断) */
+/* 玩家 ID / 昵称 (独立单行，字号精简且不换行) */
 .player-pill-name {
-    font-size: 0.82rem;
-    font-weight: 800;
+    font-size: 0.72rem;
+    font-weight: 700;
     color: #f1f5f9;
     width: 100%;
-    word-break: break-word;
-    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .player-pill-name.align-right {
