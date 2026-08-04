@@ -2949,6 +2949,50 @@ class GameEngineController {
     }
 
     /**
+     * 🀄 拟真摸牌飞牌动画 (从剩余牌墙/中心桌台飞入当前出牌玩家手牌区)
+     */
+    animateTileDraw(playerIdx, tile, onComplete) {
+        const table = document.querySelector('.vertical-mahjong-table');
+        if (!table) {
+            if (typeof onComplete === 'function') onComplete();
+            return;
+        }
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const relativePos = (playerIdx - mySlot + 4) % 4;
+
+        // 播摸牌声音
+        if (typeof SoundEngine !== 'undefined') {
+            try {
+                if (typeof SoundEngine.playMahjongTile === 'function') SoundEngine.playMahjongTile();
+                else if (typeof SoundEngine.playCardFlipSound === 'function') SoundEngine.playCardFlipSound();
+            } catch (e) {}
+        }
+
+        // 创建飞行动态抓牌元素
+        const animTile = document.createElement('div');
+        animTile.className = `drawing-mahjong-tile target-player-${relativePos}`;
+
+        // 我方摸牌显示正面图案，其他玩家显示绿色盖牌背面
+        if (relativePos === 0 && tile) {
+            animTile.innerHTML = this.getMahjongTileFaceHTML(tile);
+            animTile.classList.add('is-face');
+        } else {
+            animTile.classList.add('is-back');
+        }
+
+        table.appendChild(animTile);
+
+        // 动画时长 260ms
+        setTimeout(() => {
+            if (animTile.parentNode) {
+                animTile.parentNode.removeChild(animTile);
+            }
+            if (typeof onComplete === 'function') onComplete();
+        }, 260);
+    }
+
+    /**
      * 启动/重置 25 秒麻将倒计时器 (与扑克风格一致，超时自动打出刚摸的牌)
      */
     resetMahjongTurnTimer() {
@@ -3102,6 +3146,10 @@ class GameEngineController {
         this.renderMahjongHandTiles();
         this.renderMahjongDiscards();
 
+        if (res.nextPlayer !== undefined && !res.isGameOver) {
+            this.animateTileDraw(res.nextPlayer, engine.lastDrawnTile);
+        }
+
         // 广播出牌与最新全量牌桌状态至 Firebase 云端
         if (!NetworkManager.isAiMode && NetworkManager.roomId) {
             NetworkManager.sendMahjongMove(mySlot, tileIndex, res.discarded, engine.exportState());
@@ -3210,10 +3258,12 @@ class GameEngineController {
                     return;
                 }
 
-                // 轮到下一家
+                // 轮到下一家摸牌与打牌
                 if (engine.currentTurn !== mySlot) {
+                    this.animateTileDraw(engine.currentTurn, engine.lastDrawnTile);
                     this.triggerAiTurnLoop();
                 } else {
+                    this.animateTileDraw(mySlot, engine.lastDrawnTile);
                     this.updateMahjongStatusUI('🀄 轮到你出牌');
                     this.checkSelfActionsOnTurn();
                 }

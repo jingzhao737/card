@@ -6210,6 +6210,84 @@ body.theme-mahjong #lobbyScreen {
     }
 }
 
+/* 🀄 摸牌飞牌动画 (Tile Drawing Animation) */
+.drawing-mahjong-tile {
+    position: absolute;
+    z-index: 120;
+    width: 27px;
+    height: 37px;
+    border-radius: 4px;
+    pointer-events: none;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawing-mahjong-tile.is-back {
+    background: linear-gradient(145deg, #10b981 0%, #059669 60%, #047857 100%);
+    border: 1.5px solid #a7f3d0;
+}
+
+.drawing-mahjong-tile.is-face {
+    background: linear-gradient(145deg, #ffffff 0%, #fffdfa 70%, #f3eee3 100%);
+    border: 1.5px solid #34d399;
+}
+
+/* 我方 (Seat 0, Bottom) 摸牌轨迹：从牌墙下落至底部手牌 */
+.drawing-mahjong-tile.target-player-0 {
+    top: 15%;
+    left: 50%;
+    animation: mahjongTileDrawFlyBottom 0.26s cubic-bezier(0.2, 0.9, 0.35, 1.1) forwards;
+}
+@keyframes mahjongTileDrawFlyBottom {
+    0% {
+        transform: translate(-50%, 0) scale(0.6) rotate(-8deg);
+        opacity: 0.5;
+    }
+    60% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, 140px) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* 右家 (Seat 1) 摸牌轨迹 */
+.drawing-mahjong-tile.target-player-1 {
+    top: 20%;
+    left: 50%;
+    animation: mahjongTileDrawFlyRight 0.26s cubic-bezier(0.2, 0.9, 0.35, 1.1) forwards;
+}
+@keyframes mahjongTileDrawFlyRight {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 0.5; }
+    100% { transform: translate(110px, 35px) scale(0.85); opacity: 1; }
+}
+
+/* 对家 (Seat 2) 摸牌轨迹 */
+.drawing-mahjong-tile.target-player-2 {
+    top: 20%;
+    left: 50%;
+    animation: mahjongTileDrawFlyTop 0.26s cubic-bezier(0.2, 0.9, 0.35, 1.1) forwards;
+}
+@keyframes mahjongTileDrawFlyTop {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 0.5; }
+    100% { transform: translate(-50%, -45px) scale(0.85); opacity: 1; }
+}
+
+/* 左家 (Seat 3) 摸牌轨迹 */
+.drawing-mahjong-tile.target-player-3 {
+    top: 20%;
+    left: 50%;
+    animation: mahjongTileDrawFlyLeft 0.26s cubic-bezier(0.2, 0.9, 0.35, 1.1) forwards;
+}
+@keyframes mahjongTileDrawFlyLeft {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 0.5; }
+    100% { transform: translate(-150px, 35px) scale(0.85); opacity: 1; }
+}
+
 /* ==========================================================================
    💻 PC / 桌面端自适应大号正方形雀神桌台 (PC Desktop Large Square Table)
    ========================================================================== */
