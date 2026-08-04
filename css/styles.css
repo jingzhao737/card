@@ -5518,7 +5518,9 @@ body.theme-mahjong #lobbyScreen {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 6px;
+    padding: 16px 10px 10px 10px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     box-sizing: border-box;
     overflow: hidden;
     z-index: 1000;
@@ -5535,28 +5537,31 @@ body.theme-mahjong #lobbyScreen {
     gap: 6px;
     box-sizing: border-box;
     overflow: hidden;
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
-/* 顶部导航 Bar (固定置顶) */
+/* 顶部导航 Bar (增加顶部向下空隙，避开手机刘海/状态栏) */
 .mahjong-top-bar {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 6px;
+    padding: 8px 6px 10px 6px;
+    margin-top: 4px;
     flex-shrink: 0;
+    z-index: 50;
 }
 
 .btn-mahjong-nav-back, .btn-mahjong-nav-rematch {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #e2e8f0;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 0.74rem;
-    font-weight: 700;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #f1f5f9;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
 .btn-mahjong-nav-rematch {
