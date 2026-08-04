@@ -2643,8 +2643,9 @@ class GameEngineController {
 
     /**
      * 渲染我方手牌及另外 3 家盖牌背牌 (Top, Left, Right)
+     * @param {boolean} animateSort - 是否播放理牌滑动动画 (FLIP Sliding Sort Animation)
      */
-    renderMahjongHandTiles() {
+    renderMahjongHandTiles(animateSort = false) {
         const engine = window.mahjongEngine;
         if (!engine) return;
 
@@ -2655,70 +2656,128 @@ class GameEngineController {
         if (countEl) countEl.textContent = engine.wallCount;
         this.renderMahjongVisualWall();
 
-        // 1. 渲染我方 (Seat mySlot) 手牌
         const containerBottom = document.getElementById('mahjongHandTilesContainer');
-        if (containerBottom) {
-            containerBottom.innerHTML = '';
-            const myHand = engine.hands[mySlot] || [];
+        if (!containerBottom) return;
 
-            myHand.forEach((tile, index) => {
-                const card = document.createElement('div');
-                card.className = 'mahjong-tile-card';
-                if (this.selectedMahjongTileIndex === index) {
-                    card.classList.add('selected');
+        // 1. FLIP 动画前半段：记录我方手牌原有 DOM 坐标 (Left, Top)
+        const oldPositions = new Map();
+        if (animateSort) {
+            const existingCards = containerBottom.querySelectorAll('.mahjong-tile-card');
+            existingCards.forEach(card => {
+                const tileId = card.dataset.tileId;
+                if (tileId) {
+                    oldPositions.set(tileId, card.getBoundingClientRect());
                 }
-                card.dataset.index = index;
-                card.innerHTML = this.getMahjongTileFaceHTML(tile);
-
-                card.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (this.selectedMahjongTileIndex === index) {
-                        // 第 2 次点击：确认打出此牌！
-                        this.selectedMahjongTileIndex = -1;
-                        this.handleMahjongTileDiscard(index);
-                    } else {
-                        // 第 1 次点击：高亮凸起选中此牌！
-                        this.selectedMahjongTileIndex = index;
-                        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
-                            SoundEngine.playCardFlipSound();
-                        }
-                        this.renderMahjongHandTiles();
-                    }
-                });
-
-                containerBottom.appendChild(card);
             });
         }
 
-        // 2. 渲染北家 (Top) 盖牌背牌
+        // 2. 渲染我方 (Seat mySlot) 手牌
+        containerBottom.innerHTML = '';
+        const myHand = engine.hands[mySlot] || [];
+        const isMyTurnAndDrawn = (engine.currentTurn === mySlot && myHand.length % 3 === 2);
+
+        myHand.forEach((tile, index) => {
+            const card = document.createElement('div');
+            card.className = 'mahjong-tile-card';
+            card.dataset.tileId = tile.id || `${tile.type}_${tile.num}_${index}`;
+            card.dataset.index = index;
+
+            // 🀄 摸牌位：若轮到我方且有 14 张牌（或吃碰杠后 4/7/10/14 张），最右侧最后一张为摸牌位，离左侧手牌空开间隔
+            if (isMyTurnAndDrawn && index === myHand.length - 1) {
+                card.classList.add('is-drawn-tile');
+            }
+
+            if (this.selectedMahjongTileIndex === index) {
+                card.classList.add('selected');
+            }
+            card.innerHTML = this.getMahjongTileFaceHTML(tile);
+
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.selectedMahjongTileIndex === index) {
+                    // 第 2 次点击：确认打出此牌！
+                    this.selectedMahjongTileIndex = -1;
+                    this.handleMahjongTileDiscard(index);
+                } else {
+                    // 第 1 次点击：高亮凸起选中此牌！
+                    this.selectedMahjongTileIndex = index;
+                    if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
+                        SoundEngine.playCardFlipSound();
+                    }
+                    this.renderMahjongHandTiles();
+                }
+            });
+
+            containerBottom.appendChild(card);
+        });
+
+        // 3. FLIP 动画后半段：比对新旧坐标并播放理牌滑动动画 (0.28s)
+        if (animateSort && oldPositions.size > 0) {
+            const newCards = containerBottom.querySelectorAll('.mahjong-tile-card');
+            let hasMoved = false;
+
+            newCards.forEach(card => {
+                const tileId = card.dataset.tileId;
+                const oldRect = oldPositions.get(tileId);
+                if (oldRect) {
+                    const newRect = card.getBoundingClientRect();
+                    const deltaX = oldRect.left - newRect.left;
+                    if (Math.abs(deltaX) > 1) {
+                        hasMoved = true;
+                        card.style.transform = `translateX(${deltaX}px)`;
+                        card.style.transition = 'none';
+
+                        requestAnimationFrame(() => {
+                            card.style.transition = 'transform 0.28s cubic-bezier(0.22, 0.9, 0.35, 1)';
+                            card.style.transform = 'translateX(0)';
+                        });
+                    }
+                }
+            });
+
+            if (hasMoved && typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
+                try { SoundEngine.playCardFlipSound(); } catch (e) {}
+            }
+        }
+
+        // 4. 渲染北家 (Top) 盖牌背牌
         const containerTop = document.getElementById('mahjongTilesTop');
         if (containerTop) {
-            const countTop = (engine.hands[(mySlot + 2) % 4] || []).length;
+            const topHand = engine.hands[(mySlot + 2) % 4] || [];
+            const countTop = topHand.length;
+            const isTopTurn = (engine.currentTurn === (mySlot + 2) % 4 && countTop % 3 === 2);
             let htmlTop = '';
             for (let i = 0; i < countTop; i++) {
-                htmlTop += `<div class="standing-tile-top"></div>`;
+                const isDrawn = (isTopTurn && i === countTop - 1) ? 'is-drawn-tile' : '';
+                htmlTop += `<div class="standing-tile-top ${isDrawn}"></div>`;
             }
             containerTop.innerHTML = htmlTop;
         }
 
-        // 3. 渲染西家 (Left) 盖牌背牌
+        // 5. 渲染西家 (Left) 盖牌背牌
         const containerLeft = document.getElementById('mahjongTilesLeft');
         if (containerLeft) {
-            const countLeft = (engine.hands[(mySlot + 3) % 4] || []).length;
+            const leftHand = engine.hands[(mySlot + 3) % 4] || [];
+            const countLeft = leftHand.length;
+            const isLeftTurn = (engine.currentTurn === (mySlot + 3) % 4 && countLeft % 3 === 2);
             let htmlLeft = '';
             for (let i = 0; i < countLeft; i++) {
-                htmlLeft += `<div class="standing-tile-left"></div>`;
+                const isDrawn = (isLeftTurn && i === countLeft - 1) ? 'is-drawn-tile' : '';
+                htmlLeft += `<div class="standing-tile-left ${isDrawn}"></div>`;
             }
             containerLeft.innerHTML = htmlLeft;
         }
 
-        // 4. 渲染东家 (Right) 盖牌背牌
+        // 6. 渲染东家 (Right) 盖牌背牌
         const containerRight = document.getElementById('mahjongTilesRight');
         if (containerRight) {
-            const countRight = (engine.hands[(mySlot + 1) % 4] || []).length;
+            const rightHand = engine.hands[(mySlot + 1) % 4] || [];
+            const countRight = rightHand.length;
+            const isRightTurn = (engine.currentTurn === (mySlot + 1) % 4 && countRight % 3 === 2);
             let htmlRight = '';
             for (let i = 0; i < countRight; i++) {
-                htmlRight += `<div class="standing-tile-right"></div>`;
+                const isDrawn = (isRightTurn && i === countRight - 1) ? 'is-drawn-tile' : '';
+                htmlRight += `<div class="standing-tile-right ${isDrawn}"></div>`;
             }
             containerRight.innerHTML = htmlRight;
         }
@@ -3143,7 +3202,7 @@ class GameEngineController {
         }
 
         this.animateTileThrow(res.discarded, 0);
-        this.renderMahjongHandTiles();
+        this.renderMahjongHandTiles(true);
         this.renderMahjongDiscards();
 
         if (res.nextPlayer !== undefined && !res.isGameOver) {
@@ -3233,7 +3292,7 @@ class GameEngineController {
                     this.animateTileThrow(aiRes.discarded, curIdx);
                 }
 
-                this.renderMahjongHandTiles();
+                this.renderMahjongHandTiles(true);
                 this.renderMahjongDiscards();
 
                 if (aiRes && aiRes.isGameOver) {

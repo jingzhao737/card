@@ -5985,6 +5985,25 @@ body.theme-mahjong #lobbyScreen {
     z-index: 20 !important;
 }
 
+/* 🀄 正宗麻将摸牌位：13 张整齐理牌 + 1 张最右侧独立隔开摸牌位 */
+.mahjong-tile-card.is-drawn-tile {
+    margin-left: 14px !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 3.5px 0 #047857, 0 0 8px rgba(245, 158, 11, 0.4) !important;
+}
+
+.standing-tile-top.is-drawn-tile {
+    margin-right: 12px !important;
+}
+
+.standing-tile-left.is-drawn-tile {
+    margin-top: 10px !important;
+}
+
+.standing-tile-right.is-drawn-tile {
+    margin-bottom: 10px !important;
+}
+
 /* 📱 手机移动端 (max-width: 768px) 独立隔离尺寸：桌台位置平衡微调 */
 @media (max-width: 768px) {
     .mahjong-screen-wrap {
