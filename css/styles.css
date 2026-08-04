@@ -95,6 +95,24 @@ body.theme-gomoku .app-header {
     border-bottom: 1px solid rgba(52, 211, 153, 0.3) !important;
 }
 
+/* 🀄 国粹翡翠金纹主题：游鲸麻将专属全局大背景（带菱形网格）与 Header */
+body.theme-mahjong,
+body.theme-mahjong .game-container {
+    background-color: #031c15 !important;
+    background-image:
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 60%, #01140e 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%2334d399' stroke-width='0.75' stroke-opacity='0.2'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23ffd700' stroke-width='0.4' stroke-opacity='0.16'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%2334d399' fill-opacity='0.15'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='2' cy='2' r='0.8' fill='%2334d399' fill-opacity='0.08'/%3E%3Ccircle cx='8' cy='8' r='0.7' fill='%2334d399' fill-opacity='0.07'/%3E%3C/svg%3E") !important;
+    background-size: cover, 36px 36px, 12px 12px !important;
+    transition: background 0.4s ease;
+}
+
+body.theme-mahjong .top-nav,
+body.theme-mahjong .app-header {
+    background: linear-gradient(180deg, #062218 0%, #03140e 100%) !important;
+    border-bottom: 1px solid rgba(52, 211, 153, 0.3) !important;
+}
+
 /* 当主页大厅 (#lobbyScreen) 处于激活状态时，隐藏顶部 app-header 导航条 */
 body:has(#lobbyScreen.active) .app-header,
 .game-container:has(#lobbyScreen.active) .app-header,
