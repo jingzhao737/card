@@ -14,6 +14,12 @@ class AudioSynth {
         this.isMahjongBufferLoading = false;
         this.mahjongShuffleBuffer = null;
         this.isMahjongShuffleBufferLoading = false;
+        this.mahjongChowBuffer = null;
+        this.isMahjongChowBufferLoading = false;
+        this.mahjongPongBuffer = null;
+        this.isMahjongPongBufferLoading = false;
+        this.mahjongKongBuffer = null;
+        this.isMahjongKongBufferLoading = false;
         this.mobileAudioUnlocked = false;
     }
 
@@ -40,6 +46,15 @@ class AudioSynth {
             if (!this.mahjongShuffleBuffer && !this.isMahjongShuffleBufferLoading) {
                 this.loadMahjongShuffleBuffer();
             }
+            if (!this.mahjongChowBuffer && !this.isMahjongChowBufferLoading) {
+                this.loadMahjongChowBuffer();
+            }
+            if (!this.mahjongPongBuffer && !this.isMahjongPongBufferLoading) {
+                this.loadMahjongPongBuffer();
+            }
+            if (!this.mahjongKongBuffer && !this.isMahjongKongBufferLoading) {
+                this.loadMahjongKongBuffer();
+            }
         }
     }
 
@@ -53,7 +68,7 @@ class AudioSynth {
         }
 
         // 解封 HTML5 Audio 标签 (iOS Safari 关键静音触发解封)
-        ['audioCardFlip', 'audioStoneDrop', 'audioMahjongTile', 'audioMahjongShuffle'].forEach(id => {
+        ['audioCardFlip', 'audioStoneDrop', 'audioMahjongTile', 'audioMahjongShuffle', 'audioMahjongChow', 'audioMahjongPong', 'audioMahjongKong'].forEach(id => {
             const el = document.getElementById(id);
             if (el && !this.mobileAudioUnlocked) {
                 try {
@@ -141,6 +156,60 @@ class AudioSynth {
             }
         } catch (e) {
             this.isMahjongShuffleBufferLoading = 'failed';
+        }
+    }
+
+    async loadMahjongChowBuffer() {
+        if (this.mahjongChowBuffer || this.isMahjongChowBufferLoading) return;
+        this.isMahjongChowBufferLoading = true;
+        try {
+            const response = await fetch('sound/chi.mp3');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.mahjongChowBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            } else {
+                this.isMahjongChowBufferLoading = 'failed';
+            }
+        } catch (e) {
+            this.isMahjongChowBufferLoading = 'failed';
+        }
+    }
+
+    async loadMahjongPongBuffer() {
+        if (this.mahjongPongBuffer || this.isMahjongPongBufferLoading) return;
+        this.isMahjongPongBufferLoading = true;
+        try {
+            const response = await fetch('sound/peng.mp3');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.mahjongPongBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            } else {
+                this.isMahjongPongBufferLoading = 'failed';
+            }
+        } catch (e) {
+            this.isMahjongPongBufferLoading = 'failed';
+        }
+    }
+
+    async loadMahjongKongBuffer() {
+        if (this.mahjongKongBuffer || this.isMahjongKongBufferLoading) return;
+        this.isMahjongKongBufferLoading = true;
+        try {
+            const response = await fetch('sound/gang.mp3');
+            if (response.ok) {
+                const arrayBuffer = await response.arrayBuffer();
+                if (this.ctx) {
+                    this.mahjongKongBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+                }
+            } else {
+                this.isMahjongKongBufferLoading = 'failed';
+            }
+        } catch (e) {
+            this.isMahjongKongBufferLoading = 'failed';
         }
     }
 
@@ -882,6 +951,123 @@ class AudioSynth {
             if (playPromise !== undefined) {
                 playPromise.catch(() => {});
             }
+        } catch (e) {}
+    }
+
+    /**
+     * 播放吃牌配音 (sound/chi.mp3)
+     */
+    playMahjongChow() {
+        if (!this.enabled) return;
+        this.init();
+
+        if (this.ctx && this.mahjongChowBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.mahjongChowBuffer;
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 1.0;
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+                source.start(0);
+                return;
+            } catch (e) {}
+        }
+
+        const el = document.getElementById('audioMahjongChow');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 1.0;
+                const p = clone.play();
+                if (p !== undefined) p.then(() => {}).catch(() => {});
+                return;
+            } catch (e) {}
+        }
+
+        try {
+            const audio = new Audio('sound/chi.mp3');
+            audio.volume = 1.0;
+            const p = audio.play();
+            if (p !== undefined) p.catch(() => {});
+        } catch (e) {}
+    }
+
+    /**
+     * 播放碰牌配音 (sound/peng.mp3)
+     */
+    playMahjongPong() {
+        if (!this.enabled) return;
+        this.init();
+
+        if (this.ctx && this.mahjongPongBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.mahjongPongBuffer;
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 1.0;
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+                source.start(0);
+                return;
+            } catch (e) {}
+        }
+
+        const el = document.getElementById('audioMahjongPong');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 1.0;
+                const p = clone.play();
+                if (p !== undefined) p.then(() => {}).catch(() => {});
+                return;
+            } catch (e) {}
+        }
+
+        try {
+            const audio = new Audio('sound/peng.mp3');
+            audio.volume = 1.0;
+            const p = audio.play();
+            if (p !== undefined) p.catch(() => {});
+        } catch (e) {}
+    }
+
+    /**
+     * 播放杠牌配音 (sound/gang.mp3)
+     */
+    playMahjongKong() {
+        if (!this.enabled) return;
+        this.init();
+
+        if (this.ctx && this.mahjongKongBuffer) {
+            try {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.mahjongKongBuffer;
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.value = 1.0;
+                source.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+                source.start(0);
+                return;
+            } catch (e) {}
+        }
+
+        const el = document.getElementById('audioMahjongKong');
+        if (el) {
+            try {
+                const clone = el.cloneNode(true);
+                clone.volume = 1.0;
+                const p = clone.play();
+                if (p !== undefined) p.then(() => {}).catch(() => {});
+                return;
+            } catch (e) {}
+        }
+
+        try {
+            const audio = new Audio('sound/gang.mp3');
+            audio.volume = 1.0;
+            const p = audio.play();
+            if (p !== undefined) p.catch(() => {});
         } catch (e) {}
     }
 }

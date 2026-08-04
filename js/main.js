@@ -2453,7 +2453,7 @@ class GameEngineController {
     }
 
     /**
-     * 播放国风特效大字报 (吃！/碰！/杠！/胡！)
+     * 播放国风特效大字报 (吃！/碰！/杠！/胡！) 并联动触发高保真语音音效 (chi.mp3, peng.mp3, gang.mp3)
      */
     showMahjongActionToast(text) {
         const toast = document.getElementById('mahjongActionToast');
@@ -2462,6 +2462,17 @@ class GameEngineController {
 
         textEl.textContent = text;
         toast.style.display = 'block';
+
+        // 联动播放真实声优语音音效
+        if (typeof SoundEngine !== 'undefined') {
+            if (text.includes('吃') || text.includes('CHOW')) {
+                if (typeof SoundEngine.playMahjongChow === 'function') SoundEngine.playMahjongChow();
+            } else if (text.includes('碰') || text.includes('PONG')) {
+                if (typeof SoundEngine.playMahjongPong === 'function') SoundEngine.playMahjongPong();
+            } else if (text.includes('杠') || text.includes('KONG')) {
+                if (typeof SoundEngine.playMahjongKong === 'function') SoundEngine.playMahjongKong();
+            }
+        }
 
         if (this._actionToastTimer) clearTimeout(this._actionToastTimer);
         this._actionToastTimer = setTimeout(() => {
