@@ -103,10 +103,11 @@ class MahjongEngine {
         this.discards[playerIdx].push(discarded);
         this.hands[playerIdx] = this.sortHand(hand);
 
-        // 检查对方是否可以胡/碰
+        // 检查对方是否可以胡/碰/杠
         const nextPlayer = (playerIdx + 1) % 2;
         const canHu = this.checkCanHu(this.hands[nextPlayer], discarded);
         const canPong = this.checkCanPong(this.hands[nextPlayer], discarded);
+        const canKong = this.checkCanKong(this.hands[nextPlayer], discarded);
 
         // 切换回合并摸牌
         if (this.wall.length > 0) {
@@ -126,6 +127,7 @@ class MahjongEngine {
             nextPlayer: this.currentTurn,
             canHu,
             canPong,
+            canKong,
             isGameOver: this.isGameOver,
             winner: this.winner
         };
@@ -153,11 +155,51 @@ class MahjongEngine {
         });
 
         if (matchingIndices.length === 2) {
-            // 从手牌中移除 2 张
             const p1 = hand.splice(matchingIndices[1], 1)[0];
             const p2 = hand.splice(matchingIndices[0], 1)[0];
             this.melds[playerIdx].push({ type: 'PONG', tiles: [p1, p2, tile] });
             this.currentTurn = playerIdx; // 回合转给碰牌方落子
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断是否能杠牌 (手牌中有 3 张及以上同名牌)
+     */
+    checkCanKong(hand, tile) {
+        if (!tile) return false;
+        const matchCount = hand.filter(t => t.name === tile.name).length;
+        return matchCount >= 3;
+    }
+
+    /**
+     * 执行杠牌操作 (杠牌后补摸一张牌)
+     */
+    executeKong(playerIdx, tile) {
+        const hand = this.hands[playerIdx];
+        const matchingIndices = [];
+        hand.forEach((t, idx) => {
+            if (t.name === tile.name && matchingIndices.length < 3) {
+                matchingIndices.push(idx);
+            }
+        });
+
+        if (matchingIndices.length === 3) {
+            for (let i = matchingIndices.length - 1; i >= 0; i--) {
+                hand.splice(matchingIndices[i], 1);
+            }
+            this.melds[playerIdx].push({ type: 'KONG', tiles: [tile, tile, tile, tile] });
+
+            // 补摸一张牌
+            if (this.wall.length > 0) {
+                const suppTile = this.wall.pop();
+                hand.push(suppTile);
+                this.lastDrawnTile = suppTile;
+                this.wallCount = this.wall.length;
+            }
+
+            this.currentTurn = playerIdx;
             return true;
         }
         return false;
@@ -170,7 +212,6 @@ class MahjongEngine {
         const fullHand = extraTile ? [...hand, extraTile] : [...hand];
         if (fullHand.length % 3 !== 2) return false;
 
-        // 按牌名计数
         const counts = {};
         fullHand.forEach(t => {
             counts[t.name] = (counts[t.name] || 0) + 1;
@@ -180,7 +221,6 @@ class MahjongEngine {
         for (const name in counts) {
             if (counts[name] >= 2) {
                 const tempHand = [...fullHand];
-                // 移除将牌
                 let removed = 0;
                 for (let i = tempHand.length - 1; i >= 0; i--) {
                     if (tempHand[i].name === name && removed < 2) {
@@ -188,7 +228,6 @@ class MahjongEngine {
                         removed++;
                     }
                 }
-                // 判断剩余牌能否全部组成刻子(3张一样)或顺子(3张连续)
                 if (this.canFormMelds(tempHand)) {
                     return true;
                 }
@@ -220,7 +259,6 @@ class MahjongEngine {
 
             if (num2Index !== -1 && num3Index !== -1) {
                 const nextHand = [...sorted];
-                // 按索引从大到小移除，防止影响前面索引
                 const indices = [0, num2Index, num3Index].sort((a, b) => b - a);
                 indices.forEach(idx => nextHand.splice(idx, 1));
                 if (this.canFormMelds(nextHand)) return true;
@@ -237,7 +275,7 @@ class MahjongEngine {
         const aiHand = this.hands[1];
         if (!aiHand || aiHand.length === 0) return 0;
 
-        // 优先打出孤张牌 (无相邻且无重复的字牌/边牌)
+        // 优先打出孤张字牌
         for (let i = 0; i < aiHand.length; i++) {
             const tile = aiHand[i];
             const sameCount = aiHand.filter(t => t.name === tile.name).length;
@@ -246,7 +284,6 @@ class MahjongEngine {
             }
         }
 
-        // 默认打出最后抓到的一张或第一张孤牌
         return aiHand.length - 1;
     }
 }

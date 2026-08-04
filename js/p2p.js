@@ -751,6 +751,29 @@ class P2PManager {
         if (!this.roomRef) return;
         this.roomRef.child('gomokuClaimBlack').remove();
     }
+
+    sendMahjongMove(tileIndex, actionType = 'DISCARD') {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongLastMove').set({
+            senderSlot: this.myPlayerIndex,
+            tileIndex,
+            actionType,
+            ts: Date.now()
+        });
+    }
+
+    onMahjongMove(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongLastMove').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    clearMahjongMoves() {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongLastMove').remove();
+    }
 }
 
 const NetworkManager = new P2PManager();

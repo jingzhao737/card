@@ -2156,6 +2156,56 @@ class GameEngineController {
     }
 
     /**
+     * 开启在线游鲸麻将双人对战模式
+     */
+    startMahjongOnlineGame(roomId, isHost = false) {
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const waitingScr = document.getElementById('waitingScreen');
+        const mahjongScr = document.getElementById('mahjongGameScreen');
+
+        if (lobbyScr) { lobbyScr.style.display = 'none'; lobbyScr.classList.remove('active'); }
+        if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
+        if (mahjongScr) { mahjongScr.style.display = 'flex'; mahjongScr.classList.add('active'); }
+        this.updateHeaderVisibility();
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
+        const hostNick = isHost ? NetworkManager.nickname : '房主';
+        const guestNick = !isHost ? NetworkManager.nickname : '对手';
+        const myNick = NetworkManager.nickname || '玩家';
+        const oppNick = isHost ? guestNick : hostNick;
+
+        // 设置玩家卡片 (左侧是我方，右侧是对手)
+        const nameLeft = document.getElementById('mNameLeft');
+        const roleLeft = document.getElementById('mRoleLeft');
+        if (nameLeft) nameLeft.textContent = myNick;
+        if (roleLeft) roleLeft.textContent = mySlot === 0 ? '东家 (1000分)' : '南家 (1000分)';
+
+        const nameRight = document.getElementById('mNameRight');
+        const roleRight = document.getElementById('mRoleRight');
+        if (nameRight) nameRight.textContent = oppNick;
+        if (roleRight) roleRight.textContent = mySlot === 0 ? '南家 (1000分)' : '东家 (1000分)';
+
+        window.mahjongEngine.reset(false, mySlot);
+        this.renderMahjongHandTiles();
+        this.renderMahjongDiscards();
+
+        const isMyTurn = (window.mahjongEngine.currentTurn === mySlot);
+        this.updateMahjongStatusUI(isMyTurn ? '🀄 轮到你出牌' : '⏳ 对方出牌中...');
+        UIRenderer.showToast(`✅ 成功进入房间 #${roomId}，游鲸麻将开局！`);
+
+        // 监听云端打牌广播
+        NetworkManager.onMahjongMove((move) => {
+            if (!move || move.senderSlot === mySlot) return;
+            const engine = window.mahjongEngine;
+            engine.discardTile(move.senderSlot, move.tileIndex);
+            this.renderMahjongHandTiles();
+            this.renderMahjongDiscards();
+            const isNowMyTurn = (engine.currentTurn === mySlot);
+            this.updateMahjongStatusUI(isNowMyTurn ? '🀄 轮到你出牌' : '⏳ 对方出牌中...');
+        });
+    }
+
+    /**
      * 刷新并渲染云端公共房间大厅列表
      */
     refreshPublicRoomsList(gameType = 'DOUDIZHU') {
