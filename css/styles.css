@@ -315,21 +315,31 @@ body:has(#lobbyScreen.active) .app-header,
 }
 
 .room-info {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(0,0,0,0.45);
-    padding: 3px 12px;
-    border-radius: 2px;
-    border: 1px solid rgba(120,80,20,0.35);
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 3px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin-left: 8px;
+}
+
+.room-info .room-label {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .room-code {
     font-family: var(--font-num);
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    color: #e8b84b;
-    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #fcd34d;
+    font-size: 0.82rem;
 }
 
 .header-cont.brand-hero {

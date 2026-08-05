@@ -3951,6 +3951,20 @@ class GameEngineController {
             appHeader.style.display = 'flex';
             appHeader.classList.remove('in-lobby');
         }
+
+        // 动态在顶部 Nav 栏显示不显眼的房间号与一键邀请按钮（支持斗地主、麻将、五子棋在线局）
+        const roomInfoBar = document.getElementById('roomInfoBar');
+        const displayRoomId = document.getElementById('displayRoomId');
+        const currentRoomId = NetworkManager.roomId || (this.gameState ? this.gameState.roomId : '');
+
+        if (roomInfoBar) {
+            if (!isLobbyScreen && currentRoomId && !NetworkManager.isAiMode) {
+                if (displayRoomId) displayRoomId.textContent = currentRoomId;
+                roomInfoBar.style.display = 'inline-flex';
+            } else {
+                roomInfoBar.style.display = 'none';
+            }
+        }
     }
 
     /**
