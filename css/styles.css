@@ -1982,40 +1982,39 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
-/* 自家出牌：从底部手牌区飞出，带弹性回弹 */
+/* 出牌区域全量手牌保底 100% 透明度显现 */
+.played-cards-area .card {
+    opacity: 1;
+}
+
+/* 自家出牌：从底部手牌区飞出 */
 @keyframes flyPlaySelf {
-    0%   { transform: translateY(52px) scale(0.82) rotate(-2deg); opacity: 0; }
-    55%  { transform: translateY(-6px) scale(1.06) rotate(0.5deg); opacity: 1; }
-    80%  { transform: translateY(3px) scale(0.98) rotate(0deg); }
-    100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+    0%   { transform: translateY(36px) scale(0.85); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* 左家出牌：从左上角飞入，带弹性回弹 */
+/* 左家出牌：从左侧飞入 */
 @keyframes flyPlayLeft {
-    0%   { transform: translate(-70px, -40px) scale(0.82) rotate(-4deg); opacity: 0; }
-    55%  { transform: translate(5px, 3px) scale(1.05) rotate(1deg); opacity: 1; }
-    80%  { transform: translate(-2px, -1px) scale(0.98) rotate(0deg); }
-    100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+    0%   { transform: translateX(-36px) scale(0.85); opacity: 0; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 
-/* 右家出牌：从右上角飞入，带弹性回弹 */
+/* 右家出牌：从右侧飞入 */
 @keyframes flyPlayRight {
-    0%   { transform: translate(70px, -40px) scale(0.82) rotate(4deg); opacity: 0; }
-    55%  { transform: translate(-5px, 3px) scale(1.05) rotate(-1deg); opacity: 1; }
-    80%  { transform: translate(2px, -1px) scale(0.98) rotate(0deg); }
-    100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+    0%   { transform: translateX(36px) scale(0.85); opacity: 0; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 
 .anim-fly-self {
-    animation: flyPlaySelf 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: flyPlaySelf 0.25s ease-out both;
 }
 
 .anim-fly-left {
-    animation: flyPlayLeft 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: flyPlayLeft 0.25s ease-out both;
 }
 
 .anim-fly-right {
-    animation: flyPlayRight 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: flyPlayRight 0.25s ease-out both;
 }
 
 /* ============================================================

@@ -518,7 +518,7 @@ const UIRenderer = {
             if (oldLabel) oldLabel.remove();
         }
 
-        const cardIdsStr = (cards || []).map(c => c.id).join(',');
+        const cardIdsStr = (cards || []).map(c => c.id !== undefined ? c.id : `${c.rank}_${c.suit}`).join(',');
         const renderKey = `${cardIdsStr}_${isLatest}`;
         if (container._renderedStateKey === renderKey) {
             return;
