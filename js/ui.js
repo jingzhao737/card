@@ -625,6 +625,7 @@ const UIRenderer = {
                 el.innerHTML = '';
                 el.className = 'played-cards-area';
                 el._renderedCardIdsStr = null;
+                el._renderedStateKey = null;
             }
         });
 

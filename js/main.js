@@ -1188,6 +1188,10 @@ class GameEngineController {
     resetToLobby() {
         // 彻底清空麻将与斗地主所有定时器，防止离开大厅后后台 AI 继续走牌并播音效！
         this.stopMahjongGame();
+        if (this.turnTimerInterval) {
+            clearInterval(this.turnTimerInterval);
+            this.turnTimerInterval = null;
+        }
         if (this.turnTimerId) {
             clearInterval(this.turnTimerId);
             this.turnTimerId = null;
@@ -1715,7 +1719,7 @@ class GameEngineController {
     /**
      * 开启在线五子棋真人双人对战模式 (随机先后手，我方固定在左侧)
      */
-    startGomokuOnlineGame(roomId, isHost = false) {
+    startGomokuOnlineGame(roomId, isHost = false, hostIsBlackSynced = null) {
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
@@ -1737,11 +1741,11 @@ class GameEngineController {
         // 房主随机决定先手黑棋归属并广播同步
         let hostIsBlack;
         if (isHost) {
-            hostIsBlack = hostIsBlackSynced !== null ? hostIsBlackSynced : (Math.random() < 0.5);
+            hostIsBlack = (hostIsBlackSynced !== null && hostIsBlackSynced !== undefined) ? hostIsBlackSynced : (Math.random() < 0.5);
             NetworkManager.clearGomokuMoves();
             NetworkManager.sendGomokuStart(roomId, hostIsBlack);
         } else {
-            hostIsBlack = hostIsBlackSynced !== null ? hostIsBlackSynced : true;
+            hostIsBlack = (hostIsBlackSynced !== null && hostIsBlackSynced !== undefined) ? hostIsBlackSynced : true;
         }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);

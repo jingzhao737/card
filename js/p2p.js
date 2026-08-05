@@ -725,6 +725,7 @@ class P2PManager {
 
     onGomokuMove(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('gomokuMove').off();
         this.roomRef.child('gomokuMove').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
@@ -742,6 +743,7 @@ class P2PManager {
 
     onGomokuUndoRequest(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoReq').off();
         this.roomRef.child('gomokuUndoReq').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
@@ -759,6 +761,7 @@ class P2PManager {
 
     onGomokuUndoResponse(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('gomokuUndoResp').off();
         this.roomRef.child('gomokuUndoResp').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
@@ -775,6 +778,7 @@ class P2PManager {
 
     onGomokuRematchVote(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('gomokuRematchVotes').off();
         this.roomRef.child('gomokuRematchVotes').on('value', snap => {
             const val = snap.val();
             if (callback) callback(val || {});
@@ -796,6 +800,7 @@ class P2PManager {
 
     onGomokuClaimBlack(callback) {
         if (!this.roomRef) return;
+        this.roomRef.child('gomokuClaimBlack').off();
         this.roomRef.child('gomokuClaimBlack').on('value', snap => {
             const val = snap.val();
             if (val && callback) callback(val);
