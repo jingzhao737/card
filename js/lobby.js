@@ -4,9 +4,10 @@
  */
 const LobbyManager = {
     /**
-     * 进入等待组局大厅 (Screen 切换)
+     * 进入等待组局大厅 (Host & Client 视角)
      */
     setupWaitingScreen(roomId) {
+        const engine = window.GameEngine;
         const lobbyScr  = document.getElementById('lobbyScreen');
         const waitScr   = document.getElementById('waitingScreen');
         const dispRoom  = document.getElementById('displayRoomId');
@@ -17,56 +18,159 @@ const LobbyManager = {
 
         if (lobbyScr) { lobbyScr.classList.remove('active'); lobbyScr.style.display = 'none'; }
         if (waitScr)  { waitScr.style.display = 'flex'; waitScr.classList.add('active'); }
-        if (window.GameEngine && typeof window.GameEngine.updateHeaderVisibility === 'function') {
-            window.GameEngine.updateHeaderVisibility();
+        if (engine && typeof engine.updateHeaderVisibility === 'function') {
+            engine.updateHeaderVisibility();
         }
         if (dispRoom) dispRoom.textContent = roomId;
         const waitingRoomDisp2 = document.getElementById('waitingRoomIdDisplay');
         if (waitingRoomDisp2) waitingRoomDisp2.textContent = roomId;
         if (roomBar)  roomBar.style.display = 'none';
-        if (btnStart) btnStart.style.display = 'none';
-        if (btnAiBtn) btnAiBtn.style.display = 'none';
         if (btnGoHome) btnGoHome.style.display = 'inline-flex';
         const menuLeaveBtn2 = document.getElementById('menuBtnLeaveRoom');
         if (menuLeaveBtn2) menuLeaveBtn2.style.display = 'flex';
 
-        // 根据 gameType 动态呈现或隐去槽位 (五子棋 2 人、斗地主 3 人、麻将 4 人)
-        const gameType = NetworkManager.gameType || (window.GameEngine ? window.GameEngine.activeGameType : null) || 'DOUDIZHU';
+        // 生成真实访问 URL & 写入邀请框
+        let origin = window.location.origin;
+        if (!origin || origin === 'null') origin = window.location.protocol + '//' + window.location.host;
+        const shareUrl = `${origin}${window.location.pathname}?room=${roomId}`;
+        const inviteInput = document.getElementById('inviteUrlInput');
+        if (inviteInput) inviteInput.value = shareUrl;
+
+        // 生成二维码
+        const qrContainer = document.getElementById('qrcode');
+        if (qrContainer) {
+            qrContainer.innerHTML = '';
+            if (window.QRCode) {
+                new QRCode(qrContainer, {
+                    text: shareUrl,
+                    width: 100,
+                    height: 100
+                });
+            }
+        }
+
+        const gameType = NetworkManager.gameType || (engine ? engine.activeGameType : null) || 'DOUDIZHU';
         const isMahjong = (gameType === 'MAHJONG');
         const isGomoku  = (gameType === 'GOMOKU');
         const connectedCount = document.getElementById('connectedCount');
         const slot2 = document.getElementById('slot2');
         const slot3 = document.getElementById('slot3');
 
-        if (isMahjong) {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4</span>';
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'flex';
-        } else if (isGomoku) {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
-            if (slot2) slot2.style.display = 'none';
-            if (slot3) slot3.style.display = 'none';
+        if (NetworkManager.isHost) {
+            // 初始化房主 slot0
+            const nick = NetworkManager.nickname || '房主';
+            const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
+            if (engine && engine.gameState && engine.gameState.players) {
+                engine.gameState.players[0].name = nick;
+                engine.gameState.players[0].avatar = currentAvatar;
+                engine.gameState.players[0].isAi = false;
+            }
+
+            const slotName0 = document.getElementById('slotName0');
+            const slotAvatar0 = document.getElementById('slotAvatar0');
+            if (slotName0) slotName0.textContent = `${nick} (房主)`;
+            if (slotAvatar0) slotAvatar0.textContent = currentAvatar;
+
+            if (isMahjong) {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4 (差人自动补AI)</span>';
+                if (slot2) slot2.style.display = 'flex';
+                if (slot3) slot3.style.display = 'flex';
+                this.fillSlotWithAi(1);
+                this.fillSlotWithAi(2);
+                this.fillSlotWithAi(3);
+                if (btnStart) {
+                    btnStart.style.display = 'block';
+                    btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启 4 人麻将对局';
+                }
+                if (btnAiBtn) btnAiBtn.style.display = 'none';
+            } else if (isGomoku) {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+                if (slot2) slot2.style.display = 'none';
+                if (slot3) slot3.style.display = 'none';
+                this.fillSlotWithAi(1);
+                if (btnStart) {
+                    btnStart.style.display = 'block';
+                    btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启五子棋对局';
+                }
+                if (btnAiBtn) btnAiBtn.style.display = 'none';
+            } else {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
+                if (slot2) slot2.style.display = 'flex';
+                if (slot3) slot3.style.display = 'none';
+                this.fillSlotWithAi(1);
+                this.fillSlotWithAi(2);
+                if (btnStart) {
+                    btnStart.style.display = 'block';
+                    btnStart.innerHTML = '<i class="fa-solid fa-play"></i> START';
+                }
+                if (btnAiBtn) btnAiBtn.style.display = 'none';
+            }
+
+            this.broadcastLobbyState();
         } else {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'none';
+            // 客户端加入视角
+            if (btnStart) btnStart.style.display = 'none';
+            if (btnAiBtn) btnAiBtn.style.display = 'none';
+            if (isMahjong) {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4</span>';
+                if (slot2) slot2.style.display = 'flex';
+                if (slot3) slot3.style.display = 'flex';
+            } else if (isGomoku) {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+                if (slot2) slot2.style.display = 'none';
+                if (slot3) slot3.style.display = 'none';
+            } else {
+                if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
+                if (slot2) slot2.style.display = 'flex';
+                if (slot3) slot3.style.display = 'none';
+            }
         }
 
         // 客户端监听房主开启五子棋 / 麻将对局信号
         NetworkManager.onGomokuStart(() => {
-            if (!NetworkManager.isHost && window.GameEngine) {
-                window.GameEngine.startGomokuOnlineGame(roomId, false);
+            if (!NetworkManager.isHost && engine) {
+                engine.startGomokuOnlineGame(roomId, false);
             }
         });
 
         NetworkManager.onMahjongStart(() => {
-            if (!NetworkManager.isHost && window.GameEngine) {
-                window.GameEngine.startMahjongOnlineGame(roomId, false);
+            if (!NetworkManager.isHost && engine) {
+                engine.startMahjongOnlineGame(roomId, false);
             }
         });
 
         if (typeof UIRenderer !== 'undefined') {
             UIRenderer.showToast('已进入房间，等待房主开始游戏...');
+        }
+    },
+
+    /**
+     * 将指定 slot 标记为 AI 机器人，并更新 UI
+     */
+    fillSlotWithAi(slotIndex) {
+        const engine = window.GameEngine;
+        if (!engine || !engine.gameState || !engine.gameState.players) return;
+
+        const aiName = `AI-${slotIndex}`;
+        if (!engine.gameState.players[slotIndex]) {
+            engine.gameState.players[slotIndex] = { id: slotIndex, name: aiName, hand: [], isAi: true, isHost: false, role: 'FARMER', avatar: '🤖' };
+        } else {
+            engine.gameState.players[slotIndex].name = aiName;
+            engine.gameState.players[slotIndex].avatar = '🤖';
+            engine.gameState.players[slotIndex].isAi = true;
+        }
+
+        const nameEl = document.getElementById(`slotName${slotIndex}`);
+        const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
+        const slotEl = document.getElementById(`slot${slotIndex}`);
+        if (nameEl) nameEl.textContent = aiName;
+        if (avatarEl) avatarEl.textContent = '🤖';
+        if (slotEl) {
+            const statusEl = slotEl.querySelector('.slot-status-pill');
+            if (statusEl) {
+                statusEl.textContent = '⚙️ 备选 AI';
+                statusEl.classList.remove('ready');
+            }
         }
     },
 
