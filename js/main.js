@@ -2326,6 +2326,33 @@ class GameEngineController {
 
                 const currTurn = window.mahjongEngine.currentTurn;
                 const isMyTurnNow = (currTurn === mySlot);
+
+                // 检查我方 (mySlot) 对远程打出的牌是否有 吃/碰/杠/胡 响应
+                if (move.discardedTile && move.actionType !== 'CHOW' && move.actionType !== 'PONG' && move.actionType !== 'HU') {
+                    const engine = window.mahjongEngine;
+                    const isUpperHouse = (move.senderSlot + 1) % 4 === mySlot;
+                    const chowOptions = isUpperHouse ? engine.getChowOptions(mySlot, move.discardedTile) : [];
+                    const canChow = chowOptions.length > 0;
+                    const canPong = engine.checkCanPong(mySlot, move.discardedTile);
+                    const canKong = engine.checkCanKong(mySlot, move.discardedTile);
+                    const canHu   = engine.checkCanHu(engine.hands[mySlot] || [], move.discardedTile);
+
+                    if (canChow || canPong || canKong || canHu) {
+                        this.pendingDiscardRes = {
+                            discarded: move.discardedTile,
+                            fromPlayer: move.senderSlot,
+                            canChow,
+                            chowOptions,
+                            canPong,
+                            canKong,
+                            canHu
+                        };
+                        this.showHumanResponseActionBar(this.pendingDiscardRes);
+                        this.updateMahjongStatusUI(`⚠️ 玩家打出 [${move.discardedTile.name}]：请选择【吃 / 碰 / 杠 / 胡 / 过】`);
+                        return;
+                    }
+                }
+
                 if (isMyTurnNow) {
                     this.updateMahjongStatusUI('🀄 4人雀局 · 轮到你出牌！');
                     UIRenderer.showToast('🎲 轮到你出牌！');
@@ -3455,6 +3482,7 @@ class GameEngineController {
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         if (engine.executeChow(mySlot, res.discarded, pair)) {
+            this.pendingDiscardRes = null;
             this.showMahjongActionToast('吃！');
             if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
             this.renderMahjongHandTiles();
@@ -3480,6 +3508,7 @@ class GameEngineController {
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const discarded = this.pendingDiscardRes.discarded;
         if (engine.executePong(mySlot, discarded)) {
+            this.pendingDiscardRes = null;
             this.showMahjongActionToast('碰！');
             if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
             this.renderMahjongHandTiles();
@@ -3507,6 +3536,7 @@ class GameEngineController {
             // 明杠
             const discarded = this.pendingDiscardRes.discarded;
             if (engine.executeKong(mySlot, discarded)) {
+                this.pendingDiscardRes = null;
                 this.showMahjongActionToast('杠！');
                 if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
                 this.renderMahjongHandTiles();
@@ -3524,6 +3554,7 @@ class GameEngineController {
             const options = engine.getSelfKongOptions(mySlot);
             if (options.length > 0) {
                 if (engine.executeSelfKong(mySlot, options[0])) {
+                    this.pendingDiscardRes = null;
                     this.showMahjongActionToast(options[0].type === 'ANKONG' ? '暗杠！' : '补杠！');
                     if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
                     this.renderMahjongHandTiles();
@@ -3684,6 +3715,27 @@ class GameEngineController {
         if (btnSettle) {
             btnSettle.disabled = false;
             btnSettle.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 再来一局';
+            btnSettle.onclick = () => {
+                if (NetworkManager.roomId && !NetworkManager.isAiMode) {
+                    btnSettle.disabled = true;
+                    btnSettle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 准备中 (等待全员...)';
+                    this.handleSelfAction('RESTART_VOTE', { gameType: 'MAHJONG' });
+                    if (NetworkManager.isHost) {
+                        this.processRestartVote(0);
+                    }
+                } else {
+                    modal.style.display = 'none';
+                    this.startMahjongAiMode();
+                }
+            };
+        }
+
+        const btnLobby = document.getElementById('btnMahjongSettleLobby');
+        if (btnLobby) {
+            btnLobby.onclick = () => {
+                modal.style.display = 'none';
+                this.resetToLobby();
+            };
         }
 
         if (NetworkManager.roomId && !NetworkManager.isAiMode) {
