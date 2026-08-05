@@ -3664,18 +3664,40 @@ class GameEngineController {
             if (fanListEl) fanListEl.textContent = '· 对方胡牌';
         }
 
-        // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报
+        // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报 (方案一: 线性番数乘率 + 放炮包赔)
         const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
         const ratio = isPve ? 0.25 : 1.0;
         const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
         const baseAmount = 100 * fanCount;
         const winAmount = Math.ceil(baseAmount * ratio);
-        const loseAmount = Math.ceil((baseAmount / 3) * ratio);
 
         const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
         const windNames = ['东', '南', '西', '北'];
 
-        // 动态渲染 4 家知因币结算数额
+        // 判定放炮者与自摸
+        const engine = window.mahjongEngine;
+        const isSelfDraw = !engine || !engine.lastDiscard || engine.lastDiscard.playerIdx === winnerIdx;
+        const discarderIdx = (!isSelfDraw && engine && engine.lastDiscard) ? engine.lastDiscard.playerIdx : -1;
+
+        // 计算 4 家精准损益
+        const coinDiffs = [0, 0, 0, 0];
+        if (winnerIdx !== -1) {
+            coinDiffs[winnerIdx] = winAmount;
+            if (isSelfDraw || discarderIdx === -1) {
+                // 自摸：其余 3 家平摊 (三家分包)
+                const perPlayerLoss = Math.ceil(winAmount / 3);
+                for (let i = 0; i < 4; i++) {
+                    if (i !== winnerIdx) {
+                        coinDiffs[i] = -perPlayerLoss;
+                    }
+                }
+            } else {
+                // 放炮：放炮者一人承担全额 (放炮包赔)！另外 2 家 0 损益
+                coinDiffs[discarderIdx] = -winAmount;
+            }
+        }
+
+        // 动态渲染 4 家知因币结算战报
         for (let i = 0; i < 4; i++) {
             const rowEl = document.getElementById(`scoreRow${i}`);
             if (rowEl) {
@@ -3683,24 +3705,27 @@ class GameEngineController {
                 const p = seatPlayers[relIdx];
                 const pName = p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `玩家${relIdx + 1}`;
                 const wTag = `(${windNames[relIdx]}风)`;
+                const diff = coinDiffs[relIdx] || 0;
 
                 if (winnerIdx === -1) {
                     rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff" style="color:#94a3b8;">0 知因币</span>`;
                 } else if (relIdx === winnerIdx) {
-                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff positive">+${winAmount} 知因币</span>`;
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff positive">+${diff} 知因币</span>`;
+                } else if (relIdx === discarderIdx && !isSelfDraw) {
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag} <b style="color:#f87171;font-size:0.7rem;">(放炮包赔)</b></span><span class="p-diff negative">${diff} 知因币</span>`;
                 } else {
-                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff negative">-${loseAmount} 知因币</span>`;
+                    rowEl.innerHTML = `<span class="p-label">${pName} ${wTag}</span><span class="p-diff ${diff < 0 ? 'negative' : ''}" style="${diff === 0 ? 'color:#94a3b8;' : ''}">${diff} 知因币</span>`;
                 }
             }
         }
 
         if (typeof AuthEngine !== 'undefined') {
-            if (AuthEngine.updateCoins && winnerIdx !== -1) {
-                if (winnerIdx === mySlot) {
-                    AuthEngine.updateCoins(winAmount, isPve ? '麻将切磋胡牌 (PVE)' : '麻将大胜胡牌 (PVP)');
-                } else {
-                    AuthEngine.updateCoins(-loseAmount, isPve ? '麻将切磋失利 (PVE)' : '麻将对局失利 (PVP)');
-                }
+            const myDiff = coinDiffs[mySlot] || 0;
+            if (AuthEngine.updateCoins && winnerIdx !== -1 && myDiff !== 0) {
+                const reasonStr = (winnerIdx === mySlot) 
+                    ? (isPve ? `麻将切磋胡牌 (+${myDiff}币)` : `麻将大胜 (${fanCount}番 +${myDiff}币)`)
+                    : (isPve ? `麻将切磋失利 (${myDiff}币)` : `麻将对局 (${myDiff}币)`);
+                AuthEngine.updateCoins(myDiff, reasonStr);
             }
 
             // ⭐ 结算麻将【经验值】
