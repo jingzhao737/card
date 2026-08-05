@@ -220,7 +220,8 @@ const UIRenderer = {
      */
     showToast(msg, duration = 2500) {
         const toast = document.getElementById('toast');
-        toast.textContent = msg;
+        if (!toast) return;
+        toast.innerHTML = msg;
         toast.style.display = 'block';
         clearTimeout(this._toastTimer);
         this._toastTimer = setTimeout(() => {

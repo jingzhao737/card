@@ -616,7 +616,7 @@ class AuthManager {
         this.updateUserHeaderUI();
 
         if (reason && typeof UIRenderer !== 'undefined') {
-            UIRenderer.showToast(`⭐ 经验值: <span style="color:#fbbf24;font-weight:bold;">+${expGain} EXP</span> (${reason})`);
+            UIRenderer.showToast(`⭐ 获得 +${expGain} 经验值`);
         }
 
         if (didLevelUp) {
@@ -670,8 +670,11 @@ class AuthManager {
 
         if (reason && typeof UIRenderer !== 'undefined') {
             const sign = deltaCoins >= 0 ? '+' : '';
-            const colorStr = deltaCoins >= 0 ? '#4cd964' : '#ff3b30';
-            UIRenderer.showToast(`🪙 知因币: <span style="color:${colorStr};font-weight:bold;">${sign}${deltaCoins}</span> (${reason})`);
+            if (deltaCoins >= 0) {
+                UIRenderer.showToast(`🪙 获得 +${deltaCoins} 知因币`);
+            } else {
+                UIRenderer.showToast(`🪙 消耗 ${deltaCoins} 知因币`);
+            }
         }
 
         return newCoins;
