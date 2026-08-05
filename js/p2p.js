@@ -333,16 +333,17 @@ class P2PManager {
         this.isAiMode = false;
         this.gameType = gameType;
 
-        if (!this.db) {
-            if (this.onToast) this.onToast('❌ 云端服务未连接，请检查网络或刷新页面', 4000);
-            if (onError) onError('云端服务未连接');
-            return;
-        }
+        const doCreate = () => {
+            if (!this.db) {
+                if (this.onToast) this.onToast('❌ 云端服务未连接，请检查网络或刷新页面', 4000);
+                if (onError) onError('云端服务未连接');
+                return;
+            }
 
-        // 实施规则 1：创建前先清除同设备的旧房间 (带 1.5 秒超时保护)
-        this._leavePreviousRooms(this.roomId, () => {
-            this._removeAllListeners();
-            this.roomRef = this.db.ref('rooms/' + this.roomId);
+            // 实施规则 1：创建前先清除同设备的旧房间 (带 1.5 秒超时保护)
+            this._leavePreviousRooms(this.roomId, () => {
+                this._removeAllListeners();
+                this.roomRef = this.db.ref('rooms/' + this.roomId);
 
             if (this.onToast) this.onToast('☁️ 正在创建云端数据房间...', 2500);
 
@@ -427,6 +428,18 @@ class P2PManager {
                 if (this.onToast) this.onToast(msg, 6000);
             });
         });
+        };
+
+        if (!this.db) {
+            this._getFirebaseRef().then(ref => {
+                this.db = ref;
+                doCreate();
+            }).catch(err => {
+                if (onError) onError('云端服务未连接: ' + err);
+            });
+        } else {
+            doCreate();
+        }
     }
 
     /* ====================================================================
@@ -472,8 +485,8 @@ class P2PManager {
                 // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3, 3=玩家4)
                 let assignedSlot = -1;
 
-                // 1. 检查是否是房主 (槽位 0) 重连/加入
-                if (roomData.hostSid === this.sessionId || (players[0] && (players[0].sid === this.sessionId || players[0].name === nickname))) {
+                // 1. 检查是否是房主 (槽位 0) 重连/加入 (精确基于 session ID，禁止模糊匹配昵称防止新玩家抢占房主位)
+                if (roomData.hostSid === this.sessionId || (players[0] && players[0].sid === this.sessionId)) {
                     assignedSlot = 0;
                     this.isHost = true;
                 } else {
