@@ -4723,7 +4723,7 @@ class GameEngineController {
                 }
 
                 // 重新开局切入 BIDDING 阶段时，客户端强制重置上局残牌与选中状态
-                if (this.gameState.phase === 'BIDDING' && this._lastPhase === 'GAMEOVER') {
+                if (this.gameState.phase === 'BIDDING' && this._lastPhase !== 'BIDDING') {
                     UIRenderer.resetGameTableUI();
                 }
 

@@ -506,6 +506,9 @@ const UIRenderer = {
         const container = document.getElementById(targetAreaId);
         if (!container) return;
 
+        // 强力解除上一局结算阶段留下的明牌展开 DOM 样式
+        container.classList.remove('open-hand-container');
+
         // 仅最新打出的一手牌显示金色画框，非最新出牌区域自动移除金色画框与牌型标注
         if (isLatest && cards && cards.length > 0) {
             container.classList.add('latest-play-container');
@@ -591,6 +594,7 @@ const UIRenderer = {
         container.classList.remove('latest-play-container');
         container.classList.add('open-hand-container');
         container._renderedCardIdsStr = null;
+        container._renderedStateKey = null;
         container.innerHTML = '';
 
         if (!cards || cards.length === 0) {
@@ -624,6 +628,8 @@ const UIRenderer = {
             if (el) {
                 el.innerHTML = '';
                 el.className = 'played-cards-area';
+                el.classList.remove('open-hand-container');
+                el.classList.remove('latest-play-container');
                 el._renderedCardIdsStr = null;
                 el._renderedStateKey = null;
             }
