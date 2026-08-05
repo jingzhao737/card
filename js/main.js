@@ -4240,9 +4240,10 @@ class GameEngineController {
         }
 
         // 客户端监听房主开启五子棋 / 麻将对局信号，全员同步进入游戏！
-        NetworkManager.onGomokuStart(() => {
+        NetworkManager.onGomokuStart((data) => {
             if (!NetworkManager.isHost) {
-                this.startGomokuOnlineGame(roomId, false);
+                const hostIsBlack = (data && data.hostIsBlack !== undefined) ? data.hostIsBlack : true;
+                this.startGomokuOnlineGame(roomId, false, hostIsBlack);
             }
         });
 
