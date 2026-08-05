@@ -4611,8 +4611,8 @@ class GameEngineController {
         this._isCountingDownLocally = true;
         this.updateControlButtons(NetworkManager.myPlayerIndex);
 
-        const startTime = (this.gameState && this.gameState.openingStartTime) ? this.gameState.openingStartTime : Date.now();
         const totalDuration = 3000; // 3.0 秒
+        const startTime = Date.now();
         const step = 50;
 
         let lastPlayedSec = -1;
@@ -4649,9 +4649,7 @@ class GameEngineController {
             }
         };
 
-        const initialElapsed = Date.now() - startTime;
-        const initialSecs = Math.max(0, Math.ceil((totalDuration - initialElapsed) / 1000));
-        updateLights(initialSecs);
+        updateLights(3);
 
         clearInterval(this._startCountdownTimer);
         this._startCountdownTimer = setInterval(() => {
@@ -4665,18 +4663,17 @@ class GameEngineController {
                 this._isCountingDownLocally = false;
                 setTimeout(() => {
                     if (overlay) overlay.style.display = 'none';
-                    this.gameState.isOpeningCountdown = false;
                     if (NetworkManager.isHost) {
-                        NetworkManager.broadcastState(this.gameState); // 倒计时结束，同步状态解锁大家的操作按钮
+                        this.gameState.isOpeningCountdown = false;
+                        NetworkManager.broadcastState(this.gameState); // 仅由房主主导开局状态解锁并广播
+                        UIRenderer.showToast('🔥 3秒到！手速抢地主开始！');
+                        SoundEngine.playBid();
+
+                        if (NetworkManager.isAiMode) {
+                            this.scheduleAiBids();
+                        }
                     }
                     this.updateControlButtons(NetworkManager.myPlayerIndex);
-                    UIRenderer.showToast('🔥 3秒到！手速抢地主开始！');
-                    SoundEngine.playBid();
-
-                    // 如果是单机人机模式，AI 随机模拟拉长延迟以防抢不过玩家
-                    if (NetworkManager.isHost && NetworkManager.isAiMode) {
-                        this.scheduleAiBids();
-                    }
                 }, 200);
             }
         }, step);
