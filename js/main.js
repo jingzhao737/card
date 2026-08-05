@@ -3714,7 +3714,8 @@ class GameEngineController {
                 const rId = room.roomId;
                 const phase = (room.gameState && room.gameState.phase) ? room.gameState.phase : 'WAITING';
                 const lobby = room.lobbyData || { players: [] };
-                const players = lobby.players || [];
+                const rawP = lobby.players;
+                const players = Array.isArray(rawP) ? rawP : (rawP ? Object.values(rawP) : []);
 
                 let phaseText = '🟢 等待开局';
                 let phaseClass = 'waiting';

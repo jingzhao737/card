@@ -150,7 +150,8 @@ class P2PManager {
                 const room = roomsMap[rId];
                 if (!room) return;
 
-                const players = (room.lobbyData && room.lobbyData.players) ? room.lobbyData.players : [];
+                const rawPlayers = (room.lobbyData && room.lobbyData.players) ? room.lobbyData.players : [];
+                const players = Array.isArray(rawPlayers) ? rawPlayers : Object.values(rawPlayers);
                 const remainingHumans = players.filter(p => p && !p.isAi && p.sid !== this.sessionId && p.name);
 
                 // 规则：只要该房间内没有其他真人玩家了（无论是房主还是客户端退出），立即彻底销毁删除该房间！
@@ -238,19 +239,26 @@ class P2PManager {
 
             Object.keys(roomsMap).forEach(roomId => {
                 const room = roomsMap[roomId];
-                if (room && room.lobbyData && room.lobbyData.players) {
-                    const lastHuman = room.lastHumanActivity || room.created || 0;
+                if (room && room.lobbyData) {
+                    room.roomId = roomId;
+                    const rawPlayers = room.lobbyData.players;
+                    const players = Array.isArray(rawPlayers) ? rawPlayers : (rawPlayers ? Object.values(rawPlayers) : []);
+                    room.lobbyData.players = players; // 确保标准化为 Array
+
+                    const lastHuman = (typeof room.lastHumanActivity === 'number' && room.lastHumanActivity > 0)
+                        ? room.lastHumanActivity
+                        : ((typeof room.created === 'number' && room.created > 0) ? room.created : now);
                     const inactiveDuration = now - lastHuman;
 
-                    // 规则 2：超过 3 分钟无真人操作 -> 自动从云端数据库清除销毁！
+                    // 超过 3 分钟无真人操作 -> 自动从云端数据库清除销毁！
                     if (inactiveDuration > MAX_INACTIVE_TIME) {
                         console.log(`[AutoClean] 房间 ${roomId} 超过 3 分钟无真人操作，自动销毁`);
-                        this.db.ref('rooms/' + roomId).remove();
+                        this.db.ref('rooms/' + roomId).remove().catch(() => {});
                     } else {
-                        const isGomoku = room.gameType === 'GOMOKU';
-                        if (gameTypeFilter === 'GOMOKU' && isGomoku) {
-                            activeRooms.push(room);
-                        } else if (gameTypeFilter !== 'GOMOKU' && !isGomoku) {
+                        const roomGameType = room.gameType || 'DOUDIZHU';
+                        const targetFilter = gameTypeFilter || 'DOUDIZHU';
+
+                        if (roomGameType === targetFilter) {
                             activeRooms.push(room);
                         }
                     }
