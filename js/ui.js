@@ -506,6 +506,9 @@ const UIRenderer = {
         const container = document.getElementById(targetAreaId);
         if (!container) return;
 
+        // 强力恢复容器显示，防止上一局胜者被 renderOpenHand 的 display:none 误伤隐藏
+        container.style.display = 'flex';
+
         // 强力解除上一局结算阶段留下的明牌展开 DOM 样式
         container.classList.remove('open-hand-container');
 
@@ -622,12 +625,13 @@ const UIRenderer = {
         this.selectedCards.clear();
         this._lastHandCardIdsStr = null;
 
-        // 清空三大出牌展示区
+        // 清空三大出牌展示区，并强力恢复 display: flex 解决上局胜者 display:none 显影 bug
         ['playedSelf', 'playedLeft', 'playedRight'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.innerHTML = '';
                 el.className = 'played-cards-area';
+                el.style.display = 'flex';
                 el.classList.remove('open-hand-container');
                 el.classList.remove('latest-play-container');
                 el._renderedCardIdsStr = null;
