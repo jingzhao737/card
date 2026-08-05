@@ -38,15 +38,16 @@ const DouDizhuRules = {
     /**
      * 生成一副标准的 54 张扑克牌
      */
-    createDeck() {
+    createDeck(roundIndex = 1) {
         const deck = [];
+        const baseId = ((roundIndex || 1) % 900 + 1) * 1000;
         let id = 1;
 
         // 3 到 2 (Rank: 3..15)
         for (let rank = 3; rank <= 15; rank++) {
             for (const suit of this.SUITS) {
                 deck.push({
-                    id: id++,
+                    id: baseId + (id++),
                     rank: rank,
                     suit: suit.key,
                     suitSymbol: suit.symbol,
@@ -58,7 +59,7 @@ const DouDizhuRules = {
 
         // 小王 (16) 与 大王 (17)
         deck.push({
-            id: id++,
+            id: baseId + (id++),
             rank: 16,
             suit: 'joker',
             suitSymbol: '🃏',
@@ -67,7 +68,7 @@ const DouDizhuRules = {
             isJoker: true
         });
         deck.push({
-            id: id++,
+            id: baseId + (id++),
             rank: 17,
             suit: 'joker',
             suitSymbol: '👑',

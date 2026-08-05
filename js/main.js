@@ -4543,8 +4543,9 @@ class GameEngineController {
         // 彻底重置界面 DOM & 选牌状态 & 气泡 & 残余展示牌
         UIRenderer.resetGameTableUI();
 
-        // 1. 生成洗牌
-        const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck());
+        // 1. 生成局次唯一卡牌洗牌
+        this.roundCounter = (this.roundCounter || 0) + 1;
+        const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck(this.roundCounter));
 
         // 2. 发牌: 3人各 17 张原始混乱手牌，留 3 张底牌 (开局手牌保持乱序，点击理牌后进行排序)
         const p0Hand = deck.slice(0, 17);
