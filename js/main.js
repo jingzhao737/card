@@ -4195,505 +4195,52 @@ class GameEngineController {
     /**
      * 客户端加入房间视图更新
      */
-    enterRoomAsClient(roomId) {
-        const lobbyScr  = document.getElementById('lobbyScreen');
-        const waitScr   = document.getElementById('waitingScreen');
-        const dispRoom  = document.getElementById('displayRoomId');
-        const roomBar   = document.getElementById('roomInfoBar');
-        const btnStart  = document.getElementById('btnStartGame');
-        const btnAiBtn  = document.getElementById('btnStartWithAi');
-        const btnGoHome = document.getElementById('btnGoHomeTop');
-
-        if (lobbyScr) { lobbyScr.classList.remove('active'); lobbyScr.style.display = 'none'; }
-        if (waitScr)  { waitScr.style.display = 'flex'; waitScr.classList.add('active'); }
-        this.updateHeaderVisibility();
-        if (dispRoom) dispRoom.textContent = roomId;
-        const waitingRoomDisp2 = document.getElementById('waitingRoomIdDisplay');
-        if (waitingRoomDisp2) waitingRoomDisp2.textContent = roomId;
-        if (roomBar)  roomBar.style.display = 'none'; // 房间等待界面隐去顶部 NAV 栏重复的房间号
-        if (btnStart) btnStart.style.display = 'none';
-        if (btnAiBtn) btnAiBtn.style.display = 'none';
-        if (btnGoHome) btnGoHome.style.display = 'inline-flex';
-        const menuLeaveBtn2 = document.getElementById('menuBtnLeaveRoom');
-        if (menuLeaveBtn2) menuLeaveBtn2.style.display = 'flex';
-
-        // 根据 gameType 动态呈现或隐去槽位 (五子棋 2 人、斗地主 3 人、麻将 4 人)
-        const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
-        const isMahjong = (gameType === 'MAHJONG');
-        const isGomoku  = (gameType === 'GOMOKU');
-        const connectedCount = document.getElementById('connectedCount');
-        const slot2 = document.getElementById('slot2');
-        const slot3 = document.getElementById('slot3');
-
-        if (isMahjong) {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4</span>';
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'flex';
-        } else if (isGomoku) {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
-            if (slot2) slot2.style.display = 'none';
-            if (slot3) slot3.style.display = 'none';
-        } else {
-            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/3</span>';
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'none';
+    setupWaitingScreen(roomId) {
+        if (typeof LobbyManager !== "undefined") {
+            LobbyManager.setupWaitingScreen(roomId);
         }
-
-        // 客户端监听房主开启五子棋 / 麻将对局信号，全员同步进入游戏！
-        NetworkManager.onGomokuStart(() => {
-            if (!NetworkManager.isHost) {
-                this.startGomokuOnlineGame(roomId, false);
-            }
-        });
-
-        NetworkManager.onMahjongStart(() => {
-            if (!NetworkManager.isHost) {
-                this.startMahjongOnlineGame(roomId, false);
-            }
-        });
-
-        UIRenderer.showToast('已进入房间，等待房主开始游戏...');
     }
 
-    /**
-     * 当有新玩家加入 (Host处理) — 替换最早的一个 AI 占位符
-     */
     onPlayerJoined(slotIndex, nickname, avatarEmoji) {
-        if (!NetworkManager.isHost) return;
-
-        const name = nickname || `玩家 ${slotIndex + 1}`;
-        const avatar = avatarEmoji || '🤠';
-        this.gameState.players[slotIndex].name = name;
-        this.gameState.players[slotIndex].avatar = avatar;
-        this.gameState.players[slotIndex].isAi = false;
-
-        const nameEl = document.getElementById(`slotName${slotIndex}`);
-        const avatarEl = document.getElementById(`slotAvatar${slotIndex}`);
-        const slotEl = document.getElementById(`slot${slotIndex}`);
-        if (nameEl) nameEl.textContent = name;
-        if (avatarEl) avatarEl.textContent = avatar;
-        if (slotEl) {
-            const statusEl = slotEl.querySelector('.slot-status-pill');
-            if (statusEl) {
-                statusEl.textContent = '✅ 已就绪';
-                statusEl.classList.add('ready');
-            }
+        if (typeof LobbyManager !== "undefined") {
+            LobbyManager.onPlayerJoined(slotIndex, nickname, avatarEmoji);
         }
-
-        const humanCount = this.gameState.players.filter(p => !p.isAi).length;
-        const countEl = document.getElementById('connectedCount');
-        if (countEl) countEl.textContent = humanCount;
-
-        if (humanCount === 3) {
-            UIRenderer.showToast('🎉 全员就位，可以开始游戏了！');
-        }
-
-        this.broadcastLobbyState();
     }
 
-    /**
-     * 房主广播组局大厅玩家状态
-     */
     broadcastLobbyState() {
-        if (!NetworkManager.isHost) return;
-        const lobbyData = {
-            players: this.gameState.players.map(p => ({
-                name: p.name,
-                avatar: p.avatar || (p.isAi ? '🤖' : '🤠'),
-                isAi: p.isAi,
-                isHost: p.isHost
-            }))
-        };
-        NetworkManager.broadcastLobbySync(lobbyData);
+        if (typeof LobbyManager !== "undefined") {
+            LobbyManager.broadcastLobbyState();
+        }
     }
 
-    /**
-     * 客户端接收并渲染房间大厅玩家列表
-     */
     onReceiveLobbySync(lobbyData) {
-        if (!lobbyData || !lobbyData.players) return;
-        // 缓存最新大厅玩家列表，供麻将牌桌座位昵称/风向显示使用
-        this.latestLobbyPlayers = lobbyData.players || null;
-
-        // 房主接收到大厅列表更新时，精准同步 gameState.players 中的 isAi/name/avatar 标志
-        if (NetworkManager.isHost && this.gameState && this.gameState.players) {
-            lobbyData.players.forEach((p, i) => {
-                if (this.gameState.players[i] && p) {
-                    this.gameState.players[i].name = p.name || this.gameState.players[i].name;
-                    this.gameState.players[i].avatar = p.avatar || this.gameState.players[i].avatar;
-                    this.gameState.players[i].isAi = !!p.isAi;
-                }
-            });
+        if (typeof LobbyManager !== "undefined") {
+            LobbyManager.onReceiveLobbySync(lobbyData);
         }
-
-        const myIndex = NetworkManager.myPlayerIndex;
-
-        const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
-        const isMahjong = (gameType === 'MAHJONG');
-        const isGomoku  = (gameType === 'GOMOKU');
-        const slot2 = document.getElementById('slot2');
-        const slot3 = document.getElementById('slot3');
-
-        if (isGomoku) {
-            if (slot2) slot2.style.display = 'none';
-            if (slot3) slot3.style.display = 'none';
-        } else if (isMahjong) {
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'flex';
-        } else {
-            if (slot2) slot2.style.display = 'flex';
-            if (slot3) slot3.style.display = 'none';
-        }
-
-        let humanCount = 0;
-        lobbyData.players.forEach((p, i) => {
-            const slotEl   = document.getElementById(`slot${i}`);
-            const nameEl   = document.getElementById(`slotName${i}`);
-            const avatarEl = document.getElementById(`slotAvatar${i}`);
-            if (!slotEl || !nameEl) return;
-
-            const statusEl = slotEl.querySelector('.slot-status-pill');
-
-            if (p.isAi) {
-                nameEl.textContent = `🤖 ${p.name}`;
-                if (avatarEl) avatarEl.textContent = '🤖';
-                if (statusEl) {
-                    statusEl.textContent = '⚙️ 备选 AI';
-                    statusEl.classList.remove('ready');
-                }
-            } else if (p.name) {
-                humanCount++;
-                let displayName = p.name;
-                if (i === 0) displayName += ' (房主)';
-                if (i === myIndex && i !== 0) displayName += ' (你)';
-                nameEl.textContent = displayName;
-                if (avatarEl) avatarEl.textContent = p.avatar || '🤠';
-                if (statusEl) {
-                    statusEl.textContent = '✅ 已就绪';
-                    statusEl.classList.add('ready');
-                }
-            }
-        });
-
-        const ccEl = document.getElementById('connectedCount');
-        if (ccEl) ccEl.textContent = humanCount;
     }
 
-    /**
-     * 复制分享链接
-     */
     copyInviteUrl() {
-        const input = document.getElementById('inviteUrlInput');
-        if (input && input.value) {
-            navigator.clipboard.writeText(input.value).then(() => {
-                UIRenderer.showToast('邀请链接已复制！快速发给微信/QQ好友吧！');
-            }).catch(() => {
-                input.select();
-                document.execCommand('copy');
-                UIRenderer.showToast('链接已复制到剪贴板');
-            });
+        if (typeof LobbyManager !== "undefined") {
+            LobbyManager.copyInviteUrl();
         }
     }
 
-    /**
-     * 补齐机器人并开始
-     */
-    fillAiAndStart() {
-        for (let i = 1; i <= 2; i++) {
-            if (!this.gameState.players[i].name || this.gameState.players[i].name.includes('等待')) {
-                this.gameState.players[i].name = `AI-${i}`;
-                this.gameState.players[i].isAi = true;
-            }
-        }
-        this.startNewRound();
-    }
-
-    /**
-     * 启动单机练习模式 (对战 2 个 AI 机器人)
-     */
-    startAiGame(nickname) {
-        NetworkManager.isAiMode = true;
-        NetworkManager.isHost = true;
-        NetworkManager.myPlayerIndex = 0;
-
-        this.gameState.players[0] = { id: 0, name: nickname, hand: [], isAi: false, isHost: true, role: 'FARMER', passedBid: false };
-        this.gameState.players[1] = { id: 1, name: 'AI-1', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
-        this.gameState.players[2] = { id: 2, name: 'AI-2', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
-
-        document.getElementById('lobbyScreen').classList.remove('active');
-        document.getElementById('lobbyScreen').style.display = 'none';
-        document.getElementById('waitingScreen').style.display = 'none';
-        document.getElementById('gameTable').style.display = 'grid';
-        this.startNewRound();
-    }
-
-    /**
-     * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
-     */
-    resetToLobby() {
-        const mahjongScr = document.getElementById('mahjongGameScreen');
-        const gomokuScr  = document.getElementById('gomokuGameScreen');
-        const isMahjongExit = (this.activeGameType === 'MAHJONG') || (mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none'));
-        const isGomokuExit  = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
-
-        this._stopKeepAlive();
-        if (this._mahjongWatchdogId) { clearInterval(this._mahjongWatchdogId); this._mahjongWatchdogId = null; }
-        NetworkManager.clearSession();
-
-        // 1. 如果在房间中，清除云端对应的槽位或房间
-        if (NetworkManager.roomId && NetworkManager.db) {
-            const rId = NetworkManager.roomId;
-            const myIdx = NetworkManager.myPlayerIndex;
-            try {
-                if (NetworkManager.isHost && !NetworkManager.isAiMode) {
-                    // 如果房主主动退出，物理注销移除整个房间
-                    NetworkManager.db.ref('rooms/' + rId).remove().catch(() => {});
-                } else if (myIdx > 0 && !NetworkManager.isAiMode) {
-                    // 如果客户端主动退出，将其槽位重置为 AI 候补
-                    NetworkManager.db.ref(`rooms/${rId}/lobbyData/players/${myIdx}`).set({
-                        name: `AI-${myIdx}`,
-                        isAi: true,
-                        isHost: false
-                    }).catch(() => {});
-                }
-            } catch (e) {}
-        }
-
-        // 2. 清除云端网络监听
-        NetworkManager._removeAllListeners();
-        NetworkManager.roomId = null;
-        NetworkManager.isHost = false;
-        NetworkManager.isAiMode = false;
-
-        // 3. 关键修复：清除浏览器 URL 地址栏里的 ?room=XXXXXX 邀请参数
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        // 4. 界面瞬间平滑切回大厅 Screen (彻底隐藏麻将/五子棋/斗地主对局屏与结算弹窗)
-        const waitingScreen   = document.getElementById('waitingScreen');
-        const gameTable       = document.getElementById('gameTable');
-        const gameOverModal   = document.getElementById('gameOverModal');
-        const mahjongSettle   = document.getElementById('mahjongSettlementModal');
-        const lobbyScreen     = document.getElementById('lobbyScreen');
-        const roomInfoBar     = document.getElementById('roomInfoBar');
-        const btnLeaveRoom    = document.getElementById('btnLeaveRoom');
-        const btnGoHomeTop    = document.getElementById('btnGoHomeTop');
-
-        if (waitingScreen) { waitingScreen.style.display = 'none'; waitingScreen.classList.remove('active'); }
-        if (gameTable)     { gameTable.style.display = 'none'; gameTable.classList.remove('active'); }
-        if (gameOverModal) gameOverModal.style.display = 'none';
-        if (gomokuScr)     { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
-        if (mahjongScr)    { mahjongScr.style.display = 'none'; mahjongScr.classList.remove('active'); }
-        if (mahjongSettle) { mahjongSettle.style.display = 'none'; mahjongSettle.classList.remove('active'); }
-        if (roomInfoBar)   roomInfoBar.style.display = 'none';
-        if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
-        if (btnGoHomeTop)  btnGoHomeTop.style.display = 'none';
-        const menuLeaveBtn3 = document.getElementById('menuBtnLeaveRoom');
-        if (menuLeaveBtn3) menuLeaveBtn3.style.display = 'none';
-
-        if (lobbyScreen) {
-            lobbyScreen.style.display = 'flex';
-            lobbyScreen.classList.add('active');
-        }
-
-        // 如果是从麻将/五子棋退出的，退回主页时自动切为对应的麻将/五子棋主页 Tab
-        if (isMahjongExit && typeof this.switchGameLobby === 'function') {
-            this.switchGameLobby('MAHJONG');
-        } else if (isGomokuExit && typeof this.switchGameLobby === 'function') {
-            this.switchGameLobby('GOMOKU');
-        }
-
-        this.updateHeaderVisibility();
-
-        // 恢复大厅基础按钮可见性
-        const createBtn = document.getElementById('btnCreateRoom');
-        const aiBtn     = document.getElementById('btnPlayAi');
-        const divider   = document.querySelector('.divider');
-        const banner    = document.getElementById('quickJoinBanner');
-        if (createBtn) createBtn.style.display = 'flex';
-        if (aiBtn)     aiBtn.style.display = 'flex';
-        if (divider)   divider.style.display = 'flex';
-        if (banner)    banner.style.display = 'none';
-
-        UIRenderer.showToast('已成功退出并安全返回主页大厅');
-    }
-
-    /**
-     * 开始新一局 (洗牌、发牌、全员就位加载完毕后展开 3秒倒计时 + 动态进度条)
-     */
     startNewRound() {
-        document.getElementById('waitingScreen').style.display = 'none';
-        document.getElementById('gameOverModal').style.display = 'none';
-        document.getElementById('gameTable').style.display = 'grid';
-        this.updateHeaderVisibility();
-        const _btnLeave = document.getElementById('btnLeaveRoom');
-        if (_btnLeave) _btnLeave.style.display = 'inline-flex';
-        const menuLeaveBtn4 = document.getElementById('menuBtnLeaveRoom');
-        if (menuLeaveBtn4) menuLeaveBtn4.style.display = 'flex';
-
-        // Bug 修复：清除上一局残留的回合倒计时 interval，防止上局 timer 继续触发 handleTurnTimeout
-        if (this.turnTimerInterval) {
-            clearInterval(this.turnTimerInterval);
-            this.turnTimerInterval = null;
+        if (typeof DouDizhuEngine !== "undefined") {
+            DouDizhuEngine.startNewRound(this);
         }
-
-        // Bug 修复：清除 AI 调度守卫 key，防止新局 AI 无法调度
-        this._aiScheduleKey = null;
-
-        // 彻底重置界面 DOM & 选牌状态 & 气泡 & 残余展示牌
-        UIRenderer.resetGameTableUI();
-
-        // 1. 生成局次唯一卡牌洗牌
-        this.roundCounter = (this.roundCounter || 0) + 1;
-        const deck = DouDizhuRules.shuffle(DouDizhuRules.createDeck(this.roundCounter));
-
-        // 2. 发牌: 3人各 17 张原始混乱手牌，留 3 张底牌 (开局手牌保持乱序，点击理牌后进行排序)
-        const p0Hand = deck.slice(0, 17);
-        const p1Hand = deck.slice(17, 34);
-        const p2Hand = deck.slice(34, 51);
-        const bottom = deck.slice(51, 54);
-
-        // 3. 构造重置 GameState (保持玩家 ID/昵称/isAi/isHost)
-        this.gameState.phase = 'BIDDING';
-        this.gameState.players[0].hand = p0Hand;
-        this.gameState.players[1].hand = p1Hand;
-        this.gameState.players[2].hand = p2Hand;
-
-        this.gameState.players.forEach(p => {
-            p.role = 'FARMER';
-            p.passedBid = false;
-        });
-
-        this.gameState.bottomCards = bottom;
-        this.gameState.currentTurn = 0;
-        this.gameState.landlordIndex = -1;
-        this.gameState.highestBid = 0;
-        this.gameState.highestBidder = -1;
-        this.gameState.bidsCount = 0;
-        this.gameState.lastPlay = null;
-        this.gameState.recentPlays = {
-            0: { cards: [], isLatest: false },
-            1: { cards: [], isLatest: false },
-            2: { cards: [], isLatest: false }
-        };
-        this.gameState.multiplier = 1;
-        this.gameState.winnerIndex = -1;
-        this.gameState.readyPlayers = [false, false, false];
-
-        this._hasPlayedSortSoundThisRound = false;
-
-        // 先标记开局倒计时状态与统一绝对起始时间，再广播，确保 3 人联机倒计时 100% 同步
-        this.gameState.openingStartTime = Date.now();
-        this.gameState.isOpeningCountdown = true;
-
-        // 房主初始化完毕，立即同步全量状态给其他客户端，让大家切入打牌界面
-        if (NetworkManager.isHost) {
-            NetworkManager.broadcastState(this.gameState);
-        }
-
-        // 触发本地 3 秒全员就位加载倒计时与动态进度条
-        this.startOpeningCountdown();
     }
 
-    /**
-     * 确认人齐加载完毕后的 3 秒开局倒计时与动态进度条
-     */
     startOpeningCountdown() {
-        const overlay = document.getElementById('startCountdownOverlay');
-        const numEl = document.getElementById('startCountdownNum');
-        const lightRed = document.getElementById('trafficLightRed');
-        const lightYellow = document.getElementById('trafficLightYellow');
-        const lightGreen = document.getElementById('trafficLightGreen');
-
-        if (overlay) overlay.style.display = 'flex';
-
-        this._isCountingDownLocally = true;
-        this.updateControlButtons(NetworkManager.myPlayerIndex);
-
-        const totalDuration = 3000; // 3.0 秒
-        const startTime = Date.now();
-        const step = 50;
-
-        let lastPlayedSec = -1;
-        const updateLights = (sec) => {
-            if (lightRed) lightRed.classList.toggle('active', sec === 3 || sec === 0);
-            if (lightYellow) lightYellow.classList.toggle('active', sec === 2 || sec === 0);
-            if (lightGreen) lightGreen.classList.toggle('active', sec === 1 || sec === 0);
-
-            if (sec !== lastPlayedSec) {
-                lastPlayedSec = sec;
-                if (typeof SoundEngine !== 'undefined') {
-                    if (sec === 3 || sec === 2 || sec === 1) {
-                        SoundEngine.playCountdownBeep(sec);
-                    } else if (sec === 0) {
-                        SoundEngine.playCountdownGo();
-                    }
-                }
-            }
-
-            if (numEl) {
-                if (sec === 3) {
-                    numEl.textContent = '3';
-                    numEl.className = 'start-number num-red';
-                } else if (sec === 2) {
-                    numEl.textContent = '2';
-                    numEl.className = 'start-number num-yellow';
-                } else if (sec === 1) {
-                    numEl.textContent = '1';
-                    numEl.className = 'start-number num-green';
-                } else {
-                    numEl.textContent = '抢！';
-                    numEl.className = 'start-number num-go';
-                }
-            }
-        };
-
-        updateLights(3);
-
-        clearInterval(this._startCountdownTimer);
-        this._startCountdownTimer = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-
-            const remainingSecs = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
-            updateLights(remainingSecs);
-
-            if (elapsed >= totalDuration) {
-                clearInterval(this._startCountdownTimer);
-                this._isCountingDownLocally = false;
-                setTimeout(() => {
-                    if (overlay) overlay.style.display = 'none';
-                    if (NetworkManager.isHost) {
-                        this.gameState.isOpeningCountdown = false;
-                        NetworkManager.broadcastState(this.gameState); // 仅由房主主导开局状态解锁并广播
-                        UIRenderer.showToast('🔥 3秒到！手速抢地主开始！');
-                        SoundEngine.playBid();
-
-                        if (NetworkManager.isAiMode) {
-                            this.scheduleAiBids();
-                        }
-                    }
-                    this.updateControlButtons(NetworkManager.myPlayerIndex);
-                }, 200);
-            }
-        }, step);
+        if (typeof DouDizhuEngine !== "undefined") {
+            DouDizhuEngine.startOpeningCountdown(this);
+        }
     }
 
-    /**
-     * AI 单机模式下的手速叫牌模拟
-     */
     scheduleAiBids() {
-        [1, 2].forEach(aiIdx => {
-            const delay = 2200 + Math.random() * 2600; // 给玩家留出 2 秒以上的抢按时间
-            setTimeout(() => {
-                if (this.gameState.phase === 'BIDDING' && !this.gameState.players[aiIdx].passedBid) {
-                    // AI 有 40% 几率抢叫，60% 几率放弃不叫
-                    const willClaim = Math.random() < 0.4;
-                    this.processBid(aiIdx, willClaim ? 'CLAIM' : 'PASS');
-                    NetworkManager.broadcastState(this.gameState);
-                }
-            }, delay);
-        });
+        if (typeof DouDizhuEngine !== "undefined") {
+            DouDizhuEngine.scheduleAiBids(this);
+        }
     }
 
     /**
