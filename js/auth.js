@@ -98,7 +98,7 @@ class AuthManager {
         if (this.userData.lastClaimDate === today) return;
 
         const accountKey = this.userData.accountKey;
-        const newYinCoins = (this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000) + 600;
+        const newYinCoins = (this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000) + 200;
 
         // 记录发放状态
         this.userData.lastClaimDate = today;
@@ -110,7 +110,7 @@ class AuthManager {
         }).then(() => {
             this.updateUserHeaderUI();
             if (typeof UIRenderer !== 'undefined') {
-                UIRenderer.showToast(`🎁 检测到今日活跃，已自动发放今日福利：+600 知因币！(累计: ${newYinCoins})`, 4000);
+                UIRenderer.showToast(`🎁 检测到今日活跃，已自动发放今日福利：+200 知因币！(累计: ${newYinCoins})`, 4000);
             }
         }).catch(() => {});
     }
@@ -741,7 +741,7 @@ class AuthManager {
 
         claimCount += 1;
         this.userData[countKey] = claimCount;
-        this.updateCoins(100, `破产补助 ${claimCount}/3`);
+        this.updateCoins(150, `破产补助 ${claimCount}/3`);
 
         if (this.db && this.userData.accountKey) {
             this.db.ref('users/' + this.userData.accountKey + '/' + countKey).set(claimCount);
