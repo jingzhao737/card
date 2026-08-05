@@ -4702,6 +4702,17 @@ class GameEngineController {
                 const gameTab = document.getElementById('gameTable');
                 if (gameTab) gameTab.style.display = 'grid';
 
+                const victoryBox = document.getElementById('victoryBannerBox');
+                if (victoryBox && this.gameState.phase !== 'GAMEOVER') {
+                    victoryBox.style.display = 'none';
+                    delete victoryBox.dataset.minimized;
+                }
+
+                // 重新开局切入 BIDDING 阶段时，客户端强制重置上局残牌与选中状态
+                if (this.gameState.phase === 'BIDDING' && this._lastPhase === 'GAMEOVER') {
+                    UIRenderer.resetGameTableUI();
+                }
+
                 const btnLeave = document.getElementById('btnLeaveRoom');
                 if (btnLeave) btnLeave.style.display = 'inline-flex';
                 const btnGoHomeTop = document.getElementById('btnGoHomeTop');
@@ -4709,6 +4720,7 @@ class GameEngineController {
                 const menuLeave = document.getElementById('menuBtnLeaveRoom');
                 if (menuLeave) menuLeave.style.display = 'flex';
             }
+            this._lastPhase = this.gameState.phase;
 
             // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时
             if (this.gameState.isOpeningCountdown && !this._isCountingDownLocally) {
