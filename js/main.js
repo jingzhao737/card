@@ -2191,8 +2191,16 @@ class GameEngineController {
         this.selectedMahjongTileIndex = -1;
         // 每次开局都重置初始化标记，避免重开一局时客户端跳过新的初始牌组
         this._mahjongOnlineInitDone = false;
+        this.mahjongReadyPlayers = [false, false, false, false];
+
+        const btnSettle = document.getElementById('btnMahjongSettleRematch');
+        if (btnSettle) {
+            btnSettle.disabled = false;
+            btnSettle.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 再来一局';
+        }
 
         if (isHost) {
+            NetworkManager.clearMahjongRematchStatus();
             // 房主初始化麻将引擎并导出全量牌组与庄家状态
             window.mahjongEngine.reset(false, 0);
             const initData = window.mahjongEngine.exportState();
@@ -2427,10 +2435,11 @@ class GameEngineController {
         if (btnSettleRematch) {
             btnSettleRematch.onclick = () => {
                 if (NetworkManager.roomId && !NetworkManager.isAiMode) {
+                    btnSettleRematch.disabled = true;
+                    btnSettleRematch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 准备中 (等待全员...)';
+                    this.handleSelfAction('RESTART_VOTE', { gameType: 'MAHJONG' });
                     if (NetworkManager.isHost) {
-                        this.startMahjongOnlineGame(NetworkManager.roomId, true);
-                    } else {
-                        UIRenderer.showToast('⌛ 已收到重开请求，等待房主开启新一局麻将...');
+                        this.processRestartVote(0);
                     }
                 } else {
                     this.startMahjongAiMode();
@@ -3668,6 +3677,23 @@ class GameEngineController {
                 const expVal = isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50);
                 AuthEngine.addExp(expVal, isPve ? '麻将切磋 (PVE)' : '麻将对局 (PVP)');
             }
+        }
+
+        const btnSettle = document.getElementById('btnMahjongSettleRematch');
+        if (btnSettle) {
+            btnSettle.disabled = false;
+            btnSettle.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 再来一局';
+        }
+
+        if (NetworkManager.roomId && !NetworkManager.isAiMode) {
+            NetworkManager.onMahjongRematchStatus((status) => {
+                if (status && status.readyCount !== undefined) {
+                    if (btnSettle) {
+                        btnSettle.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 准备中 (${status.readyCount}/${status.total || 4} 就绪)`;
+                    }
+                    UIRenderer.showToast(`⌛ 麻将对局就绪进度：${status.readyCount}/4`);
+                }
+            });
         }
 
         modal.style.display = 'flex';
@@ -5118,6 +5144,41 @@ class GameEngineController {
      * 处理【再来一局】准备就绪投票
      */
     processRestartVote(playerIndex) {
+        if (this.activeGameType === 'MAHJONG' || (window.mahjongEngine && window.mahjongEngine.isGameOver)) {
+            if (!this.mahjongReadyPlayers) this.mahjongReadyPlayers = [false, false, false, false];
+            this.mahjongReadyPlayers[playerIndex] = true;
+
+            const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
+            for (let i = 0; i < 4; i++) {
+                if (!seatPlayers[i] || seatPlayers[i].isAi) {
+                    this.mahjongReadyPlayers[i] = true;
+                }
+            }
+
+            const readyCount = this.mahjongReadyPlayers.filter(Boolean).length;
+            const statusPayload = {
+                readyPlayers: this.mahjongReadyPlayers,
+                readyCount: readyCount,
+                total: 4
+            };
+
+            NetworkManager.sendMahjongRematchStatus(statusPayload);
+
+            const btnSettle = document.getElementById('btnMahjongSettleRematch');
+            if (btnSettle) {
+                btnSettle.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 准备中 (${readyCount}/4 就绪)`;
+            }
+            UIRenderer.showToast(`⌛ 麻将重开准备中：${readyCount}/4 席位就绪`);
+
+            if (readyCount >= 4) {
+                setTimeout(() => {
+                    this.mahjongReadyPlayers = [false, false, false, false];
+                    this.startMahjongOnlineGame(NetworkManager.roomId, true);
+                }, 400);
+            }
+            return;
+        }
+
         if (this.gameState.phase !== 'GAMEOVER') return;
         if (!this.gameState.readyPlayers) {
             this.gameState.readyPlayers = [false, false, false];

@@ -899,6 +899,25 @@ class P2PManager {
             if (val && callback) callback(val);
         });
     }
+
+    sendMahjongRematchStatus(status) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongRematchStatus').set(status);
+    }
+
+    onMahjongRematchStatus(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongRematchStatus').off();
+        this.roomRef.child('mahjongRematchStatus').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    clearMahjongRematchStatus() {
+        if (!this.roomRef) return;
+        this.roomRef.child('mahjongRematchStatus').remove();
+    }
 }
 
 const NetworkManager = new P2PManager();
