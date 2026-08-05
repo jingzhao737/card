@@ -4572,7 +4572,11 @@ class GameEngineController {
         this.gameState.highestBidder = -1;
         this.gameState.bidsCount = 0;
         this.gameState.lastPlay = null;
-        this.gameState.recentPlays = { 0: null, 1: null, 2: null };
+        this.gameState.recentPlays = {
+            0: { cards: [], isLatest: false },
+            1: { cards: [], isLatest: false },
+            2: { cards: [], isLatest: false }
+        };
         this.gameState.multiplier = 1;
         this.gameState.winnerIndex = -1;
         this.gameState.readyPlayers = [false, false, false];
@@ -4947,9 +4951,16 @@ class GameEngineController {
                 }
 
                 const recent = this.gameState.recentPlays || {};
-                const selfPlay = recent[rel.self];
-                const leftPlay = recent[rel.left];
-                const rightPlay = recent[rel.right];
+                const getPlayData = (slotIdx) => {
+                    if (!recent) return null;
+                    const p = recent[slotIdx] || recent[String(slotIdx)];
+                    if (!p || !p.cards || p.cards.length === 0) return null;
+                    return p;
+                };
+
+                const selfPlay = getPlayData(rel.self);
+                const leftPlay = getPlayData(rel.left);
+                const rightPlay = getPlayData(rel.right);
 
                 UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
                 UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
@@ -5212,6 +5223,15 @@ class GameEngineController {
         this.gameState.phase = 'PLAYING';
         this.gameState.currentTurn = landlordIdx;
         this.gameState.multiplier = Math.max(1, this.gameState.highestBid || 1);
+        this.gameState.lastPlay = null;
+        this.gameState.recentPlays = {
+            0: { cards: [], isLatest: false },
+            1: { cards: [], isLatest: false },
+            2: { cards: [], isLatest: false }
+        };
+
+        // 清理叫地主阶段或上一局残留界面，确保地主首出时 100% 渲染显现
+        UIRenderer.resetGameTableUI();
 
         // 赋予角色并自动为全场玩家整理手牌
         this.gameState.players.forEach((p, idx) => {
@@ -5263,8 +5283,12 @@ class GameEngineController {
             }
 
             // 如果是自由首出（开启新一轮叫/打牌），清空上一轮大家打出的残牌！
-            if (isFreePlay) {
-                this.gameState.recentPlays = { 0: null, 1: null, 2: null };
+            if (isFreePlay || !this.gameState.recentPlays) {
+                this.gameState.recentPlays = {
+                    0: { cards: [], isLatest: false },
+                    1: { cards: [], isLatest: false },
+                    2: { cards: [], isLatest: false }
+                };
             }
 
             // 规则合规！从玩家手牌中扣除
@@ -5273,14 +5297,12 @@ class GameEngineController {
 
             this.gameState.lastPlay = { playerIndex, cards };
 
-            if (!this.gameState.recentPlays) {
-                this.gameState.recentPlays = { 0: null, 1: null, 2: null };
-            }
-
             // 取消之前玩家出牌的 isLatest 金光高亮标记
             for (let i = 0; i < 3; i++) {
                 if (this.gameState.recentPlays[i]) {
                     this.gameState.recentPlays[i].isLatest = false;
+                } else {
+                    this.gameState.recentPlays[i] = { cards: [], isLatest: false };
                 }
             }
 
