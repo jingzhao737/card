@@ -4642,8 +4642,8 @@ class GameEngineController {
                 this._isCountingDownLocally = false;
                 setTimeout(() => {
                     if (overlay) overlay.style.display = 'none';
+                    this.gameState.isOpeningCountdown = false;
                     if (NetworkManager.isHost) {
-                        this.gameState.isOpeningCountdown = false;
                         NetworkManager.broadcastState(this.gameState); // 倒计时结束，同步状态解锁大家的操作按钮
                     }
                     this.updateControlButtons(NetworkManager.myPlayerIndex);
@@ -5102,13 +5102,9 @@ class GameEngineController {
     processBid(playerIndex, action) {
         if (this.gameState.phase !== 'BIDDING') return;
 
-        // 如果处于 3 秒开局倒计时中且非房主直接忽略，房主解除锁定响应叫牌
+        // 开局 3 秒倒计时锁判定（收到叫牌动作时全员自动解除锁定）
         if (this.gameState.isOpeningCountdown) {
-            if (NetworkManager.isHost) {
-                this.gameState.isOpeningCountdown = false;
-            } else {
-                return;
-            }
+            this.gameState.isOpeningCountdown = false;
         }
 
         const player = this.gameState.players[playerIndex];
@@ -5133,11 +5129,6 @@ class GameEngineController {
             UIRenderer.showBubble(bubbleTarget, '不叫');
             UIRenderer.showToast(`${player.name} 放弃叫地主`);
 
-            // 广播不叫状态，保证其他玩家的冒泡提示与手牌同步
-            if (NetworkManager.isHost) {
-                NetworkManager.broadcastState(this.gameState);
-            }
-
             // 统计剩下没有退出的玩家
             const activeBidders = this.gameState.players.filter(p => !p.passedBid);
 
@@ -5151,12 +5142,25 @@ class GameEngineController {
                 setTimeout(() => {
                     this.finalizeLandlord(targetIdx);
                 }, 1000);
-                return;
             } else if (activeBidders.length === 0) {
                 // 3 个玩家全都退出了 -> 重新发牌
                 UIRenderer.showToast('全员放弃叫地主，重新发牌！');
                 setTimeout(() => this.startNewRound(), 1500);
-                return;
+            } else {
+                // 仍有多人未放弃：轮到下一个未放弃叫牌的玩家继续叫牌/思考，并重置倒计时
+                let nextTurn = (playerIndex + 1) % 3;
+                let count = 0;
+                while (this.gameState.players[nextTurn] && this.gameState.players[nextTurn].passedBid && count < 3) {
+                    nextTurn = (nextTurn + 1) % 3;
+                    count++;
+                }
+                this.gameState.currentTurn = nextTurn;
+                this.startTurnTimer();
+            }
+
+            // 广播叫牌/不叫最新状态，保证所有玩家界面提示与倒计时同步
+            if (NetworkManager.isHost) {
+                NetworkManager.broadcastState(this.gameState);
             }
         }
     }
