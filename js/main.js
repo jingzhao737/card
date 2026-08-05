@@ -4283,6 +4283,18 @@ class GameEngineController {
         if (!lobbyData || !lobbyData.players) return;
         // 缓存最新大厅玩家列表，供麻将牌桌座位昵称/风向显示使用
         this.latestLobbyPlayers = lobbyData.players || null;
+
+        // 房主接收到大厅列表更新时，精准同步 gameState.players 中的 isAi/name/avatar 标志
+        if (NetworkManager.isHost && this.gameState && this.gameState.players) {
+            lobbyData.players.forEach((p, i) => {
+                if (this.gameState.players[i] && p) {
+                    this.gameState.players[i].name = p.name || this.gameState.players[i].name;
+                    this.gameState.players[i].avatar = p.avatar || this.gameState.players[i].avatar;
+                    this.gameState.players[i].isAi = !!p.isAi;
+                }
+            });
+        }
+
         const myIndex = NetworkManager.myPlayerIndex;
 
         const gameType = NetworkManager.gameType || this.activeGameType || 'DOUDIZHU';
@@ -5210,6 +5222,7 @@ class GameEngineController {
             if (this.gameState.players[playerIndex].hand.length === 0) {
                 this.gameState.phase = 'GAMEOVER';
                 this.gameState.winnerIndex = playerIndex;
+                this.gameState.readyPlayers = [false, false, false];
                 NetworkManager.broadcastState(this.gameState);
 
                 // 战绩结算与天梯积分更新
