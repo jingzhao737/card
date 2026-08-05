@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸斗地主 - 随时在线打牌</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=34.3">
+    <link rel="stylesheet" href="css/styles.css?v=34.4">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -487,7 +487,7 @@
 
             <!-- 网页主页最下方不起眼的版本号与最后修改时间 -->
             <div class="app-version-footer" style="text-align: center; padding: 12px 0 18px 0; font-size: 0.68rem; color: rgba(255, 255, 255, 0.35); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0.3px; user-select: none;">
-                v34.3 · 最后修改时间：2026-08-06 03:16
+                v34.4 · 最后修改时间：2026-08-06 03:21
             </div>
         </div>
 
@@ -832,6 +832,10 @@
                 <!-- 底牌区域居中，问号悬浮在右侧 -->
                 <div id="bottomCardsWrapper" style="display:flex;justify-content:center;width:100%;">
                     <div style="position:relative;display:inline-block;">
+                        <!-- 全局动态倍率胶囊悬浮在底牌左侧 -->
+                        <div id="multiplierPill" class="multiplier-pill" style="position:absolute; left:-95px; top:50%; transform:translateY(-50%); background:rgba(15,23,42,0.85); border:1px solid rgba(251,191,36,0.6); backdrop-filter:blur(8px); border-radius:20px; padding:4px 12px; color:#fbbf24; font-size:0.82rem; font-weight:800; display:flex; align-items:center; gap:5px; box-shadow:0 4px 12px rgba(0,0,0,0.4); z-index:10;">
+                            <i class="fa-solid fa-bolt" style="color:#fbbf24;"></i> <span id="gameMultiplier">x1</span> 倍
+                        </div>
                         <div class="bottom-cards-box" id="bottomCardsBox">
                             <div class="box-title">底牌</div>
                             <div class="bottom-cards-cards" id="bottomCardsContainer">
@@ -872,7 +876,7 @@
                 <div class="played-cards-area" id="playedLeft"></div>
             </div>
 
-            <!-- 右侧玩家 (Player 3) -->
+            <!-- 右侧玩家 (Player 3 - 顺时针下家/上家) -->
             <div class="player-area right-player" id="playerAreaRight">
                 <div class="player-profile">
                     <!-- 右家对话气泡/出牌状态 (位于名片正上方) -->
@@ -932,10 +936,12 @@
 
                 <!-- 交互控制面板 (叫地主/出牌按钮组) -->
                 <div class="controls-bar" id="controlsBar" style="display: none;">
-                    <!-- 抢手速叫地主阶段按钮 -->
+                    <!-- 正宗叫地主阶段按钮 (不叫 / 1分 / 2分 / 3分 抢地主) -->
                     <div id="biddingControls" class="btn-group" style="display: none;">
                         <button class="btn-action danger" id="btnBidPass">不叫</button>
-                        <button class="btn-action primary" id="btnBidLandlord">叫地主</button>
+                        <button class="btn-action secondary" id="btnBid1">1 分</button>
+                        <button class="btn-action secondary" id="btnBid2">2 分</button>
+                        <button class="btn-action primary" id="btnBid3">3 分</button>
                     </div>
 
                     <!-- 备用按钮组 -->

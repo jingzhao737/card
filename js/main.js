@@ -1120,9 +1120,18 @@ class GameEngineController {
         }
 
 
-        // 按钮组事件绑定 (抢手速叫地主/不叫/出牌/不出/提示)
+        // 按钮组事件绑定 (叫地主 1分/2分/3分/不叫/出牌/不出/提示)
+        const bid1Btn = document.getElementById('btnBid1');
+        if (bid1Btn) bid1Btn.addEventListener('click', () => this.handleSelfAction('BID', 1));
+
+        const bid2Btn = document.getElementById('btnBid2');
+        if (bid2Btn) bid2Btn.addEventListener('click', () => this.handleSelfAction('BID', 2));
+
+        const bid3Btn = document.getElementById('btnBid3');
+        if (bid3Btn) bid3Btn.addEventListener('click', () => this.handleSelfAction('BID', 3));
+
         const bidLandlordBtn = document.getElementById('btnBidLandlord');
-        if (bidLandlordBtn) bidLandlordBtn.addEventListener('click', () => this.handleSelfAction('BID', 'CLAIM'));
+        if (bidLandlordBtn) bidLandlordBtn.addEventListener('click', () => this.handleSelfAction('BID', 3));
 
         const bidPassBtn = document.getElementById('btnBidPass');
         if (bidPassBtn) bidPassBtn.addEventListener('click', () => this.handleSelfAction('BID', 'PASS'));
@@ -5315,11 +5324,39 @@ class GameEngineController {
         if (playerIndex === rel.right) bubbleTarget = 'bubbleRight';
 
         if (action === 'CLAIM' || action === 1 || action === 2 || action === 3) {
-            // 谁先点击到了【叫地主】，谁就瞬间成为地主！
+            const bidVal = (typeof action === 'number') ? action : 3;
             SoundEngine.playBid();
-            UIRenderer.showBubble(bubbleTarget, '👑 叫地主！');
-            UIRenderer.showToast(`👑 ${player.name} 手速拔得头筹，成功抢到地主！`);
-            this.finalizeLandlord(playerIndex);
+            const currentHighest = this.gameState.highestBid || 0;
+            if (bidVal > currentHighest) {
+                this.gameState.highestBid = bidVal;
+                this.gameState.highestBidder = playerIndex;
+                this.gameState.multiplier = bidVal;
+            }
+            UIRenderer.showBubble(bubbleTarget, bidVal === 3 ? '👑 3分(地主)' : `👑 ${bidVal}分`);
+            UIRenderer.showToast(`👑 ${player.name} 叫了 ${bidVal} 分！`);
+
+            if (bidVal === 3 || action === 'CLAIM') {
+                this.finalizeLandlord(playerIndex);
+                return;
+            }
+
+            let nextTurn = (playerIndex + 1) % 3;
+            let count = 0;
+            while (this.gameState.players[nextTurn] && this.gameState.players[nextTurn].passedBid && count < 3) {
+                nextTurn = (nextTurn + 1) % 3;
+                count++;
+            }
+            this.gameState.bidsCount = (this.gameState.bidsCount || 0) + 1;
+            if (this.gameState.bidsCount >= 3) {
+                const winner = this.gameState.highestBidder !== undefined && this.gameState.highestBidder !== -1 ? this.gameState.highestBidder : playerIndex;
+                this.finalizeLandlord(winner);
+                return;
+            }
+            this.gameState.currentTurn = nextTurn;
+            this.startTurnTimer();
+            if (NetworkManager.isHost) {
+                NetworkManager.broadcastState(this.gameState);
+            }
             return;
         } else if (action === 'PASS' || action === 0) {
             // 玩家点击【不叫】，退出叫地主
