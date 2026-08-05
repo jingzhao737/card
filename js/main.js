@@ -2449,7 +2449,8 @@ class GameEngineController {
 
         const btnSettleLobby = document.getElementById('btnMahjongSettleLobby');
         if (btnSettleLobby) btnSettleLobby.onclick = () => {
-            if (settlementModal) settlementModal.style.display = 'none';
+            const mModal = document.getElementById('mahjongSettlementModal');
+            if (mModal) mModal.style.display = 'none';
             this.resetToLobby();
         };
 
