@@ -672,7 +672,7 @@ const UIRenderer = {
     /**
      * 更新倒计时与轮到谁出牌的 UI 样式 (带流畅本地 1 秒倒计时与头像回合金光高亮)
      */
-    updateTurnIndicator(currentTurnIndex, myPlayerIndex, seconds) {
+    updateTurnIndicator(currentTurnIndex, myPlayerIndex, seconds, turnStartTime) {
         const timerEl = document.getElementById('turnTimer');
         const timerSecs = document.getElementById('timerSeconds');
 
@@ -685,10 +685,20 @@ const UIRenderer = {
 
         timerEl.style.display = 'flex';
 
-        // 每次回合轮换或服务端大同步时，启动/重置本地秒级流畅倒计时
-        if (this._currentTurnIndex !== currentTurnIndex || seconds === 25) {
+        // 基于绝对时间戳计算真实剩余秒数，保证 3 人联机零时差完美同步
+        let calcRemaining = seconds !== undefined ? seconds : 25;
+        if (turnStartTime) {
+            const elapsed = Math.floor((Date.now() - turnStartTime) / 1000);
+            calcRemaining = Math.max(0, 25 - elapsed);
+        }
+
+        const turnChanged = this._currentTurnIndex !== currentTurnIndex;
+        const startTimeChanged = this._lastTurnStartTime !== turnStartTime;
+
+        if (turnChanged || startTimeChanged || calcRemaining === 25) {
             this._currentTurnIndex = currentTurnIndex;
-            this.startLocalTimer(seconds !== undefined ? seconds : 25);
+            this._lastTurnStartTime = turnStartTime;
+            this.startLocalTimer(calcRemaining);
         }
 
         // 高亮轮到思考/出牌的玩家头像

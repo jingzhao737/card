@@ -4579,7 +4579,8 @@ class GameEngineController {
 
         this._hasPlayedSortSoundThisRound = false;
 
-        // 先标记开局倒计时状态，再广播，确保客户端收到时能触发倒计时动画
+        // 先标记开局倒计时状态与统一绝对起始时间，再广播，确保 3 人联机倒计时 100% 同步
+        this.gameState.openingStartTime = Date.now();
         this.gameState.isOpeningCountdown = true;
 
         // 房主初始化完毕，立即同步全量状态给其他客户端，让大家切入打牌界面
@@ -4606,7 +4607,7 @@ class GameEngineController {
         this._isCountingDownLocally = true;
         this.updateControlButtons(NetworkManager.myPlayerIndex);
 
-        let elapsed = 0;
+        const startTime = (this.gameState && this.gameState.openingStartTime) ? this.gameState.openingStartTime : Date.now();
         const totalDuration = 3000; // 3.0 秒
         const step = 50;
 
@@ -4644,11 +4645,13 @@ class GameEngineController {
             }
         };
 
-        updateLights(3);
+        const initialElapsed = Date.now() - startTime;
+        const initialSecs = Math.max(0, Math.ceil((totalDuration - initialElapsed) / 1000));
+        updateLights(initialSecs);
 
         clearInterval(this._startCountdownTimer);
         this._startCountdownTimer = setInterval(() => {
-            elapsed += step;
+            const elapsed = Date.now() - startTime;
 
             const remainingSecs = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
             updateLights(remainingSecs);
@@ -4979,7 +4982,12 @@ class GameEngineController {
             if (this.gameState.phase === 'GAMEOVER') {
                 UIRenderer.updateTurnIndicator(-1, myIndex);
             } else {
-                UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
+                UIRenderer.updateTurnIndicator(
+                    this.gameState.currentTurn,
+                    myIndex,
+                    this.gameState.timerSeconds !== undefined ? this.gameState.timerSeconds : 25,
+                    this.gameState.turnStartTime
+                );
             }
 
             // 8. 处理 AI 或当前回合的自动触发 (如果是房主)
@@ -5348,6 +5356,7 @@ class GameEngineController {
         }
 
         this.gameState.timerSeconds = 25;
+        this.gameState.turnStartTime = Date.now();
         NetworkManager.broadcastState(this.gameState);
 
         this.turnTimerInterval = setInterval(() => {
@@ -5357,7 +5366,8 @@ class GameEngineController {
                 return;
             }
 
-            this.gameState.timerSeconds--;
+            const elapsedSecs = Math.floor((Date.now() - (this.gameState.turnStartTime || Date.now())) / 1000);
+            this.gameState.timerSeconds = Math.max(0, 25 - elapsedSecs);
 
             if (this.gameState.timerSeconds <= 0) {
                 clearInterval(this.turnTimerInterval);
