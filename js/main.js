@@ -2420,7 +2420,19 @@ class GameEngineController {
         };
 
         const btnSettleRematch = document.getElementById('btnMahjongSettleRematch');
-        if (btnSettleRematch) btnSettleRematch.onclick = () => this.startMahjongAiMode();
+        if (btnSettleRematch) {
+            btnSettleRematch.onclick = () => {
+                if (NetworkManager.roomId && !NetworkManager.isAiMode) {
+                    if (NetworkManager.isHost) {
+                        this.startMahjongOnlineGame(NetworkManager.roomId, true);
+                    } else {
+                        UIRenderer.showToast('⌛ 已收到重开请求，等待房主开启新一局麻将...');
+                    }
+                } else {
+                    this.startMahjongAiMode();
+                }
+            };
+        }
 
         const btnSettleLobby = document.getElementById('btnMahjongSettleLobby');
         if (btnSettleLobby) btnSettleLobby.onclick = () => {
