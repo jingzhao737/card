@@ -4664,265 +4664,291 @@ class GameEngineController {
      * 收到服务端/全网同步状态时的 UI 刷新入口
      */
     onReceiveStateUpdate(state) {
+        if (!state) return;
         this.gameState = state;
-        const myIndex = NetworkManager.myPlayerIndex;
-        const rel = UIRenderer.getRelativePlayerIndices(myIndex);
 
-        // 如果游戏已经开始（叫牌/打牌阶段），确保手机客户端也自动切入牌桌界面！
-        if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
-            document.getElementById('lobbyScreen').classList.remove('active');
-            document.getElementById('lobbyScreen').style.display = 'none';
-            document.getElementById('waitingScreen').style.display = 'none';
-            document.getElementById('gameOverModal').style.display = 'none';
-            document.getElementById('gameTable').style.display = 'grid';
-            const btnLeave = document.getElementById('btnLeaveRoom');
-            if (btnLeave) btnLeave.style.display = 'inline-flex';
-            const btnGoHomeTop = document.getElementById('btnGoHomeTop');
-            if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
-            const menuLeave = document.getElementById('menuBtnLeaveRoom');
-            if (menuLeave) menuLeave.style.display = 'flex';
-        }
+        try {
+            const myIndex = (NetworkManager.myPlayerIndex !== null && NetworkManager.myPlayerIndex !== undefined) ? NetworkManager.myPlayerIndex : 0;
+            const rel = UIRenderer.getRelativePlayerIndices(myIndex);
 
-        // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时
-        if (this.gameState.isOpeningCountdown && !this._isCountingDownLocally) {
-            this.startOpeningCountdown();
-        }
+            const pSelf = (this.gameState.players && this.gameState.players[rel.self]) ? this.gameState.players[rel.self] : { name: '玩家 1', hand: [], isAi: false };
+            const pLeft = (this.gameState.players && this.gameState.players[rel.left]) ? this.gameState.players[rel.left] : { name: '玩家 2', hand: [], isAi: false };
+            const pRight = (this.gameState.players && this.gameState.players[rel.right]) ? this.gameState.players[rel.right] : { name: '玩家 3', hand: [], isAi: false };
 
-        // 1. 顶部底牌与倍数
-        const isBottomRevealed = this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER';
-        UIRenderer.renderBottomCards(this.gameState.bottomCards, isBottomRevealed);
-        const multEl = document.getElementById('gameMultiplier');
-        if (multEl) multEl.textContent = `x${this.gameState.multiplier}`;
+            // 如果游戏已经开始（叫牌/打牌阶段），确保手机客户端也自动切入牌桌界面！
+            if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
+                const lobbyScr = document.getElementById('lobbyScreen');
+                if (lobbyScr) { lobbyScr.classList.remove('active'); lobbyScr.style.display = 'none'; }
+                const waitScr = document.getElementById('waitingScreen');
+                if (waitScr) waitScr.style.display = 'none';
+                const gameOverM = document.getElementById('gameOverModal');
+                if (gameOverM) gameOverM.style.display = 'none';
+                const gameTab = document.getElementById('gameTable');
+                if (gameTab) gameTab.style.display = 'grid';
 
-        // 2. 玩家面板信息 (头像/名字/剩余手牌)
-        document.getElementById('nameSelf').textContent = this.gameState.players[rel.self].name;
-        document.getElementById('nameLeft').textContent = this.gameState.players[rel.left].name;
-        document.getElementById('nameRight').textContent = this.gameState.players[rel.right].name;
-
-        const renderSeatAvatar = (avatarBoxId, avatarEmoji, isAi) => {
-            const box = document.getElementById(avatarBoxId);
-            if (!box) return;
-            if (isAi) {
-                box.innerHTML = '<i class="fa-solid fa-robot" style="color:#60a5fa;"></i>';
-            } else {
-                const emoji = avatarEmoji || '🤠';
-                box.innerHTML = `<span style="font-size:1.35rem;line-height:1;">${emoji}</span>`;
+                const btnLeave = document.getElementById('btnLeaveRoom');
+                if (btnLeave) btnLeave.style.display = 'inline-flex';
+                const btnGoHomeTop = document.getElementById('btnGoHomeTop');
+                if (btnGoHomeTop) btnGoHomeTop.style.display = 'inline-flex';
+                const menuLeave = document.getElementById('menuBtnLeaveRoom');
+                if (menuLeave) menuLeave.style.display = 'flex';
             }
-        };
 
-        renderSeatAvatar('avatarSelf', this.gameState.players[rel.self].avatar || (AuthEngine.userData ? AuthEngine.userData.avatar : '🤠'), this.gameState.players[rel.self].isAi);
-        renderSeatAvatar('avatarLeft', this.gameState.players[rel.left].avatar, this.gameState.players[rel.left].isAi);
-        renderSeatAvatar('avatarRight', this.gameState.players[rel.right].avatar, this.gameState.players[rel.right].isAi);
-
-        document.getElementById('cardCountLeft').querySelector('.count').textContent = this.gameState.players[rel.left].hand.length;
-        document.getElementById('cardCountRight').querySelector('.count').textContent = this.gameState.players[rel.right].hand.length;
-
-        // 3. 身份徽章标识 (抢地主结束后，在每个人ID左侧高亮放置【👑 地主】或【🌾 农民】徽章)
-        const isBiddingDone = (this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER');
-        const landlordIdx = this.gameState.landlordIndex;
-
-        const updateRoleBadge = (badgeId, playerIdx) => {
-            const el = document.getElementById(badgeId);
-            if (!el) return;
-            if (isBiddingDone && landlordIdx !== -1) {
-                el.style.display = 'inline-flex';
-                const isLandlord = (playerIdx === landlordIdx);
-                el.className = `role-identity-badge ${isLandlord ? 'landlord' : 'farmer'}`;
-                el.textContent = isLandlord ? '资本家' : '牛马';
-            } else {
-                el.style.display = 'none';
+            // 客户端如果收到开局倒计时状态且本地未在倒数，则触发本地视觉倒计时
+            if (this.gameState.isOpeningCountdown && !this._isCountingDownLocally) {
+                this.startOpeningCountdown();
             }
-        };
 
-        updateRoleBadge('roleBadgeSelf', rel.self);
-        updateRoleBadge('roleBadgeLeft', rel.left);
-        updateRoleBadge('roleBadgeRight', rel.right);
+            // 1. 顶部底牌与倍数
+            const isBottomRevealed = this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER';
+            UIRenderer.renderBottomCards(this.gameState.bottomCards || [], isBottomRevealed);
+            const multEl = document.getElementById('gameMultiplier');
+            if (multEl) multEl.textContent = `x${this.gameState.multiplier || 1}`;
 
-        // 玩家编号：严格按出牌顺序 1(资本家)、2(资本家下家)、3(资本家上家) 标注
-        const updatePlayerNums = () => {
-            const badges = {
-                self:  document.getElementById('numBadgeSelf'),
-                left:  document.getElementById('numBadgeLeft'),
-                right: document.getElementById('numBadgeRight'),
+            // 2. 玩家面板信息 (头像/名字/剩余手牌)
+            const nameSelfEl = document.getElementById('nameSelf');
+            if (nameSelfEl) nameSelfEl.textContent = pSelf.name || '你';
+            const nameLeftEl = document.getElementById('nameLeft');
+            if (nameLeftEl) nameLeftEl.textContent = pLeft.name || '左家';
+            const nameRightEl = document.getElementById('nameRight');
+            if (nameRightEl) nameRightEl.textContent = pRight.name || '右家';
+
+            const renderSeatAvatar = (avatarBoxId, avatarEmoji, isAi) => {
+                const box = document.getElementById(avatarBoxId);
+                if (!box) return;
+                if (isAi) {
+                    box.innerHTML = '<i class="fa-solid fa-robot" style="color:#60a5fa;"></i>';
+                } else {
+                    const emoji = avatarEmoji || '🤠';
+                    box.innerHTML = `<span style="font-size:1.35rem;line-height:1;">${emoji}</span>`;
+                }
             };
-            if (!isBiddingDone || landlordIdx === -1) {
-                // 叫分叫牌阶段隐藏编号
-                Object.values(badges).forEach(b => { if (b) b.style.display = 'none'; });
-                return;
+
+            renderSeatAvatar('avatarSelf', pSelf.avatar || (AuthEngine.userData ? AuthEngine.userData.avatar : '🤠'), pSelf.isAi);
+            renderSeatAvatar('avatarLeft', pLeft.avatar, pLeft.isAi);
+            renderSeatAvatar('avatarRight', pRight.avatar, pRight.isAi);
+
+            const cardLeftBox = document.getElementById('cardCountLeft');
+            if (cardLeftBox) {
+                const cnt = cardLeftBox.querySelector('.count');
+                if (cnt) cnt.textContent = pLeft.hand ? pLeft.hand.length : 0;
+            }
+            const cardRightBox = document.getElementById('cardCountRight');
+            if (cardRightBox) {
+                const cnt = cardRightBox.querySelector('.count');
+                if (cnt) cnt.textContent = pRight.hand ? pRight.hand.length : 0;
             }
 
-            const setNum = (badgeId, absIdx) => {
+            // 3. 身份徽章标识 (抢地主结束后，在每个人ID左侧高亮放置【👑 地主】或【🌾 农民】徽章)
+            const isBiddingDone = (this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER');
+            const landlordIdx = this.gameState.landlordIndex;
+
+            const updateRoleBadge = (badgeId, playerIdx) => {
                 const el = document.getElementById(badgeId);
                 if (!el) return;
-                // 出牌顺序：资本家固定为 1，顺时针下家为 2，顺时针上家为 3
-                const turnOrder = ((absIdx - landlordIdx + 3) % 3) + 1;
-                el.textContent = turnOrder;
-                el.style.display = 'inline-flex';
+                if (isBiddingDone && landlordIdx !== undefined && landlordIdx !== -1) {
+                    el.style.display = 'inline-flex';
+                    const isLandlord = (playerIdx === landlordIdx);
+                    el.className = `role-identity-badge ${isLandlord ? 'landlord' : 'farmer'}`;
+                    el.textContent = isLandlord ? '资本家' : '牛马';
+                } else {
+                    el.style.display = 'none';
+                }
             };
 
-            setNum('numBadgeSelf',  rel.self);
-            setNum('numBadgeLeft',  rel.left);
-            setNum('numBadgeRight', rel.right);
-        };
-        updatePlayerNums();
+            updateRoleBadge('roleBadgeSelf', rel.self);
+            updateRoleBadge('roleBadgeLeft', rel.left);
+            updateRoleBadge('roleBadgeRight', rel.right);
 
-        // 4. 叫完资本家进入打牌阶段时，自动触发全员理牌与理牌音效
-        if (this.gameState.phase === 'PLAYING' && !this._hasPlayedSortSoundThisRound) {
-            this._hasPlayedSortSoundThisRound = true;
-            SoundEngine.playCardSort();
-        }
+            // 玩家编号：严格按出牌顺序 1(资本家)、2(资本家下家)、3(资本家上家) 标注
+            const updatePlayerNums = () => {
+                const badges = {
+                    self:  document.getElementById('numBadgeSelf'),
+                    left:  document.getElementById('numBadgeLeft'),
+                    right: document.getElementById('numBadgeRight'),
+                };
+                if (!isBiddingDone || landlordIdx === undefined || landlordIdx === -1) {
+                    Object.values(badges).forEach(b => { if (b) b.style.display = 'none'; });
+                    return;
+                }
 
-        const myHand = this.gameState.players[myIndex].hand || [];
-        UIRenderer.renderSelfHand(myHand);
+                const setNum = (badgeId, absIdx) => {
+                    const el = document.getElementById(badgeId);
+                    if (!el) return;
+                    const turnOrder = ((absIdx - landlordIdx + 3) % 3) + 1;
+                    el.textContent = turnOrder;
+                    el.style.display = 'inline-flex';
+                };
 
-        const btnSort = document.getElementById('btnSortCards');
-        if (btnSort) {
-            const isHandSorted = myHand.length > 0 && myHand.every((c, i) => i === 0 || c.rank <= myHand[i - 1].rank);
-            if (isHandSorted || this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER') {
-                btnSort.style.display = 'none';
-            } else {
-                btnSort.style.display = 'inline-flex';
+                setNum('numBadgeSelf',  rel.self);
+                setNum('numBadgeLeft',  rel.left);
+                setNum('numBadgeRight', rel.right);
+            };
+            updatePlayerNums();
+
+            // 4. 叫完资本家进入打牌阶段时，自动触发全员理牌与理牌音效
+            if (this.gameState.phase === 'PLAYING' && !this._hasPlayedSortSoundThisRound) {
+                this._hasPlayedSortSoundThisRound = true;
+                SoundEngine.playCardSort();
             }
-        }
 
-        // 5. 渲染桌面打出的牌 / 结算明牌展示
-        if (this.gameState.phase === 'GAMEOVER') {
-            const bWrap = document.getElementById('bottomCardsWrapper');
-            if (bWrap) bWrap.style.display = 'none';
+            const myHand = pSelf.hand || [];
+            UIRenderer.renderSelfHand(myHand);
 
-            // 全员 (不论房主还是客户端) 自动触发战绩结算 (每个账号每盘仅结算1次)
-            if (!this._hasSettledThisRound) {
-                this._hasSettledThisRound = true;
-                if (typeof AuthEngine !== 'undefined' && AuthEngine.userData) {
+            const btnSort = document.getElementById('btnSortCards');
+            if (btnSort) {
+                const isHandSorted = myHand.length > 0 && myHand.every((c, i) => i === 0 || c.rank <= myHand[i - 1].rank);
+                if (isHandSorted || this.gameState.phase === 'PLAYING' || this.gameState.phase === 'GAMEOVER') {
+                    btnSort.style.display = 'none';
+                } else {
+                    btnSort.style.display = 'inline-flex';
+                }
+            }
+
+            // 5. 渲染桌面打出的牌 / 结算明牌展示
+            if (this.gameState.phase === 'GAMEOVER') {
+                const bWrap = document.getElementById('bottomCardsWrapper');
+                if (bWrap) bWrap.style.display = 'none';
+
+                // 全员 (不论房主还是客户端) 自动触发战绩结算 (每个账号每盘仅结算1次)
+                if (!this._hasSettledThisRound) {
+                    this._hasSettledThisRound = true;
+                    if (typeof AuthEngine !== 'undefined' && AuthEngine.userData) {
+                        const winnerIdx = this.gameState.winnerIndex;
+                        const winnerRole = (this.gameState.players && this.gameState.players[winnerIdx]) ? this.gameState.players[winnerIdx].role : 'FARMER';
+                        const myRole = (this.gameState.players && this.gameState.players[myIndex]) ? this.gameState.players[myIndex].role : 'FARMER';
+                        const isWin = (winnerIdx === myIndex) || (winnerRole === 'FARMER' && myRole === 'FARMER');
+                        AuthEngine.updateStats(isWin, myRole, 0, this.gameState.multiplier || 1);
+                    }
+                }
+
+                if (this.turnTimerInterval) {
+                    clearInterval(this.turnTimerInterval);
+                    this.turnTimerInterval = null;
+                }
+
+                // 房主主导：确保 AI 机器人自动标记就绪 (仅对真正的 AI 生效)
+                if (NetworkManager.isHost && this.gameState.players) {
+                    if (!this.gameState.readyPlayers) this.gameState.readyPlayers = [false, false, false];
+                    this.gameState.players.forEach((p, idx) => {
+                        if (p && p.isAi) this.gameState.readyPlayers[idx] = true;
+                    });
+                }
+
+                const victoryBox = document.getElementById('victoryBannerBox');
+                if (victoryBox) {
+                    victoryBox.style.display = 'flex';
                     const winnerIdx = this.gameState.winnerIndex;
-                    const winnerRole = (this.gameState.players[winnerIdx]) ? this.gameState.players[winnerIdx].role : 'FARMER';
-                    const myRole = (this.gameState.players[myIndex]) ? this.gameState.players[myIndex].role : 'FARMER';
-                    const isWin = (winnerIdx === myIndex) || (winnerRole === 'FARMER' && myRole === 'FARMER');
-                    AuthEngine.updateStats(isWin, myRole, 0, this.gameState.multiplier || 1);
-                }
-            }
+                    const winner = (this.gameState.players && winnerIdx !== undefined && winnerIdx >= 0) ? this.gameState.players[winnerIdx] : null;
+                    const isLandlordWin = (winner && winner.role === 'LANDLORD');
 
-            if (this.turnTimerInterval) {
-                clearInterval(this.turnTimerInterval);
-                this.turnTimerInterval = null;
-            }
+                    let titleText = isLandlordWin ? '资本家胜利！' : '牛马胜利！';
+                    let winnerDesc = '';
+                    if (isLandlordWin) {
+                        winnerDesc = `资本家【${winner ? winner.name : '地主'}】独占鳌头`;
+                    } else {
+                        const farmers = (this.gameState.players || [])
+                            .filter(p => p && p.role === 'FARMER')
+                            .map(p => p.name || '农民')
+                            .join(' & ');
+                        winnerDesc = `牛马【${farmers || '农民们'}】联手翻盘`;
+                    }
 
-            // 房主主导：确保 AI 机器人自动标记就绪
-            if (NetworkManager.isHost) {
-                if (!this.gameState.readyPlayers) this.gameState.readyPlayers = [false, false, false];
-                this.gameState.players.forEach((p, idx) => {
-                    if (p.isAi) this.gameState.readyPlayers[idx] = true;
-                });
-            }
+                    const readyPlayers = this.gameState.readyPlayers || [false, false, false];
+                    const readyCount = readyPlayers.filter(Boolean).length;
+                    const hasSelfVoted = !!readyPlayers[myIndex];
+                    const isMinimized = victoryBox.dataset.minimized === 'true';
 
-            const victoryBox = document.getElementById('victoryBannerBox');
-            if (victoryBox) {
-                victoryBox.style.display = 'flex';
-                const winner = this.gameState.players[this.gameState.winnerIndex];
-                const isLandlordWin = (winner && winner.role === 'LANDLORD');
-
-                let titleText = isLandlordWin ? '资本家胜利！' : '牛马胜利！';
-                let winnerDesc = '';
-                if (isLandlordWin) {
-                    winnerDesc = `资本家【${winner.name}】独占鳌头`;
-                } else {
-                    const farmers = this.gameState.players.filter(p => p.role === 'FARMER').map(p => p.name).join(' & ');
-                    winnerDesc = `牛马【${farmers}】联手翻盘`;
-                }
-
-                const readyPlayers = this.gameState.readyPlayers || [false, false, false];
-                const readyCount = readyPlayers.filter(Boolean).length;
-                const hasSelfVoted = !!readyPlayers[myIndex];
-                const isMinimized = victoryBox.dataset.minimized === 'true';
-
-                if (isMinimized) {
-                    victoryBox.innerHTML = `
-                        <div class="victory-mini-badge" id="btnExpandVictory">
-                            <span>🏆 胜负 (已就绪 ${readyCount}/3)</span>
-                            <i class="fa-solid fa-expand"></i>
-                        </div>
-                    `;
-                } else {
-                    victoryBox.innerHTML = `
-                        <div class="victory-content-wrap">
-                            <button class="victory-close-btn" id="btnCloseVictoryBanner" title="收起胜负榜 (方便看牌)">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                            <div class="victory-main-title">${titleText}</div>
-                            <div class="victory-sub-desc">${winnerDesc}</div>
-                            
-                            <div class="restart-vote-box">
-                                <div class="restart-vote-count">准备开局 <span class="vote-num ${readyCount > 0 ? 'active' : ''}">${readyCount}/3</span></div>
-                                <button class="btn-action primary btn-restart-round ${hasSelfVoted ? 'voted' : ''}" id="btnRestartGame" ${hasSelfVoted ? 'disabled' : ''}>
-                                    <i class="fa-solid ${hasSelfVoted ? 'fa-check' : 'fa-rotate-right'}"></i> ${hasSelfVoted ? '已就绪' : '再来一局'}
-                                </button>
+                    if (isMinimized) {
+                        victoryBox.innerHTML = `
+                            <div class="victory-mini-badge" id="btnExpandVictory">
+                                <span>🏆 胜负 (已就绪 ${readyCount}/3)</span>
+                                <i class="fa-solid fa-expand"></i>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        victoryBox.innerHTML = `
+                            <div class="victory-content-wrap">
+                                <button class="victory-close-btn" id="btnCloseVictoryBanner" title="收起胜负榜 (方便看牌)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                <div class="victory-main-title">${titleText}</div>
+                                <div class="victory-sub-desc">${winnerDesc}</div>
+                                
+                                <div class="restart-vote-box">
+                                    <div class="restart-vote-count">准备开局 <span class="vote-num ${readyCount > 0 ? 'active' : ''}">${readyCount}/3</span></div>
+                                    <button class="btn-action primary btn-restart-round ${hasSelfVoted ? 'voted' : ''}" id="btnRestartGame" ${hasSelfVoted ? 'disabled' : ''}>
+                                        <i class="fa-solid ${hasSelfVoted ? 'fa-check' : 'fa-rotate-right'}"></i> ${hasSelfVoted ? '已就绪' : '再来一局'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
+
+                // 结算时明牌公开展示全场剩余手牌 (自动折到第二排、第三排)
+                UIRenderer.renderOpenHand('playedSelf', pSelf.hand || []);
+                UIRenderer.renderOpenHand('playedLeft', pLeft.hand || []);
+                UIRenderer.renderOpenHand('playedRight', pRight.hand || []);
+            } else {
+                const bWrap = document.getElementById('bottomCardsWrapper');
+                if (bWrap) bWrap.style.display = 'flex';
+                const vBox = document.getElementById('victoryBannerBox');
+                if (vBox) {
+                    vBox.style.display = 'none';
+                    delete vBox.dataset.minimized;
+                }
+
+                const recent = this.gameState.recentPlays || {};
+                const selfPlay = recent[rel.self];
+                const leftPlay = recent[rel.left];
+                const rightPlay = recent[rel.right];
+
+                UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
+                UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
+                UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
+
+                this._hasSettledThisRound = false;
             }
 
-            // 结算时明牌公开展示全场剩余手牌 (自动折到第二排、第三排)
-            UIRenderer.renderOpenHand('playedSelf', this.gameState.players[rel.self].hand || []);
-            UIRenderer.renderOpenHand('playedLeft', this.gameState.players[rel.left].hand || []);
-            UIRenderer.renderOpenHand('playedRight', this.gameState.players[rel.right].hand || []);
-        } else {
-            const bWrap = document.getElementById('bottomCardsWrapper');
-            if (bWrap) bWrap.style.display = 'flex';
-            const vBox = document.getElementById('victoryBannerBox');
-            if (vBox) {
-                vBox.style.display = 'none';
-                delete vBox.dataset.minimized;
+            // 6. 思考出牌/叫地主文本提示与头像高亮
+            const currentTurnIdx = this.gameState.currentTurn;
+            const currentTurnPlayer = (this.gameState.players && currentTurnIdx !== undefined) ? this.gameState.players[currentTurnIdx] : null;
+            const promptContainer = document.getElementById('thinkingStatusPrompt');
+            const promptTextEl = document.getElementById('thinkingStatusText');
+
+            if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
+                if (promptContainer && promptTextEl && currentTurnPlayer) {
+                    promptContainer.style.display = 'inline-flex';
+                    const pName = (currentTurnIdx === myIndex) ? '你' : currentTurnPlayer.name;
+                    const actionDesc = (this.gameState.phase === 'BIDDING') ? '叫地主中...' : '思考出牌中...';
+                    promptTextEl.textContent = `轮到 【${pName}】 ${actionDesc}`;
+                }
+            } else {
+                if (promptContainer) promptContainer.style.display = 'none';
             }
 
-            const recent = this.gameState.recentPlays || {};
-            const selfPlay = recent[rel.self];
-            const leftPlay = recent[rel.left];
-            const rightPlay = recent[rel.right];
+            // 7. 交互控制按钮面板
+            this.updateControlButtons(myIndex);
 
-            UIRenderer.renderPlayedCards('playedSelf', selfPlay ? selfPlay.cards : [], selfPlay ? selfPlay.isLatest : false);
-            UIRenderer.renderPlayedCards('playedLeft', leftPlay ? leftPlay.cards : [], leftPlay ? leftPlay.isLatest : false);
-            UIRenderer.renderPlayedCards('playedRight', rightPlay ? rightPlay.cards : [], rightPlay ? rightPlay.isLatest : false);
-
-            this._hasSettledThisRound = false;
-        }
-
-        // 6. 思考出牌/叫地主文本提示与头像高亮
-        const currentTurnIdx = this.gameState.currentTurn;
-        const currentTurnPlayer = this.gameState.players[currentTurnIdx];
-        const promptContainer = document.getElementById('thinkingStatusPrompt');
-        const promptTextEl = document.getElementById('thinkingStatusText');
-
-        if (this.gameState.phase === 'BIDDING' || this.gameState.phase === 'PLAYING') {
-            if (promptContainer && promptTextEl && currentTurnPlayer) {
-                promptContainer.style.display = 'inline-flex';
-                const pName = (currentTurnIdx === myIndex) ? '你' : currentTurnPlayer.name;
-                const actionDesc = (this.gameState.phase === 'BIDDING') ? '叫地主中...' : '思考出牌中...';
-                promptTextEl.textContent = `轮到 【${pName}】 ${actionDesc}`;
+            // 7. 倒计时指示 (对局结束时隐藏倒计时)
+            if (this.gameState.phase === 'GAMEOVER') {
+                UIRenderer.updateTurnIndicator(-1, myIndex);
+            } else {
+                UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
             }
-        } else {
-            if (promptContainer) promptContainer.style.display = 'none';
-        }
 
-        // 7. 交互控制按钮面板
-        this.updateControlButtons(myIndex);
+            // 8. 处理 AI 或当前回合的自动触发 (如果是房主)
+            if (NetworkManager.isHost && this.gameState.phase !== 'GAMEOVER') {
+                this.checkAiTurn();
+            }
 
-        // 7. 倒计时指示 (对局结束时隐藏倒计时)
-        if (this.gameState.phase === 'GAMEOVER') {
-            UIRenderer.updateTurnIndicator(-1, myIndex);
-        } else {
-            UIRenderer.updateTurnIndicator(this.gameState.currentTurn, myIndex, this.timerSeconds);
-        }
-
-
-        // 8. 处理 AI 或当前回合的自动触发 (如果是房主)
-        if (NetworkManager.isHost && this.gameState.phase !== 'GAMEOVER') {
-            this.checkAiTurn();
-        }
-
-        // 9. 结算处理
-        if (this.gameState.phase === 'GAMEOVER') {
-            this.showGameOverModal();
+            // 9. 结算处理
+            if (this.gameState.phase === 'GAMEOVER') {
+                this.showGameOverModal();
+            }
+        } catch (err) {
+            console.error('[GameEngine] onReceiveStateUpdate 状态刷新异常 (已容错防护):', err);
         }
     }
 
