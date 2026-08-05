@@ -688,6 +688,10 @@ class AuthManager {
      */
     checkAndDeductEntryFee(gameType = 'DOUDIZHU', isPve = false) {
         if (!this.userData) return true;
+        const now = Date.now();
+        if (this._lastDeductTs && (now - this._lastDeductTs < 4000) && this._lastDeductGameType === gameType) {
+            return true;
+        }
 
         const currentCoins = this.userData.yinCoins !== undefined ? this.userData.yinCoins : 1000;
         let fee = 20;
@@ -711,6 +715,8 @@ class AuthManager {
             return false;
         }
 
+        this._lastDeductTs = now;
+        this._lastDeductGameType = gameType;
         this.updateCoins(-fee, `对局入场费 (-${fee}币)`);
         return true;
     }

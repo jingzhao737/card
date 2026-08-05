@@ -1720,6 +1720,11 @@ class GameEngineController {
      * 开启在线五子棋真人双人对战模式 (随机先后手，我方固定在左侧)
      */
     startGomokuOnlineGame(roomId, isHost = false, hostIsBlackSynced = null) {
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            AuthEngine.checkAndDeductEntryFee('GOMOKU', isPve);
+        }
+
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
@@ -2174,6 +2179,11 @@ class GameEngineController {
      * 开启在线多人/补齐 AI 游鲸麻将模式 (真正多人云端同步局)
      */
     startMahjongOnlineGame(roomId, isHost = false) {
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            AuthEngine.checkAndDeductEntryFee('MAHJONG', isPve);
+        }
+
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const mahjongScr = document.getElementById('mahjongGameScreen');
@@ -4628,6 +4638,11 @@ class GameEngineController {
      * 开始新一局 (洗牌、发牌、全员就位加载完毕后展开 3秒倒计时 + 动态进度条)
      */
     startNewRound() {
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            AuthEngine.checkAndDeductEntryFee('DOUDIZHU', isPve);
+        }
+
         document.getElementById('waitingScreen').style.display = 'none';
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('gameTable').style.display = 'grid';
