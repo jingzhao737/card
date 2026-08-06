@@ -4269,14 +4269,15 @@ class GameEngineController {
     }
 
     /**
-     * AI 走子 (拟人化延迟)
+     * AI 走子 (拟人化延迟; 开局可传 initialDelay 让玩家先意识到对局开始)
      */
-    triggerXiangqiAiMove() {
+    triggerXiangqiAiMove(initialDelay) {
         const engine = window.xiangqiEngine;
         const aiColor = engine.currentTurn;
         this.updateXiangqiStatusUI(aiColor === 'R' ? '🤖 AI (红方) 思考中...' : '🤖 AI (黑方) 思考中...');
 
-        const thinkDelay = 500 + Math.floor(Math.random() * 700);
+        // 开局 AI 先手时给 2 秒缓冲, 平时 500-1200ms
+        const thinkDelay = (initialDelay && initialDelay > 0) ? initialDelay : (500 + Math.floor(Math.random() * 700));
         setTimeout(() => {
             try {
                 const scr = document.getElementById('xiangqiGameScreen');
@@ -4371,6 +4372,9 @@ class GameEngineController {
         this.initXiangqiUI();
         this.renderXiangqiBoard();
 
+        // 开局播放战鼓音效
+        this.playXiangqiOpenSound();
+
         const banner = document.getElementById('xqCenterBanner');
         const bannerText = document.getElementById('xqCenterBannerText');
         if (banner && bannerText) {
@@ -4387,7 +4391,22 @@ class GameEngineController {
             this.startXiangqiTurnTimer();
         } else {
             this.updateXiangqiStatusUI('🤖 AI 棋圣 (红方) 思考中...');
-            this.triggerXiangqiAiMove();
+            // AI 先手: 等 2 秒再开始下, 让玩家意识到对局已开始
+            this.triggerXiangqiAiMove(2000);
+        }
+    }
+
+    /**
+     * 播放象棋开局战鼓音效 (sound/zhangu.mp3)
+     */
+    playXiangqiOpenSound() {
+        try {
+            const audio = new Audio('sound/zhangu.mp3');
+            audio.volume = 0.7;
+            const p = audio.play();
+            if (p && p.catch) p.catch(() => {});
+        } catch (e) {
+            // 音频加载/播放失败不阻塞对局
         }
     }
 
@@ -4446,6 +4465,9 @@ class GameEngineController {
         window.xiangqiEngine.reset(false, myColor);
         this.initXiangqiUI();
         this.renderXiangqiBoard();
+
+        // 开局播放战鼓音效
+        this.playXiangqiOpenSound();
 
         const isMyTurn = window.xiangqiEngine.currentTurn === myColor;
         this.updateXiangqiStatusUI(isMyTurn ? '🔴 轮到你落子 (红方)' : '⚫ 对方思考中 (黑方)...');
