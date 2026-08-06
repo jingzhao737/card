@@ -6712,7 +6712,7 @@ class GameEngineController {
         const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
         const ratio = isPve ? 0.25 : 1.0;
         const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
-        const baseAmount = 50 * fanCount;
+        const baseAmount = 80 * fanCount;
         const winAmount = Math.ceil(baseAmount * ratio);
 
         const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
