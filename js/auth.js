@@ -525,6 +525,53 @@ class AuthManager {
         }).catch(() => {});
     }
 
+    /**
+     * 独立记录围棋战绩 (胜、负、平，与斗地主/五子棋战绩隔离)
+     */
+    recordGoMatchResult(isWin, isDraw = false) {
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const accountKey = this.userData.accountKey;
+
+        const currentGo = this.userData.goStats || {
+            totalGames: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            matchHistory: []
+        };
+
+        const newTotal = (currentGo.totalGames || 0) + 1;
+        const newWins = (currentGo.wins || 0) + (isWin ? 1 : 0);
+        const newDraws = (currentGo.draws || 0) + (isDraw ? 1 : 0);
+        const newLosses = (currentGo.losses || 0) + (!isWin && !isDraw ? 1 : 0);
+
+        let roleText = isWin ? '黑白纵横' : (isDraw ? '平局' : '败局');
+        const historyItem = {
+            id: Date.now(),
+            gameType: 'GO',
+            isWin: isWin,
+            isDraw: isDraw,
+            role: roleText,
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        const currentHistory = Array.isArray(currentGo.matchHistory) ? currentGo.matchHistory : [];
+        const newHistory = [historyItem, ...currentHistory].slice(0, 10);
+
+        const newGoStats = {
+            totalGames: newTotal,
+            wins: newWins,
+            losses: newLosses,
+            draws: newDraws,
+            matchHistory: newHistory
+        };
+
+        this.db.ref('users/' + accountKey + '/goStats').set(newGoStats).then(() => {
+            if (!this.userData.goStats) this.userData.goStats = {};
+            Object.assign(this.userData.goStats, newGoStats);
+        }).catch(() => {});
+    }
+
     /* ====================================================================
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
@@ -699,6 +746,8 @@ class AuthManager {
             fee = 1; // 人机局切磋统一固定仅收 1 知因币！
         } else if (gameType === 'GOMOKU') {
             fee = 10;
+        } else if (gameType === 'GO') {
+            fee = 10;
         } else if (gameType === 'MAHJONG') {
             fee = 30;
         } else {
@@ -768,6 +817,10 @@ class AuthManager {
         const gUserNick = document.getElementById('gomokuUserNick');
         const gUserSub  = document.getElementById('gomokuUserSub');
         const gBtnAuth  = document.getElementById('btnGomokuAuth');
+        const goAuthAvatar = document.getElementById('goAuthAvatar');
+        const goUserNick = document.getElementById('goUserNick');
+        const goUserSub  = document.getElementById('goUserSub');
+        const goBtnAuth  = document.getElementById('btnGoAuth');
         const mAuthAvatar = document.getElementById('mahjongAuthAvatar');
         const mUserNick = document.getElementById('mahjongUserNick');
         const mUserSub  = document.getElementById('mahjongUserSub');
@@ -807,6 +860,11 @@ class AuthManager {
             if (gUserSub)    gUserSub.textContent    = `🪙 知因币: ${currentYin}`;
             if (gBtnAuth)    gBtnAuth.textContent    = '个人信息';
 
+            setAvatarWithLevel(goAuthAvatar, this.userData.avatar || '🤠');
+            if (goUserNick)  goUserNick.textContent  = this.userData.nickname;
+            if (goUserSub)   goUserSub.textContent   = `🪙 知因币: ${currentYin}`;
+            if (goBtnAuth)   goBtnAuth.textContent   = '个人信息';
+
             setAvatarWithLevel(mAuthAvatar, this.userData.avatar || '🤠');
             if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
             if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
@@ -834,6 +892,11 @@ class AuthManager {
             if (gUserNick)   gUserNick.textContent   = '未登录 (游客)';
             if (gUserSub)    gUserSub.textContent    = '🪙 知因币: 0';
             if (gBtnAuth)    gBtnAuth.textContent    = '登录 / 注册';
+
+            if (goAuthAvatar) goAuthAvatar.textContent = '👤';
+            if (goUserNick)  goUserNick.textContent   = '未登录 (游客)';
+            if (goUserSub)   goUserSub.textContent    = '🪙 知因币: 0';
+            if (goBtnAuth)   goBtnAuth.textContent    = '登录 / 注册';
 
             if (mAuthAvatar) mAuthAvatar.textContent = '👤';
             if (mUserNick)   mUserNick.textContent   = '未登录 (游客)';

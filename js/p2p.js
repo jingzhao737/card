@@ -351,8 +351,10 @@ class P2PManager {
             const currentAvatar = (typeof AuthEngine !== 'undefined' && AuthEngine.userData) ? (AuthEngine.userData.avatar || '🤠') : '🤠';
 
             const isGomoku = gameType === 'GOMOKU';
+            const isGo = gameType === 'GO';
+            const isTwoPlayer = isGomoku || isGo;
             const initialLobby = {
-                players: isGomoku ? [
+                players: isTwoPlayer ? [
                     { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
                     { name: 'AI 棋圣', avatar: '🤖', isAi: true, isHost: false }
                 ] : [
@@ -467,7 +469,7 @@ class P2PManager {
 
                 const lobby = roomData.lobbyData || { players: [] };
                 const players = lobby.players || [];
-                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : (gameType === 'GOMOKU' ? 1 : 2);
+                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : ((gameType === 'GOMOKU' || gameType === 'GO') ? 1 : 2);
 
                 // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3, 3=玩家4)
                 let assignedSlot = -1;
@@ -888,6 +890,129 @@ class P2PManager {
             const val = snap.val();
             if (val && callback) callback(val);
         });
+    }
+
+    /* ============================================================
+       ⚫⚪ 围棋 (GO) 云端通信方法
+       ============================================================ */
+    sendGoMove(r, c, color, pass = false) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goMove').set({
+            r, c, color, pass,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    sendGoPass(color) {
+        this.sendGoMove(-1, -1, color, true);
+    }
+
+    onGoMove(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goMove').off();
+        this.roomRef.child('goMove').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    clearGoMoves() {
+        if (!this.roomRef) return;
+        this.roomRef.child('goMove').remove();
+    }
+
+    sendGoStart(roomId, hostIsBlack = true) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goStart').set({
+            ts: Date.now(),
+            hostNick: this.nickname,
+            hostIsBlack
+        });
+    }
+
+    onGoStart(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goStart').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendGoEnd(reason, winnerColor) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goEnd').set({
+            reason,
+            winnerColor,
+            ts: Date.now()
+        });
+    }
+
+    onGoEnd(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goEnd').off();
+        this.roomRef.child('goEnd').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendGoUndoRequest(applicantNick) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goUndoReq').set({
+            applicantNick,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onGoUndoRequest(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goUndoReq').off();
+        this.roomRef.child('goUndoReq').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendGoUndoResponse(approved) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goUndoResp').set({
+            approved,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onGoUndoResponse(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goUndoResp').off();
+        this.roomRef.child('goUndoResp').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendGoRematchVote(ready) {
+        if (!this.roomRef || this.myPlayerIndex === null) return;
+        this.roomRef.child(`goRematchVotes/${this.myPlayerIndex}`).set({
+            ready,
+            ts: Date.now()
+        });
+    }
+
+    onGoRematchVote(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('goRematchVotes').off();
+        this.roomRef.child('goRematchVotes').on('value', snap => {
+            const val = snap.val();
+            if (callback) callback(val || {});
+        });
+    }
+
+    clearGoRematchVotes() {
+        if (!this.roomRef) return;
+        this.roomRef.child('goRematchVotes').remove();
     }
 
     sendMahjongStart(roomId) {

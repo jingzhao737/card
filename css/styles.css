@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    P2P 网页斗地主 - 极清扑克与全端响应式 CSS 样式表 (v2 高清优化版)
    ========================================================================== */
 
@@ -7259,3 +7259,562 @@ body.theme-mahjong #lobbyScreen {
 
 
 
+
+
+
+/* ============================================================
+   ⚫⚪ 游鲸围棋 水墨黑白棋盘 UI Style (Go / Weiqi)
+   ============================================================ */
+
+/* 围棋主题 body 背景 */
+body.theme-go {
+    background: linear-gradient(135deg, #101418 0%, #05070a 100%);
+}
+
+/* 导航按钮激活态 (围棋水墨风) */
+.game-nav-btn.active#btnNavGo {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(10, 14, 18, 0.95) 100%);
+    border-color: rgba(226, 232, 240, 0.5);
+    color: #f8fafc;
+    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.08);
+}
+
+/* 围棋专属 Lobby Card (水墨黑底) */
+.hero-lobby-card.theme-ink {
+    background: linear-gradient(180deg, #14181d 0%, #07090c 100%) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(148, 163, 184, 0.08) !important;
+}
+
+/* 围棋大厅 Header (榧木棋盘木质横条) */
+.hero-lobby-card.theme-ink .lobby-header.go-ink-header {
+    background: linear-gradient(180deg, #d49c53 0%, #b87b32 60%, #9e6423 100%) !important;
+    border-bottom: 2px solid #5a320c !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px 16px 26px !important;
+    text-align: left !important;
+}
+
+.hero-lobby-card.theme-ink .brand-title {
+    color: #2b1103 !important;
+    background: none !important;
+    -webkit-text-fill-color: #2b1103 !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    font-size: 1.35rem !important;
+    letter-spacing: 1.5px !important;
+}
+
+.hero-lobby-card.theme-ink .brand-subtitle {
+    color: #5c300c !important;
+    font-weight: 900 !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 1px !important;
+}
+
+.hero-lobby-card.theme-ink .badge-tag.ink {
+    background: rgba(43, 17, 3, 0.14) !important;
+    border-color: rgba(74, 36, 8, 0.45) !important;
+    color: #2b1103 !important;
+    font-weight: 800 !important;
+    margin-top: 2px;
+}
+
+/* 棋盘路数选择按钮 */
+.btn-size-pick {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-size-pick.active {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #34d399;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.go-size-hint {
+    margin-top: 8px;
+    font-size: 0.7rem;
+    color: #64748b;
+    text-align: center;
+}
+
+/* 围棋对局室背景 */
+.go-screen-wrap {
+    background: linear-gradient(135deg, #101418 0%, #05070a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.go-screen-wrap.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.go-container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.go-header-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 置顶对局状态指示胶囊 */
+.go-turn-status.top-status {
+    background: rgba(148, 163, 184, 0.14);
+    border: 1px solid rgba(203, 213, 225, 0.4);
+    border-radius: 16px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+}
+
+.go-timer-badge {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.4);
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    line-height: 1.4;
+}
+
+.go-timer-badge.urgent {
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #fca5a5;
+    animation: timerUrgentPulse 0.6s ease-in-out infinite alternate;
+}
+
+/* 玩家 VS 对决 Bar */
+.go-header-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10, 14, 18, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(203, 213, 225, 0.22);
+    border-radius: 12px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    gap: 10px;
+}
+
+.go-vs-badge {
+    font-size: 0.85rem;
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(203, 213, 225, 0.5);
+    text-shadow: 0 0 8px rgba(203, 213, 225, 0.25);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.go-player-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.25s ease;
+    max-width: 46%;
+    min-width: 0;
+}
+
+/* 轮到落子方的卡片高亮 */
+.go-player-pill.turn-active {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.2) 0%, rgba(10, 14, 18, 0.7) 100%) !important;
+    border-color: rgba(226, 232, 240, 0.55) !important;
+    box-shadow: 0 0 14px rgba(148, 163, 184, 0.25) !important;
+    transform: scale(1.02);
+}
+
+/* 提子数统计栏 */
+.go-captures-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.go-capture-pill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.go-capture-pill b {
+    font-size: 0.85rem;
+}
+
+.go-capture-pill.black-pill {
+    background: rgba(15, 15, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #e2e8f0;
+}
+
+.go-capture-pill.white-pill {
+    background: rgba(240, 242, 245, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #1e293b;
+}
+
+.go-capture-pill.white-pill b {
+    color: #0f172a;
+}
+
+.go-komi-pill {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 14px;
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #94a3b8;
+}
+
+/* 棋盘外框 — 经典榧木温润木纹 */
+.go-board-wrapper {
+    background-color: #d49c53;
+    background-image:
+        radial-gradient(ellipse 90% 70% at 50% 50%, #eac285 0%, #ca9046 70%, #995f21 100%),
+        repeating-linear-gradient(0deg, rgba(74, 37, 0, 0.03), rgba(74, 37, 0, 0.03) 2px, transparent 2px, transparent 6px);
+    border: 7px solid #4a2408;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(60, 30, 5, 0.5), 0 0 0 2px rgba(255, 215, 0, 0.2);
+    position: relative;
+}
+
+.go-board {
+    display: grid;
+    grid-template-columns: repeat(19, 1fr);
+    grid-template-rows: repeat(19, 1fr);
+    width: min(calc(100vw - 36px), 340px);
+    height: min(calc(100vw - 36px), 340px);
+    position: relative;
+    user-select: none;
+    touch-action: manipulation;
+    background: transparent;
+}
+
+@media (max-width: 768px) {
+    .go-board-wrapper {
+        padding: 6px !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .go-container {
+        max-width: 600px;
+        gap: 14px;
+    }
+
+    .go-board-wrapper {
+        padding: 16px;
+        border-width: 8px;
+    }
+
+    .go-board {
+        width: 480px;
+        height: 480px;
+    }
+
+    .go-header-bar {
+        padding: 12px 18px;
+    }
+
+    .go-turn-status {
+        font-size: 0.88rem;
+        padding: 6px 14px;
+    }
+}
+
+/* 交叉格节点 */
+.go-cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 网格交叉线 (深浓木墨色) */
+.go-cell::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(50, 24, 4, 0.85);
+    z-index: 1;
+}
+
+.go-cell::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(50, 24, 4, 0.85);
+    z-index: 1;
+}
+
+/* 边缘格线条精确裁剪，止于外围交叉点封边 */
+.go-cell.col-left::before {
+    left: 50% !important;
+    width: 50% !important;
+}
+
+.go-cell.col-right::before {
+    left: 0 !important;
+    width: 50% !important;
+}
+
+.go-cell.row-top::after {
+    top: 50% !important;
+    height: 50% !important;
+}
+
+.go-cell.row-bottom::after {
+    top: 0 !important;
+    height: 50% !important;
+}
+
+/* 棋子 Style (全自然光感，1:1 物理等大规格) */
+.go-stone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 86%;
+    height: 86%;
+    border-radius: 50%;
+    z-index: 5;
+    border: none !important;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.65);
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: stonePop 0.2s ease;
+}
+
+.go-stone.black {
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none !important;
+}
+
+.go-stone.white {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    border: none !important;
+}
+
+/* 最近落子指示点 */
+.go-stone.last-move::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff2a2a;
+    box-shadow: 0 0 6px #ff2a2a;
+}
+
+/* 桌面端悬停预览落子 */
+.go-stone.hover-preview {
+    opacity: 0.45;
+    pointer-events: none;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    animation: none;
+}
+
+/* 手机端二次确认落子 静态虚影预选棋子 */
+.go-stone.preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 86%;
+    height: 86%;
+    opacity: 0.55;
+    pointer-events: none;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* 停一手标记 (虚线圈) */
+.go-pass-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    border: 2px dashed rgba(0, 0, 0, 0.55);
+    z-index: 4;
+    pointer-events: none;
+    animation: passPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes passPulse {
+    from { opacity: 0.5; transform: translate(-50%, -50%) scale(0.95); }
+    to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* 控制按钮栏 (停一手/悔棋/数目/认输/重来一局) */
+.go-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+.btn-go-action {
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-go-action:hover:not(.disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(226, 232, 240, 0.55);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-go-action.pass:hover:not(.disabled) {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(52, 211, 153, 0.6);
+    color: #6ee7b7;
+}
+
+.btn-go-action.undo:hover:not(.disabled) {
+    background: rgba(245, 158, 11, 0.16);
+    border-color: rgba(251, 191, 36, 0.6);
+    color: #fcd34d;
+}
+
+.btn-go-action.score:hover:not(.disabled) {
+    background: rgba(59, 130, 246, 0.16);
+    border-color: rgba(96, 165, 250, 0.6);
+    color: #93c5fd;
+}
+
+.btn-go-action.resign:hover:not(.disabled) {
+    background: rgba(239, 68, 68, 0.16);
+    border-color: rgba(248, 113, 113, 0.6);
+    color: #fca5a5;
+}
+
+.btn-go-action.rematch {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #34d399;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    padding: 9px 24px;
+    font-size: 0.88rem;
+}
+
+.btn-go-action.rematch:hover:not(.disabled) {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+.btn-go-action.disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+}
+
+/* 数目结算弹窗行 */
+.go-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.go-score-row.black-row {
+    background: rgba(15, 15, 18, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+}
+
+.go-score-row.white-row {
+    background: rgba(240, 242, 245, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #1e293b;
+}

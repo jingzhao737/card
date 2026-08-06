@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>游鲸斗地主 - 随时在线打牌</title>
-    <meta name="description" content="无需下载、随时对战、极致流畅的网页斗地主游戏">
-    <link rel="stylesheet" href="css/styles.css?v=34.9">
+    <title>游鲸围棋 - 在线围棋对战</title>
+    <meta name="description" content="无需下载、随时对战、极致流畅的网页围棋游戏，可选五子棋、斗地主、麻将">
+    <link rel="stylesheet" href="css/styles.css?v=35.0">
     <!-- CDN & Fonts Optimization (dns-prefetch + swap display) -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
@@ -33,7 +33,7 @@
             <!-- btnGoHomeTop removed: covered by dropdown menu -->
 
             <div class="brand-badge">
-                <span id="appHeaderBrandTitle">游鲸斗地主</span>
+                <span id="appHeaderBrandTitle">游鲸围棋</span>
             </div>
             
             <div class="room-info" id="roomInfoBar" style="display: none;">
@@ -114,16 +114,125 @@
 
             <!-- 顶级多游戏切换导航 Bar -->
             <div class="game-switch-nav">
-                <button class="game-nav-btn active" id="btnNavDoudizhu">
-                    <i class="fa-solid fa-layer-group"></i> 游鲸斗地主
+                <button class="game-nav-btn active" id="btnNavGo">
+                    <i class="fa-solid fa-circle"></i> 游鲸围棋
                 </button>
                 <button class="game-nav-btn" id="btnNavGomoku">
                     <i class="fa-solid fa-chess-board"></i> 游鲸五子棋
+                </button>
+                <button class="game-nav-btn" id="btnNavDoudizhu">
+                    <i class="fa-solid fa-layer-group"></i> 游鲸斗地主
                 </button>
                 <button class="game-nav-btn btn-mahjong-nav" id="btnNavMahjong">
                     <i class="fa-solid fa-square-full"></i> 游鲸麻将
                     <span class="badge-corner-new">NEW</span>
                 </button>
+            </div>
+
+            <!-- 游鲸围棋 专属水墨黑白主大厅卡片 -->
+            <div class="lobby-card hero-lobby-card theme-ink" id="goLobbyCard" style="display:none;">
+                <div class="lobby-header go-ink-header">
+                    <div class="brand-hero-left">
+                        <div class="brand-text">
+                            <h1 class="brand-title">游鲸围棋</h1>
+                            <p class="brand-subtitle">GO WEIQI · 黑白纵横</p>
+                        </div>
+                        <div class="hero-tags">
+                            <span class="badge-tag ink"><i class="fa-solid fa-circle"></i> 标准 19 路盘面</span>
+                        </div>
+                    </div>
+                    <div class="gomoku-stones-decoration" title="黑子先手 / 白子后手">
+                        <div class="mini-stone black-stone"></div>
+                        <div class="mini-stone white-stone"></div>
+                    </div>
+                </div>
+
+                <div class="lobby-form">
+                    <!-- 账号登录/注册 快捷卡片横幅 -->
+                    <div class="auth-banner-card emerald-auth" id="goAuthBanner">
+                        <div class="auth-banner-left">
+                            <div class="auth-avatar-badge" id="goAuthAvatar">🤠</div>
+                            <div class="auth-banner-info">
+                                <div class="auth-banner-nick" id="goUserNick">未登录 (游客)</div>
+                                <div class="auth-banner-sub" id="goUserSub">🪙 知因币: 0</div>
+                            </div>
+                        </div>
+                        <div class="auth-banner-actions">
+                            <button class="btn-auth-action green" id="btnGoAuth" type="button">个人信息</button>
+                        </div>
+                    </div>
+
+                    <!-- 模式选择区 -->
+                    <div class="mode-selection">
+                        <!-- 棋盘路数选择 (人机切磋专用) -->
+                        <div class="mode-card join-card">
+                            <div class="card-title-sm"><i class="fa-solid fa-border-all"></i> 人机切磋棋盘路数</div>
+                            <div class="join-input-row" style="gap:8px;">
+                                <button class="btn-size-pick active" id="btnGoSize19" type="button">19 路</button>
+                                <button class="btn-size-pick" id="btnGoSize13" type="button">13 路</button>
+                                <button class="btn-size-pick" id="btnGoSize9" type="button">9 路</button>
+                            </div>
+                            <div class="go-size-hint"><i class="fa-solid fa-circle-info"></i> 联机对局固定 19 路 · AI 模式可选</div>
+                        </div>
+
+                        <!-- 创建围棋房间 -->
+                        <button class="mode-card primary-card green-theme" id="btnCreateGoRoom">
+                            <div class="card-icon-wrap green">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>创建围棋对局</span>
+                                    <span class="pill-badge green">房主 · 10知因币</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
+                        <!-- 输入房间号加入围棋 -->
+                        <div class="mode-card join-card">
+                            <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入 6 位围棋房间号</div>
+                            <div class="join-input-row">
+                                <input type="text" id="joinGoInput" placeholder="6 位房间号" maxlength="6">
+                                <button class="btn-join-action green" id="btnJoinGo">进入对局 <i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- 动态公开围棋房间大厅 -->
+                        <button class="mode-card public-card green-theme" id="btnPublicGoRooms">
+                            <div class="card-icon-wrap cyan">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>在线围棋大厅</span>
+                                    <span class="pill-badge cyan">实时列表</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+
+                        <div class="divider"><span>人机切磋</span></div>
+
+                        <!-- 单机围棋 AI 练习 -->
+                        <button class="mode-card ai-card" id="btnPlayGoAi">
+                            <div class="card-icon-wrap cyan">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">
+                                    <span>AI 棋圣练习</span>
+                                    <span class="pill-badge cyan">智能博弈 · 1知因币</span>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right card-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lobby-footer">
+                    <span><i class="fa-solid fa-circle"></i> 黑白纵横 · 运筹帷幄</span>
+                </div>
             </div>
 
             <!-- 游鲸斗地主 主大厅卡片 -->
@@ -765,6 +874,127 @@
             </div>
         </div>
 
+        <!-- 游鲸围棋 专属水墨黑白棋盘对局室 (Go Game Screen) -->
+        <div id="goGameScreen" class="overlay-screen go-screen-wrap" style="display: none;">
+            <div class="go-container">
+                <!-- 顶部对局玩家与回合信息 Area -->
+                <div class="go-header-area">
+                    <div class="go-turn-status top-status" id="goTurnStatus">
+                        <span class="status-dot green"></span>
+                        <span id="goTurnText">黑方落子</span>
+                        <span class="go-timer-badge" id="goTimerBadge" style="display:none;">⏱ <span id="goTimerSecs">60</span>s</span>
+                    </div>
+
+                    <!-- 玩家 VS 信息 Bar (左侧固定是我方，右侧固定是对方/AI) -->
+                    <div class="go-header-bar">
+                        <div class="go-player-pill left-me turn-active" id="goPlayerLeft">
+                            <div class="player-pill-top">
+                                <div class="mini-stone-avatar black" id="goAvatarLeft" title="棋子颜色"></div>
+                                <span class="p-role" id="goRoleLeft">⚫ 先手黑棋</span>
+                            </div>
+                            <div class="player-pill-name" id="goNameLeft">我方玩家</div>
+                        </div>
+
+                        <div class="go-vs-badge">VS</div>
+
+                        <div class="go-player-pill right-opp" id="goPlayerRight">
+                            <div class="player-pill-top right">
+                                <span class="p-role" id="goRoleRight">⚪ 后手白棋</span>
+                                <div class="mini-stone-avatar white" id="goAvatarRight" title="棋子颜色"></div>
+                            </div>
+                            <div class="player-pill-name align-right" id="goNameRight">AI 棋圣</div>
+                        </div>
+                    </div>
+
+                    <!-- 提子数统计栏 -->
+                    <div class="go-captures-bar">
+                        <span class="go-capture-pill black-pill">⚫ 黑提 <b id="goCapturesBlack">0</b></span>
+                        <span class="go-capture-pill white-pill">⚪ 白提 <b id="goCapturesWhite">0</b></span>
+                        <span class="go-komi-pill" title="黑方需扣除贴目">贴目 <b id="goKomiDisplay">7.5</b></span>
+                    </div>
+                </div>
+
+                <!-- 19x19 水墨木纹棋盘容器 -->
+                <div class="go-board-wrapper">
+                    <div id="goCenterBanner" class="gomoku-center-banner" style="display: none;">
+                        <div id="goBannerBadge" class="stone-badge black"></div>
+                        <span id="goCenterBannerText" class="black-first">你先手</span>
+                    </div>
+
+                    <div class="go-board" id="goBoardContainer">
+                        <!-- 动态生成交叉落子点网格 -->
+                    </div>
+                </div>
+
+                <!-- 底部操作控制栏 (停一手 / 悔棋 / 数目 / 认输 / 重来一局) -->
+                <div class="go-actions-bar">
+                    <button class="btn-go-action pass" id="btnGoPass" title="放弃本手落子">
+                        <i class="fa-solid fa-hand"></i> 停一手
+                    </button>
+                    <button class="btn-go-action undo" id="btnGoUndo" title="单局限悔棋 3 次">
+                        <i class="fa-solid fa-rotate-left"></i> 悔棋 (<span id="goUndoCount">3</span>/3)
+                    </button>
+                    <button class="btn-go-action score" id="btnGoScore" title="按数子法结算当前盘面">
+                        <i class="fa-solid fa-calculator"></i> 数目
+                    </button>
+                    <button class="btn-go-action resign" id="btnGoResign" title="认输结束本局">
+                        <i class="fa-solid fa-flag"></i> 认输
+                    </button>
+                    <button class="btn-go-action rematch" id="btnGoRematch" style="display: none;" title="双方均点击后开启新一局">
+                        <i class="fa-solid fa-rotate-right"></i> 重来一局
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 围棋双人对战悔棋申请确认弹窗 -->
+        <div id="goUndoModal" class="modal-overlay" style="display: none;">
+            <div class="modal-card hero-modal-card" style="max-width: 360px; padding: 24px;">
+                <div class="modal-header" style="justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+                    <h3 class="modal-title" style="color: #ffd700; font-size: 1.1rem;"><i class="fa-solid fa-handshake-simple"></i> 悔棋申请</h3>
+                </div>
+                <div class="modal-body" style="padding: 16px 0;">
+                    <p id="goUndoModalText" style="font-size: 0.95rem; color: #e2e8f0; text-align: center; margin: 0; line-height: 1.5;">
+                        对方申请悔棋，是否同意？
+                    </p>
+                </div>
+                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: center; width: 100%; margin-top: 8px;">
+                    <button class="btn-action secondary" id="btnRejectGoUndo" style="flex: 1; border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+                        <i class="fa-solid fa-xmark"></i> 拒绝
+                    </button>
+                    <button class="btn-action primary" id="btnAgreeGoUndo" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); border-color: #34d399; color: #fff;">
+                        <i class="fa-solid fa-check"></i> 同意
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 围棋数目结算弹窗 -->
+        <div id="goScoreModal" class="modal-overlay" style="display: none;">
+            <div class="modal-card hero-modal-card" style="max-width: 380px; padding: 24px;">
+                <div class="modal-header" style="justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+                    <h3 class="modal-title" style="color: #ffd700; font-size: 1.1rem;"><i class="fa-solid fa-calculator"></i> 数目结算 (数子法)</h3>
+                </div>
+                <div class="modal-body" style="padding: 16px 0; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="go-score-row black-row">
+                        <span>⚫ 黑方</span>
+                        <span>子 <b id="goScoreBlackStones">0</b> + 空 <b id="goScoreBlackTerritory">0</b> = <b id="goScoreBlackTotal" style="color:#fff;">0</b></span>
+                    </div>
+                    <div class="go-score-row white-row">
+                        <span>⚪ 白方</span>
+                        <span>子 <b id="goScoreWhiteStones">0</b> + 空 <b id="goScoreWhiteTerritory">0</b> + 贴目 <b id="goScoreKomi">7.5</b> = <b id="goScoreWhiteTotal" style="color:#fff;">0</b></span>
+                    </div>
+                    <div id="goScoreResultText" style="text-align:center; font-size:1.05rem; font-weight:900; color:#34d399; margin-top:4px;"></div>
+                    <div style="text-align:center; font-size:0.72rem; color:#64748b;">注: 死子请先提尽再数目 · 按中国规则数子法结算</div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: center; width: 100%; margin-top: 8px;">
+                    <button class="btn-action primary" id="btnCloseGoScore" style="background: linear-gradient(135deg, #10b981, #059669); border-color: #34d399; color: #fff; min-width: 140px;">
+                        <i class="fa-solid fa-check"></i> 知道了
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- 房间等待大厅 (Waiting Room Redesign) -->
         <div id="waitingScreen" class="overlay-screen" style="display: none;">
             <div class="lobby-card waiting-card-hero">
@@ -1055,6 +1285,7 @@
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/gomoku.js"></script>
+<script src="js/go.js"></script>
     <script src="js/mahjong.js"></script>
     <script src="js/main.js"></script>
 
