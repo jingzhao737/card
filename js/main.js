@@ -476,7 +476,7 @@ class GameEngineController {
                 const btnRect = activeNavBtn.getBoundingClientRect();
                 const btnLeftInNav = btnRect.left - navRect.left + navFollowEl.scrollLeft;
                 const targetScroll = btnLeftInNav - (navFollowEl.clientWidth - btnRect.width) / 2;
-                navFollowEl.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+                navFollowEl.scrollLeft = Math.max(0, targetScroll);
             }
         };
         this.switchGameLobby = switchGameLobby;
