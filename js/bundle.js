@@ -10360,6 +10360,13 @@ Object.assign(GameEngineController.prototype, {
         this.xqMoveDots = [];        // 合法走法提示 [{r, c}]
         this.xqMyRematchReady = false;
 
+        // 预加载象棋音效 (消除手机端首次播放延迟)
+        try {
+            if (!this._xqAudioOpen) { this._xqAudioOpen = new Audio('sound/zhangu.mp3'); this._xqAudioOpen.preload = 'auto'; }
+            if (!this._xqAudioMove) { this._xqAudioMove = new Audio('sound/mahjangclack-1.wav'); this._xqAudioMove.preload = 'auto'; }
+            if (!this._xqAudioSelect) { this._xqAudioSelect = new Audio('sound/placing-a-piece.mp3'); this._xqAudioSelect.preload = 'auto'; }
+        } catch (e) {}
+
         const countEl = document.getElementById('xqUndoCount');
         if (countEl) countEl.textContent = '3';
 
@@ -10667,9 +10674,13 @@ Object.assign(GameEngineController.prototype, {
      */
     playXiangqiOpenSound() {
         try {
-            const audio = new Audio('sound/zhangu.mp3');
-            audio.volume = 0.7;
-            const p = audio.play();
+            if (!this._xqAudioOpen) {
+                this._xqAudioOpen = new Audio('sound/zhangu.mp3');
+                this._xqAudioOpen.preload = 'auto';
+            }
+            this._xqAudioOpen.volume = 0.7;
+            try { this._xqAudioOpen.currentTime = 0; } catch (e) {}
+            const p = this._xqAudioOpen.play();
             if (p && p.catch) p.catch(() => {});
         } catch (e) {
             // 音频加载/播放失败不阻塞对局
@@ -10679,10 +10690,18 @@ Object.assign(GameEngineController.prototype, {
      * 播放落子音效 (sound/mahjangclack-1.wav)
      */
     playXiangqiMoveSound() {
+        // 播放节流: 80ms 内不重复触发, 防快速操作声音叠加乱响
+        const now = Date.now();
+        if (this._xqLastMoveSfx && now - this._xqLastMoveSfx < 80) return;
+        this._xqLastMoveSfx = now;
         try {
-            const audio = new Audio('sound/mahjangclack-1.wav');
-            audio.volume = 0.9;
-            const p = audio.play();
+            if (!this._xqAudioMove) {
+                this._xqAudioMove = new Audio('sound/mahjangclack-1.wav');
+                this._xqAudioMove.preload = 'auto';
+            }
+            this._xqAudioMove.volume = 0.9;
+            try { this._xqAudioMove.currentTime = 0; } catch (e) {}
+            const p = this._xqAudioMove.play();
             if (p && p.catch) p.catch(() => {});
         } catch (e) {}
     },
@@ -10690,10 +10709,18 @@ Object.assign(GameEngineController.prototype, {
      * 播放选子音效 (sound/placing-a-piece.mp3)
      */
     playXiangqiSelectSound() {
+        // 播放节流: 60ms 内不重复触发
+        const now = Date.now();
+        if (this._xqLastSelectSfx && now - this._xqLastSelectSfx < 60) return;
+        this._xqLastSelectSfx = now;
         try {
-            const audio = new Audio('sound/placing-a-piece.mp3');
-            audio.volume = 0.55;
-            const p = audio.play();
+            if (!this._xqAudioSelect) {
+                this._xqAudioSelect = new Audio('sound/placing-a-piece.mp3');
+                this._xqAudioSelect.preload = 'auto';
+            }
+            this._xqAudioSelect.volume = 0.55;
+            try { this._xqAudioSelect.currentTime = 0; } catch (e) {}
+            const p = this._xqAudioSelect.play();
             if (p && p.catch) p.catch(() => {});
         } catch (e) {}
     },
