@@ -28,10 +28,30 @@ class AuthManager {
 
     _initDB() {
         if (typeof firebase !== 'undefined' && firebase.database) {
-            this.db = firebase.database();
-            this.checkAutoLogin();
-        } else {
-            setTimeout(() => this._initDB(), 400);
+            try {
+                this.db = firebase.database();
+            } catch (e) {
+                this.db = null;
+            }
+            if (this.db) {
+                this.checkAutoLogin();
+                this._onDbReady();
+                return;
+            }
+        }
+        setTimeout(() => this._initDB(), 400);
+    }
+
+    /**
+     * 云端数据库就绪回调: 刷新顶部排行榜 (SDK 异步加载完成后自动触发)
+     */
+    _onDbReady() {
+        if (typeof window.GameEngine !== 'undefined' && window.GameEngine) {
+            try {
+                if (typeof window.GameEngine.renderMiniLeaderboard === 'function') {
+                    window.GameEngine.renderMiniLeaderboard();
+                }
+            } catch (e) {}
         }
     }
 
@@ -576,9 +596,36 @@ class AuthManager {
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
     fetchLeaderboard(callback) {
+        const CACHE_KEY = 'yj_lb_cache_v1';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存, 避免每次全量下载 /users
+
+        const readCache = () => {
+            try {
+                const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+                if (c && c.ts && Date.now() - c.ts < CACHE_TTL && Array.isArray(c.list)) {
+                    return c.list;
+                }
+            } catch (e) {}
+            return null;
+        };
+
+        // 云端未就绪: 先给缓存 (如有), 否则回调 null 表示加载中
         if (!this.db) {
-            if (callback) callback([]);
+            const cached = readCache();
+            if (cached) {
+                if (callback) callback(cached);
+            } else if (callback) {
+                callback(null);
+            }
             return;
+        }
+
+        // 有新鲜缓存先秒出, 后台静默刷新 (不再二次回调避免走马灯闪烁)
+        let servedCache = false;
+        const cached = readCache();
+        if (cached) {
+            servedCache = true;
+            if (callback) callback(cached);
         }
 
         this.db.ref('users').orderByChild('yinCoins').limitToLast(15).once('value').then(snap => {
@@ -591,10 +638,14 @@ class AuthManager {
                 }
             });
             list.sort((a, b) => (b.yinCoins || 0) - (a.yinCoins || 0));
-            if (callback) callback(list.slice(0, 10));
+            const top10 = list.slice(0, 10);
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), list: top10 }));
+            } catch (e) {}
+            if (callback && !servedCache) callback(top10);
         }).catch(err => {
             console.error('[Auth] 排行榜加载失败:', err);
-            if (callback) callback([]);
+            if (callback && !servedCache) callback([]);
         });
     }
 

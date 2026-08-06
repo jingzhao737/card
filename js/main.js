@@ -1885,7 +1885,12 @@ class GameEngineController {
         if (!ticker) return;
 
         AuthEngine.fetchLeaderboard(list => {
-            if (!list || list.length === 0) {
+            if (!list) {
+                // 云端 SDK 尚未就绪 (异步加载中)
+                ticker.innerHTML = '<span style="color:#94a3b8"><i class="fa-solid fa-spinner fa-spin"></i> 云端排行榜加载中...</span>';
+                return;
+            }
+            if (list.length === 0) {
                 ticker.innerHTML = '<span style="color:#94a3b8">暂无上榜玩家，注册开局即可登顶！</span>';
                 return;
             }
@@ -1930,7 +1935,12 @@ class GameEngineController {
 
         AuthEngine.fetchLeaderboard(list => {
             container.innerHTML = '';
-            if (!list || list.length === 0) {
+            if (!list) {
+                // 云端 SDK 尚未就绪 (异步加载中)
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 云端连接中，稍后自动加载...</div>';
+                return;
+            }
+            if (list.length === 0) {
                 container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;">暂无上榜玩家，注册即送 1000 因币！</div>';
                 return;
             }

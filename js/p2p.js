@@ -13,9 +13,75 @@ const firebaseConfig = {
     measurementId: "G-1WKXG1DLBJ"
 };
 
-// 初始化 Firebase (Compat 模式)
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+// 初始化 Firebase 改为异步动态加载: 不在 <head> 同步阻塞, 避免 gstatic CDN 慢导致整页按钮绑定延迟
+// 游戏本体 (AI/本地) 完全不依赖 Firebase; 云端房间/排行榜/账号就绪后自动生效
+const FIREBASE_SDK_URLS = [
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
+];
+
+let _firebaseReady = false;
+let _firebaseFailed = false;
+let _firebaseLoading = false;
+const _firebaseWaiters = [];
+
+/**
+ * 异步加载 Firebase SDK (按序注入, 完成后 initializeApp)
+ * @param {Function} callback  (ok: boolean)
+ */
+function loadFirebaseSDK(callback) {
+    if (_firebaseReady) { if (callback) callback(true); return; }
+
+    // 全局已就绪 (例如后续加载完成后再次调用)
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+        _firebaseReady = true;
+        _firebaseFailed = false;
+        if (callback) callback(true);
+        return;
+    }
+
+    if (_firebaseFailed) { if (callback) callback(false); return; }
+    if (callback) _firebaseWaiters.push(callback);
+    if (_firebaseLoading) return;
+    _firebaseLoading = true;
+
+    let idx = 0;
+    const loadNext = () => {
+        if (idx >= FIREBASE_SDK_URLS.length) {
+            // 全部加载完成: 初始化 App (auth.js 的 400ms 重试会自动接入)
+            try {
+                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+            } catch (e) {
+                console.error('[Firebase] initializeApp 失败:', e);
+            }
+            _firebaseReady = true;
+            _firebaseFailed = false;
+            _firebaseLoading = false;
+            const waiters = _firebaseWaiters.splice(0);
+            waiters.forEach(w => { if (w) w(true); });
+            return;
+        }
+        const s = document.createElement('script');
+        s.src = FIREBASE_SDK_URLS[idx];
+        s.async = true;
+        s.onload = () => { idx++; loadNext(); };
+        s.onerror = () => { idx++; loadNext(); }; // 单个失败继续尝试下一个
+        document.head.appendChild(s);
+    };
+    loadNext();
+
+    // 25 秒超时兜底: 网络极差时不再无限等待, 通知等待方失败 (游戏本体不受影响)
+    setTimeout(() => {
+        if (!_firebaseReady) {
+            _firebaseFailed = true;
+            _firebaseLoading = false;
+            const waiters = _firebaseWaiters.splice(0);
+            waiters.forEach(w => { if (w) w(false); });
+        }
+    }, 25000);
 }
 
 const SESSION_KEY       = 'ddz_session';     // localStorage key
@@ -25,7 +91,7 @@ const MAX_INACTIVE_TIME = 3 * 60 * 1000;    // 3 分钟（180,000ms）无真人�
 
 class P2PManager {
     constructor() {
-        this.db            = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+        this.db            = null; // Firebase SDK 就绪后自动赋值
         this.roomRef       = null;
         this.isHost        = false;
         this.myPlayerIndex = 0;
@@ -45,6 +111,38 @@ class P2PManager {
         this._listeners = [];
 
         this._bindVisibilityChange();
+        this._initDbAsync();
+    }
+
+    /**
+     * 异步初始化 Firebase 数据库连接 (SDK 可能仍在后台加载)
+     */
+    _initDbAsync() {
+        const tryInit = () => {
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                try {
+                    this.db = firebase.database();
+                } catch (e) {
+                    this.db = null;
+                }
+            }
+            return !!this.db;
+        };
+
+        if (tryInit()) return;
+
+        loadFirebaseSDK(ok => {
+            if (ok) {
+                tryInit();
+                // 通知就绪 (排行榜/大厅可立即拉取)
+                if (typeof window.__onFirebaseReady === 'function') {
+                    try { window.__onFirebaseReady(); } catch (e) {}
+                }
+            } else {
+                console.warn('[CloudEngine] Firebase SDK 加载超时/失败, 云端房间/排行榜暂不可用, 单机游戏不受影响');
+                if (this.onToast) this.onToast('☁️ 云端连接较慢，排行榜可能暂不可用（单机游戏不受影响）', 4000);
+            }
+        });
     }
 
     /* ====================================================================

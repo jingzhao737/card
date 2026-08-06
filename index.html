@@ -18,13 +18,9 @@
     <!-- FontAwesome Icons (defer 加载避免阻塞渲染) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    
-    <!-- Firebase 必须同步加载: p2p.js 在 body 末尾同步执行时需要 firebase 已就绪 -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <!-- PeerJS / QRCode 运行时才使用, defer 即可 -->
-    <script defer src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+    <!-- Firebase SDK 改为异步动态加载 (由 js/p2p.js 顶部注入)，避免同步阻塞页面渲染与按钮绑定 -->
+    <!-- QRCode 运行时才使用, defer 即可 -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
