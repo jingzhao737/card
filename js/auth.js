@@ -616,35 +616,35 @@ class AuthManager {
         this.updateUserHeaderUI();
 
         if (reason && typeof UIRenderer !== 'undefined') {
-            UIRenderer.showToast(`⭐ 获得 +${expGain} 经验值`);
+            UIRenderer.showToast(`⭐ 经验 +${expGain}`);
         }
 
         if (didLevelUp) {
             this.updateCoins(totalCoinBonus, `升级 Lv.${newLevel} 福利`);
-            this.showLevelUpNotice(currentLevel, newLevel, totalCoinBonus);
+            this.queuePendingLevelUpNotice(currentLevel, newLevel, totalCoinBonus);
         }
     }
 
     /**
-     * 弹出升级欢庆弹窗
+     * 缓存升级提醒 (延迟到玩家回到大厅主页时展示，不在房间内弹窗)
      */
-    showLevelUpNotice(oldLv, newLv, coinBonus) {
+    queuePendingLevelUpNotice(oldLv, newLv, coinBonus) {
         const title = this.getLevelTitle(newLv);
+        this._pendingLevelUpNotice = { oldLv, newLv, coinBonus, title };
+    }
+
+    /**
+     * 玩家回到主页大厅时触发精简版升级提示 (免手动点击确认)
+     */
+    checkAndShowPendingLevelUp() {
+        if (!this._pendingLevelUpNotice) return;
+        const notice = this._pendingLevelUpNotice;
+        this._pendingLevelUpNotice = null;
+
         if (typeof SoundEngine !== 'undefined' && SoundEngine.playWin) SoundEngine.playWin();
 
-        const modal = document.getElementById('levelUpModal');
-        const badgeEl = document.getElementById('levelUpBadge');
-        const titleEl = document.getElementById('levelUpTitle');
-        const bonusEl = document.getElementById('levelUpBonusCoins');
-
-        if (badgeEl) badgeEl.textContent = `Lv.${oldLv} ➔ Lv.${newLv}`;
-        if (titleEl) titleEl.textContent = title;
-        if (bonusEl) bonusEl.textContent = `+${coinBonus}`;
-
-        if (modal) {
-            modal.style.display = 'flex';
-        } else if (typeof UIRenderer !== 'undefined') {
-            UIRenderer.showToast(`🎉 恭喜升级到 Lv.${newLv} (${title})！获赠 +${coinBonus} 知因币！`, 5000);
+        if (typeof UIRenderer !== 'undefined') {
+            UIRenderer.showToast(`🎉 恭喜升级到 Lv.${notice.newLv} (${notice.title})！已获赠 +${notice.coinBonus} 知因币！`, 5000);
         }
     }
 

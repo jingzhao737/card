@@ -4071,6 +4071,9 @@ class GameEngineController {
         if (isLobbyScreen) {
             appHeader.style.display = 'none';
             appHeader.classList.add('in-lobby');
+            if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndShowPendingLevelUp) {
+                AuthEngine.checkAndShowPendingLevelUp();
+            }
         } else {
             appHeader.style.display = 'flex';
             appHeader.classList.remove('in-lobby');
