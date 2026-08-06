@@ -5891,10 +5891,9 @@ body.theme-mahjong #lobbyScreen {
     z-index: 10;
 }
 
-/* 我方 ID 信息框向上偏移拉开距离 */
+/* 我方 ID 信息框 (偏移已由 bottom-info-row 整体处理) */
 .seat-user-pill.bottom-pill {
-    margin-bottom: 8px;
-    transform: translateY(-8px);
+    margin-bottom: 0;
 }
 
 /* 左右两侧玩家 ID 90 度旋转纵向排版 (精细 3px 微型直角) */
@@ -6718,28 +6717,32 @@ body.theme-mahjong #lobbyScreen {
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5), 0 0 0 2px rgba(52, 211, 153, 0.3) !important;
 }
 
-/* 我方 ID 信息行：ID 框 + 独立出牌键并排 */
+/* 我方 ID 信息行：ID 框 + 独立出牌键并排，整体上移对齐 */
 .bottom-info-row {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     z-index: 10;
+    transform: translateY(-8px);
 }
 
-/* 📱 手机端出牌按钮：独立于 ID 框右侧，胡桃木色，圆角小 */
+/* 📱 手机端出牌按钮：独立于 ID 框右侧，与 ID 框同高对齐，胡桃木色，圆角小 */
 .btn-mahjong-discard {
     background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 60%, #4a2e15 100%);
     border: 1px solid rgba(222, 184, 135, 0.5);
     color: #f3e2c7;
     font-size: 0.72rem;
     font-weight: 800;
-    padding: 5px 12px;
+    height: 25px;
+    box-sizing: border-box;
+    padding: 0 10px;
     border-radius: 2px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 4px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 235, 205, 0.25);
     transition: all 0.2s ease;
     flex-shrink: 0;
