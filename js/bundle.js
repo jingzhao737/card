@@ -7574,6 +7574,8 @@ class GameEngineController {
                 } else {
                     navFollowEl.scrollLeft = targetScroll;
                 }
+                // 平滑滚动结束后刷新边缘渐隐 (scroll 事件对 smooth 动画会多次触发, 这里兜底刷新)
+                setTimeout(() => { if (this.updateNavScrollMask) this.updateNavScrollMask(); }, 400);
             }
         };
         this.switchGameLobby = switchGameLobby;
@@ -7587,6 +7589,28 @@ class GameEngineController {
         // 导航区鼠标拖拽滚动 (桌面端, 与手机端触摸滚动体验一致)
         const navEl = document.querySelector('.game-switch-nav');
         if (navEl) {
+            // 动态渐隐: 滚到最左时左侧渐隐消失, 最右时右侧渐隐消失
+            const updateNavScrollMask = () => {
+                const el = document.querySelector('.game-switch-nav');
+                if (!el) return;
+                const maxScroll = el.scrollWidth - el.clientWidth;
+                if (maxScroll <= 0) {
+                    el.style.webkitMaskImage = 'none';
+                    el.style.maskImage = 'none';
+                    return;
+                }
+                const leftFade = el.scrollLeft > 2 ? 'transparent 0%, black 7%' : 'black 0%';
+                const rightFade = el.scrollLeft < maxScroll - 2 ? 'black 93%, transparent 100%' : 'black 100%';
+                const mask = 'linear-gradient(to right, ' + leftFade + ', ' + rightFade + ')';
+                el.style.webkitMaskImage = mask;
+                el.style.maskImage = mask;
+            };
+            this.updateNavScrollMask = updateNavScrollMask;
+            navEl.addEventListener('scroll', updateNavScrollMask, { passive: true });
+            // 初始化 + 切换游戏平滑滚动结束后也刷新
+            setTimeout(updateNavScrollMask, 100);
+            updateNavScrollMask();
+
             let navDragging = false;
             let navStartX = 0;
             let navStartScroll = 0;

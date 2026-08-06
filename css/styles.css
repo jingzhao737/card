@@ -3904,10 +3904,9 @@ body.theme-gomoku .overlay-screen {
     gap: 8px;
     margin: 2px auto -4px;
     padding: 8px 10px 8px; /* 四边留空间: 上(NEW角标) 下(active阴影) 左右(边框/滚动边缘) */
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%); /* 左右滚动边缘渐隐, 替代生硬裁切 */
-    mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
-    width: max-content;
-    max-width: 90%;
+    /* mask 渐隐由 JS 动态控制 (updateNavScrollMask): 滚到边界时对应侧渐隐消失 */
+    width: min(92%, 460px); /* 限宽: 电脑端也只显示部分可滚动 */
+    max-width: 92%;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
