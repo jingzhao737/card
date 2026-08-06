@@ -41,7 +41,7 @@ class GomokuEngine {
 
         const color = this.currentTurn;
         this.board[r][c] = color;
-        this.lastMove = { r, c, color };
+        this.lastMove = { r, c, color, moveNumber: this.moveHistory.length + 1 };
         this.moveHistory.push(this.lastMove);
 
         // 检查胜负

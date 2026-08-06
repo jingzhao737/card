@@ -1724,8 +1724,42 @@ class GameEngineController {
                 cell.dataset.r = r;
                 cell.dataset.c = c;
                 cell.addEventListener('click', () => this.handleGomokuCellClick(r, c));
+
+                // 桌面端悬停预览落子 (移动端触摸不启用，避免与 2-Tap 冲突)
+                if (!('ontouchstart' in window) && window.innerWidth > 768) {
+                    cell.addEventListener('mouseenter', () => this.showGomokuHoverPreview(r, c, true));
+                    cell.addEventListener('mouseleave', () => this.showGomokuHoverPreview(r, c, false));
+                }
+
                 boardContainer.appendChild(cell);
             }
+        }
+    }
+
+    /**
+     * 桌面端悬停预览落子：在合法交叉点显示半透明当前方棋子
+     */
+    showGomokuHoverPreview(r, c, show) {
+        const engine = window.gomokuEngine;
+        if (!engine || engine.isGameOver) return;
+        const cell = document.querySelector(`.gomoku-cell[data-r="${r}"][data-c="${c}"]`);
+        if (!cell) return;
+
+        // 该位置已有棋子 或 非我方回合时不显示预览
+        if (engine.board[r][c] !== 0) return;
+        if (engine.currentTurn !== engine.playerColor) return;
+        // 手机端 2-Tap 预选位置优先，不覆盖
+        if (this.gomokuPendingMove && this.gomokuPendingMove.r === r && this.gomokuPendingMove.c === c) return;
+
+        let hover = cell.querySelector('.hover-preview');
+        if (show) {
+            if (!hover) {
+                hover = document.createElement('div');
+                hover.className = `gomoku-stone ${engine.currentTurn === 1 ? 'black' : 'white'} hover-preview`;
+                cell.appendChild(hover);
+            }
+        } else {
+            if (hover) hover.remove();
         }
     }
 
@@ -2117,7 +2151,7 @@ class GameEngineController {
     }
 
     /**
-     * 重新渲染盘面棋子
+     * 重新渲染盘面棋子 (含落子序号标记)
      */
     renderGomokuBoard() {
         const engine = window.gomokuEngine;
@@ -2125,6 +2159,13 @@ class GameEngineController {
 
         const winNodes = engine.winLine || [];
         const cells = document.querySelectorAll('.gomoku-cell');
+
+        // 构建 序号查找表: `${r},${c}` -> 落子序号 (1 起步)
+        const moveNumberMap = {};
+        (engine.moveHistory || []).forEach(m => {
+            if (m) moveNumberMap[`${m.r},${m.c}`] = m.moveNumber || 1;
+        });
+
         cells.forEach(cell => {
             const r = parseInt(cell.dataset.r);
             const c = parseInt(cell.dataset.c);
@@ -2133,11 +2174,9 @@ class GameEngineController {
             let stone = cell.querySelector('.gomoku-stone');
 
             if (val === 0) {
-                // 如果格子上无正式棋子
-                if (stone) {
-                    stone.remove();
-                    stone = null;
-                }
+                // 如果格子上无正式棋子：清除所有棋子/预览残留 (含 hover 预览与旧 2-Tap 预览)
+                cell.querySelectorAll('.gomoku-stone').forEach(s => s.remove());
+                stone = null;
 
                 // 如果该格被选中作为 2-Tap 预选位置，渲染半透明预览虚影棋子
                 if (this.gomokuPendingMove && this.gomokuPendingMove.r === r && this.gomokuPendingMove.c === c) {
@@ -2151,6 +2190,10 @@ class GameEngineController {
                 const windNames = ['东', '南', '西', '北'];
                 const isLastMove = engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c;
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
+
+                // 清除可能残留的 hover 预览（该格已有正式棋子时）
+                const hoverLeft = cell.querySelector('.hover-preview');
+                if (hoverLeft) hoverLeft.remove();
 
                 if (!stone || stone.classList.contains('preview')) {
                     if (stone) stone.remove();
@@ -2172,8 +2215,71 @@ class GameEngineController {
 
                 if (isWinStone) stone.classList.add('win-stone');
                 else stone.classList.remove('win-stone');
+
+                // 落子序号标记 (仅当棋格内无已有序号 span 时重建)
+                let numSpan = stone.querySelector('.stone-num');
+                if (numSpan) numSpan.remove();
+                const moveNum = moveNumberMap[`${r},${c}`] || '';
+                numSpan = document.createElement('span');
+                numSpan.className = 'stone-num' + (val === 1 ? ' on-black' : ' on-white') + (String(moveNum).length >= 2 ? ' len-2' : '');
+                numSpan.textContent = moveNum;
+                stone.appendChild(numSpan);
             }
         });
+
+        // 胜利连线特效: 五连子发光连线
+        this.renderGomokuWinLine();
+    }
+
+    /**
+     * 胜利五连子发光连线 (SVG 覆盖在棋盘上)
+     */
+    renderGomokuWinLine() {
+        const boardEl = document.getElementById('gomokuBoardContainer');
+        const engine = window.gomokuEngine;
+        if (!boardEl || !engine) return;
+
+        // 移除旧连线
+        const oldLine = boardEl.querySelector('.gomoku-win-line');
+        if (oldLine) oldLine.remove();
+
+        const winNodes = engine.winLine || [];
+        if (winNodes.length < 2) return;
+
+        const first = winNodes[0];
+        const last = winNodes[winNodes.length - 1];
+
+        // 计算首尾交叉点的像素位置 (棋盘 grid 每格等宽)
+        const rect = boardEl.getBoundingClientRect();
+        const cellW = rect.width / 15;
+        const cellH = rect.height / 15;
+        const x1 = (first.c + 0.5) * cellW;
+        const y1 = (first.r + 0.5) * cellH;
+        const x2 = (last.c + 0.5) * cellW;
+        const y2 = (last.r + 0.5) * cellH;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'gomoku-win-line');
+        svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+        svg.style.pointerEvents = 'none';
+        svg.style.zIndex = '6';
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#34d399');
+        line.setAttribute('stroke-width', Math.max(3, cellW * 0.09));
+        line.setAttribute('stroke-linecap', 'round');
+        line.style.filter = 'drop-shadow(0 0 6px rgba(52, 211, 153, 0.9))';
+        svg.appendChild(line);
+        boardEl.appendChild(svg);
     }
 
     /**

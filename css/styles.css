@@ -5042,6 +5042,43 @@ body.theme-gomoku .overlay-screen {
     box-shadow: 0 0 6px #ff2a2a;
 }
 
+/* 落子序号标记 (专业棋谱风格小数字) */
+.gomoku-stone .stone-num {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(0.58rem + 0.3vw);
+    font-weight: 900;
+    font-family: 'Outfit', 'Noto Sans SC', sans-serif;
+    line-height: 1;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    z-index: 7;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+.gomoku-stone .stone-num.on-black {
+    color: #f8fafc;
+}
+.gomoku-stone .stone-num.on-white {
+    color: #1e293b;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+/* 序号不超过2位时略小一号，避免溢出棋子 */
+.gomoku-stone .stone-num.len-2 {
+    font-size: calc(0.48rem + 0.22vw);
+}
+
+/* 桌面端悬停预览落子 (半透明当前方棋子) */
+.gomoku-stone.hover-preview {
+    opacity: 0.45;
+    pointer-events: none;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    animation: none;
+}
+
 /* 获胜 5 连子闪耀墨绿细描边与光圈效果 (保持原尺寸不缩微) */
 .gomoku-stone.win-stone {
     box-sizing: border-box !important;
