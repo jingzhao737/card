@@ -11086,7 +11086,7 @@ class GameEngineController {
      * 生成标准中国象棋棋盘 SVG (完整边框/河界断开两侧贯通/九宫斜线/炮兵位记号)
      * 坐标: viewBox 0-8 (9列) x 0-9 (10行), 交叉点在整数坐标
      */
-    _buildXiangqiBoardSvg() {
+    _buildXiangqiBoardSvg(flip) {
         const L = [];
         // 横线: 每行一条, 从左边框到右边框 (y=0..9)
         for (let y = 0; y <= 9; y++) {
@@ -11101,19 +11101,25 @@ class GameEngineController {
                 L.push(`<line x1="${x}" y1="5" x2="${x}" y2="9"/>`);
             }
         }
-        // 九宫斜线: 黑九宫 (3,0)-(5,2) 与 (5,0)-(3,2); 红九宫 (3,7)-(5,9) 与 (5,7)-(3,9)
-        L.push('<line x1="3" y1="0" x2="5" y2="2"/>');
-        L.push('<line x1="5" y1="0" x2="3" y2="2"/>');
-        L.push('<line x1="3" y1="7" x2="5" y2="9"/>');
-        L.push('<line x1="5" y1="7" x2="3" y2="9"/>');
+        // 九宫斜线 (黑方视角上下翻转)
+        const fy = (y) => flip ? 9 - y : y;
+        const diagLines = [
+            [3, 0, 5, 2], [5, 0, 3, 2],
+            [3, 7, 5, 9], [5, 7, 3, 9]
+        ];
+        diagLines.forEach(([x1, y1, x2, y2]) => {
+            L.push(`<line x1="${x1}" y1="${fy(y1)}" x2="${x2}" y2="${fy(y2)}"/>`);
+        });
         // 炮位交叉记号
         [[1, 2], [7, 2], [1, 7], [7, 7]].forEach(([x, y]) => {
-            L.push(`<path d="M${x - 0.2} ${y - 0.2} L${x + 0.2} ${y + 0.2} M${x - 0.2} ${y + 0.2} L${x + 0.2} ${y - 0.2}"/>`);
+            const yy = fy(y);
+            L.push(`<path d="M${x - 0.2} ${yy - 0.2} L${x + 0.2} ${yy + 0.2} M${x - 0.2} ${yy + 0.2} L${x + 0.2} ${yy - 0.2}"/>`);
         });
         // 兵位交叉记号
         for (let x = 0; x <= 8; x += 2) {
             [3, 6].forEach(y => {
-                L.push(`<path d="M${x - 0.2} ${y - 0.2} L${x + 0.2} ${y + 0.2} M${x - 0.2} ${y + 0.2} L${x + 0.2} ${y - 0.2}"/>`);
+                const yy = fy(y);
+                L.push(`<path d="M${x - 0.2} ${yy - 0.2} L${x + 0.2} ${yy + 0.2} M${x - 0.2} ${yy + 0.2} L${x + 0.2} ${yy - 0.2}"/>`);
             });
         }
         return `<svg class="xq-board-svg" viewBox="-0.3 -0.3 8.6 9.6" preserveAspectRatio="none">${L.join('')}</svg>`;
@@ -11152,7 +11158,7 @@ class GameEngineController {
         boardContainer.innerHTML = '';
 
         // 用 SVG 精确绘制标准棋盘 (完整边框 + 河界断开两侧竖线贯通 + 九宫斜线 + 炮兵位记号)
-        boardContainer.insertAdjacentHTML('beforeend', this._buildXiangqiBoardSvg());
+        boardContainer.insertAdjacentHTML('beforeend', this._buildXiangqiBoardSvg(engine.playerColor === 'B'));
 
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 9; c++) {
@@ -11169,10 +11175,13 @@ class GameEngineController {
             const rect = boardContainer.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width * 8.6 - 0.3;
             const y = (e.clientY - rect.top) / rect.height * 9.6 - 0.3;
-            const c = Math.round(x);
-            const r = Math.round(y);
-            if (c >= 0 && c <= 8 && r >= 0 && r <= 9) {
-                this.handleXiangqiCellClick(r, c);
+            const dc = Math.round(x);
+            const dr = Math.round(y);
+            if (dc >= 0 && dc <= 8 && dr >= 0 && dr <= 9) {
+                // 视角翻转: 显示坐标 -> 引擎坐标
+                const flip = (window.xiangqiEngine && window.xiangqiEngine.playerColor === 'B');
+                const r = flip ? 9 - dr : dr;
+                this.handleXiangqiCellClick(r, dc);
             }
         });
 
@@ -11199,28 +11208,32 @@ class GameEngineController {
         const board = document.getElementById('xqBoardContainer');
         if (!board) return;
 
+        // 视角翻转: 我方是黑方时棋盘上下翻转, 保证我方棋子永远在下
+        const flip = (engine.playerColor === 'B');
+        const viewR = (r) => flip ? 9 - r : r;
+
         // 清除旧棋子 (棋盘线 SVG 与 cell 热区保留)
         board.querySelectorAll('.xq-piece').forEach(el => el.remove());
 
-        // 棋子按交叉点绝对定位: 与 SVG viewBox(-0.3,-0.3,8.6,9.6) 对齐
-        // 交叉点 (c,r) -> left=(c+0.3)/8.6*100%, top=(r+0.3)/9.6*100%
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 9; c++) {
                 const p = engine.board[r][c];
                 if (!p) continue;
+                const dr = viewR(r);
                 const piece = document.createElement('div');
                 piece.className = 'xq-piece ' + (p.color === 'R' ? 'red' : 'black');
                 piece.textContent = XiangqiEngine.pieceName(p.color, p.type);
                 piece.style.left = ((c + 0.3) / 8.6 * 100) + '%';
-                piece.style.top = ((r + 0.3) / 9.6 * 100) + '%';
+                piece.style.top = ((dr + 0.3) / 9.6 * 100) + '%';
 
-                if (this.xqSelected && this.xqSelected.r === r && this.xqSelected.c === c) {
+                if (this.xqSelected && viewR(this.xqSelected.r) === dr && this.xqSelected.c === c) {
                     piece.classList.add('selected');
                 }
-                if (engine.lastMove && engine.lastMove.tr === r && engine.lastMove.tc === c) {
+                if (engine.lastMove && viewR(engine.lastMove.tr) === dr && engine.lastMove.tc === c) {
                     piece.classList.add('last-move');
                 }
-                if (engine.inCheck && p.type === 'K') {
+                // 将军提示: 只闪烁被将军方的帅/将 (当前轮到方即被将军方)
+                if (engine.inCheck && p.type === 'K' && p.color === engine.currentTurn) {
                     piece.classList.add('in-check');
                 }
                 board.appendChild(piece);
@@ -11306,36 +11319,50 @@ class GameEngineController {
 
         const thinkDelay = 500 + Math.floor(Math.random() * 700);
         setTimeout(() => {
-            const scr = document.getElementById('xiangqiGameScreen');
-            if (!scr || scr.style.display === 'none' || engine.isGameOver) return;
-            if (engine.currentTurn !== aiColor) return;
+            try {
+                const scr = document.getElementById('xiangqiGameScreen');
+                if (!scr || scr.style.display === 'none' || engine.isGameOver) return;
+                if (engine.currentTurn !== aiColor) return;
 
-            const mv = engine.getBestAiMove();
-            if (!mv) {
-                // 无走法: 判负/和
-                engine.isGameOver = true;
-                engine.winReason = 'STALEMATE';
-                engine.winner = engine.currentTurn === 'R' ? 'B' : 'R';
+                const mv = engine.getBestAiMove();
+                if (!mv) {
+                    // 无走法: 将被将死/困毙 -> 判负 (兜底防宕机)
+                    if (!engine.isGameOver) {
+                        engine.isGameOver = true;
+                        engine.winReason = 'STALEMATE';
+                        engine.winner = engine.currentTurn === 'R' ? 'B' : 'R';
+                    }
+                    this.stopXiangqiTurnTimer();
+                    this.handleXiangqiEnd(engine.winner, engine.winReason);
+                    return;
+                }
+                const res = engine.move(mv.fr, mv.fc, mv.tr, mv.tc);
+                if (!res) return;
+                this.renderXiangqiBoard();
+
+                if (engine.isGameOver) {
+                    this.stopXiangqiTurnTimer();
+                    this.handleXiangqiEnd(engine.winner, engine.winReason);
+                    return;
+                }
+                if (res.check) {
+                    this.updateXiangqiStatusUI('⚡ 将军！轮到你应将');
+                    UIRenderer.showToast('⚡ 将军！');
+                } else {
+                    this.updateXiangqiStatusUI(engine.playerColor === 'R' ? '🔴 轮到你落子 (红方)' : '⚫ 轮到你落子 (黑方)');
+                }
+                this.startXiangqiTurnTimer();
+            } catch (err) {
+                console.error('[Xiangqi] AI 走子异常:', err);
+                // 异常兜底: 强制判负避免卡死
+                if (!engine.isGameOver) {
+                    engine.isGameOver = true;
+                    engine.winReason = 'STALEMATE';
+                    engine.winner = engine.currentTurn === 'R' ? 'B' : 'R';
+                }
                 this.stopXiangqiTurnTimer();
                 this.handleXiangqiEnd(engine.winner, engine.winReason);
-                return;
             }
-            const res = engine.move(mv.fr, mv.fc, mv.tr, mv.tc);
-            if (!res) return;
-            this.renderXiangqiBoard();
-
-            if (engine.isGameOver) {
-                this.stopXiangqiTurnTimer();
-                this.handleXiangqiEnd(engine.winner, engine.winReason);
-                return;
-            }
-            if (res.check) {
-                this.updateXiangqiStatusUI('⚡ 将军！轮到你应将');
-                UIRenderer.showToast('⚡ 将军！');
-            } else {
-                this.updateXiangqiStatusUI(engine.playerColor === 'R' ? '🔴 轮到你落子 (红方)' : '⚫ 轮到你落子 (黑方)');
-            }
-            this.startXiangqiTurnTimer();
         }, thinkDelay);
     }
 
