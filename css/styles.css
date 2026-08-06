@@ -7897,4 +7897,10 @@ body.theme-go {
         overscroll-behavior: contain;
         padding: 14px 12px 34px !important;
     }
+
+    /* 大厅卡禁止被 flex 压缩 (矮屏内容不再被压扁/裁剪), 由 #lobbyScreen 滚动展示 */
+    .hero-lobby-card {
+        flex-shrink: 0 !important;
+        height: auto !important;
+    }
 }
