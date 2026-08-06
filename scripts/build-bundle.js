@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-// 合并 9 个 JS 文件为 bundle.js (保持原加载顺序)
-const order = ['rules', 'audio', 'p2p', 'auth', 'ui', 'gomoku', 'go', 'mahjong', 'xiangqi', 'main'];
+// 合并 10 个 JS 文件为 bundle.js (保持原加载顺序)
+// main.js 定义 GameEngineController 类, game-* 文件用原型扩展拆分各游戏对局方法
+const order = ['rules', 'audio', 'p2p', 'auth', 'ui', 'gomoku', 'go', 'mahjong', 'xiangqi', 'main', 'game-xiangqi'];
 let bundle = '';
 order.forEach(name => {
     const content = fs.readFileSync(path.join('js', name + '.js'), 'utf8');
