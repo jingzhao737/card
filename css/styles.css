@@ -8587,3 +8587,65 @@ body.theme-go .overlay-screen {
     color: #1e293b !important;
     box-shadow: 0 3px 10px rgba(148, 163, 184, 0.35) !important;
 }
+
+/* ===== 榜单克制化: 隐藏滚动条 + 简化设计 + 字体收敛 ===== */
+#leaderboardListContainer {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#leaderboardListContainer::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* 榜单项: 去掉大色块/金边, 改细分割线列表 */
+.lb-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0;
+    padding: 9px 4px;
+    margin-bottom: 0;
+}
+.lb-item:last-child {
+    border-bottom: none;
+}
+
+/* 名次: 收敛字号字重, 前三名仅保留轻微色差 */
+.lb-rank {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #64748b;
+    width: 26px;
+}
+.lb-rank.top1 { color: #d4a017; }
+.lb-rank.top2 { color: #94a3b8; }
+.lb-rank.top3 { color: #a16207; }
+
+/* 昵称: 减重 */
+.lb-nick {
+    font-weight: 500;
+    color: #e2e8f0;
+    flex: 1;
+    font-size: 0.82rem;
+    padding: 0 10px;
+}
+
+/* 分数: 金色大粗字 -> 低调灰 */
+.lb-score {
+    font-weight: 600;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 0.82rem;
+}
+
+/* 主页顶部迷你榜单: 悬浮态低调化 */
+.mini-leaderboard-bar:hover {
+    background: rgba(25, 18, 14, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.mini-lb-ticker .lb-top-score {
+    color: #94a3b8;
+}
