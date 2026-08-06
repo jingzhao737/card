@@ -8461,3 +8461,27 @@ body.theme-xiangqi {
     display: block;
     min-height: 300px;
 }
+/* 象棋大厅卡标题区: 将帅棋子装饰 (木色圆片 + 内圈 + 中心字) */
+.xiangqi-stones-decoration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.mini-xq-piece {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    font-family: "KaiTi", "STKaiti", "楷体", serif;
+    background: radial-gradient(circle at 32% 30%, #f7e3b6, #d9ab6a 68%, #b98a4e);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(90,60,20,0.55), inset 0 0 0 5px rgba(90,60,20,0.18);
+    user-select: none;
+}
+.mini-xq-piece.red  { color: #c23a2b; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+.mini-xq-piece.black { color: #191919; text-shadow: 0 1px 1px rgba(0,0,0,0.15); }
