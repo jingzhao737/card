@@ -4075,7 +4075,7 @@ class GameEngineController {
                 L.push(`<path d="M${x - 0.2} ${y - 0.2} L${x + 0.2} ${y + 0.2} M${x - 0.2} ${y + 0.2} L${x + 0.2} ${y - 0.2}"/>`);
             });
         }
-        return `<svg class="xq-board-svg" viewBox="-0.6 -0.6 9.2 10.2" preserveAspectRatio="none">${L.join('')}</svg>`;
+        return `<svg class="xq-board-svg" viewBox="-0.3 -0.3 8.6 9.6" preserveAspectRatio="none">${L.join('')}</svg>`;
     }
 
     /**
@@ -4145,19 +4145,23 @@ class GameEngineController {
         const engine = window.xiangqiEngine;
         if (!engine) return;
 
-        const cells = document.querySelectorAll('.xq-cell');
-        cells.forEach(cell => {
-            const r = parseInt(cell.dataset.r);
-            const c = parseInt(cell.dataset.c);
-            const p = engine.board[r][c];
+        const board = document.getElementById('xqBoardContainer');
+        if (!board) return;
 
-            // 清除旧棋子/提示
-            cell.querySelectorAll('.xq-piece, .xq-move-dot').forEach(el => el.remove());
+        // 清除旧棋子 (棋盘线 SVG 与 cell 热区保留)
+        board.querySelectorAll('.xq-piece').forEach(el => el.remove());
 
-            if (p) {
+        // 棋子按交叉点绝对定位: 与 SVG viewBox(-0.3,-0.3,8.6,9.6) 对齐
+        // 交叉点 (c,r) -> left=(c+0.3)/8.6*100%, top=(r+0.3)/9.6*100%
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = engine.board[r][c];
+                if (!p) continue;
                 const piece = document.createElement('div');
                 piece.className = 'xq-piece ' + (p.color === 'R' ? 'red' : 'black');
                 piece.textContent = XiangqiEngine.pieceName(p.color, p.type);
+                piece.style.left = ((c + 0.3) / 8.6 * 100) + '%';
+                piece.style.top = ((r + 0.3) / 9.6 * 100) + '%';
 
                 if (this.xqSelected && this.xqSelected.r === r && this.xqSelected.c === c) {
                     piece.classList.add('selected');
@@ -4165,21 +4169,12 @@ class GameEngineController {
                 if (engine.lastMove && engine.lastMove.tr === r && engine.lastMove.tc === c) {
                     piece.classList.add('last-move');
                 }
-                // 被将军的帅/将闪烁
                 if (engine.inCheck && p.type === 'K') {
                     piece.classList.add('in-check');
                 }
-                cell.appendChild(piece);
-            } else {
-                // 合法走法提示点
-                if (this.xqMoveDots.some(d => d.r === r && d.c === c)) {
-                    const dot = document.createElement('div');
-                    const isCapture = !!engine.board[r][c];
-                    dot.className = 'xq-move-dot' + (isCapture ? ' capture' : '');
-                    cell.appendChild(dot);
-                }
+                board.appendChild(piece);
             }
-        });
+        }
     }
 
     /**

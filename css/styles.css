@@ -8247,13 +8247,13 @@ body.theme-xiangqi {
 
 .xq-board-svg line {
     stroke: rgba(55, 28, 5, 0.9);
-    stroke-width: 0.028;
+    stroke-width: 0.02;
     stroke-linecap: round;
 }
 
 .xq-board-svg path {
     stroke: rgba(55, 28, 5, 0.6);
-    stroke-width: 0.025;
+    stroke-width: 0.018;
     stroke-linecap: round;
 }
 
@@ -8343,36 +8343,7 @@ body.theme-xiangqi {
     z-index: 8;
 }
 
-/* 合法落点提示 */
-.xq-move-dot {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 30%;
-    height: 30%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, rgba(74, 222, 128, 0.9), rgba(22, 163, 74, 0.55));
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-    z-index: 4;
-    pointer-events: none;
-    animation: xqDotPulse 1s ease-in-out infinite alternate;
-}
 
-.xq-move-dot.capture {
-    background: transparent;
-    border: 3px solid rgba(220, 38, 38, 0.8);
-    border-radius: 50%;
-    width: 66%;
-    height: 66%;
-    box-shadow: 0 0 10px rgba(220, 38, 38, 0.45);
-    animation: none;
-}
-
-@keyframes xqDotPulse {
-    from { opacity: 0.6; transform: translate(-50%, -50%) scale(0.9); }
-    to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.1); }
-}
 
 /* 最近走子标记 */
 .xq-piece.last-move {
