@@ -6697,19 +6697,23 @@ class GameEngineController {
             const inCls = direction > 0 ? 'lobby-card-in' : 'lobby-card-in-left';
 
             if (oldCard && oldCard !== newCard && !this._lobbySwitchBusy) {
-                // 滑动过渡: 旧卡滑出 + 新卡滑入
+                // 顺序滑动过渡: 旧卡先滑出, 完成后新卡再从同方向滑入 (避免两卡并存导致的错位/闪动/高度跳动)
                 this._lobbySwitchBusy = true;
+                // 切换前回到顶部, 避免高度变化引发滚动跳动
+                const lobbyScr = document.getElementById('lobbyScreen');
+                if (lobbyScr) lobbyScr.scrollTop = 0;
+
                 oldCard.classList.add(outCls);
-                newCard.style.display = 'block';
-                newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
-                void newCard.offsetWidth; // 强制 reflow 触发动画
-                newCard.classList.add(inCls);
                 setTimeout(() => {
                     oldCard.style.display = 'none';
                     oldCard.classList.remove(outCls);
+                    newCard.style.display = 'block';
+                    newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
+                    void newCard.offsetWidth; // 强制 reflow 触发动画
+                    newCard.classList.add(inCls);
                     this._lobbySwitchBusy = false;
                     setTimeout(() => newCard.classList.remove(inCls), 350);
-                }, 270);
+                }, 280);
             } else {
                 // 首次加载 / 动画忙时: 直接切换 (新卡带滑入动画)
                 cardsAll.forEach(c => { if (c) c.style.display = 'none'; });
@@ -6801,6 +6805,15 @@ class GameEngineController {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
             }, { passive: true });
+
+            // 横向滑动意图明显时阻止纵向滚动 (避免左右滑时页面上下跳动)
+            lobbyScr.addEventListener('touchmove', (e) => {
+                const dx = e.touches[0].clientX - touchStartX;
+                const dy = e.touches[0].clientY - touchStartY;
+                if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                    if (e.cancelable) e.preventDefault();
+                }
+            }, { passive: false });
 
             lobbyScr.addEventListener('touchend', (e) => {
                 const diffX = e.changedTouches[0].clientX - touchStartX;
