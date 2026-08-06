@@ -306,15 +306,15 @@ class MahjongEngine {
                 hand.splice(matchingIndices[i], 1);
             }
             this.melds[playerIdx].push({ type: 'KONG', tiles: [tile, tile, tile, tile] });
-            this.hands[playerIdx] = this.sortHand(hand);
 
-            // 杠牌补摸牌
+            // 杠牌补摸牌 (必须先补牌再排序赋值，否则补牌会丢失)
             if (this.wall.length > 0) {
                 const suppTile = this.wall.pop();
                 hand.push(suppTile);
                 this.lastDrawnTile = suppTile;
                 this.wallCount = this.wall.length;
             }
+            this.hands[playerIdx] = this.sortHand(hand);
 
             this.currentTurn = playerIdx;
             return true;
@@ -349,15 +349,15 @@ class MahjongEngine {
             }
         }
 
-        this.hands[playerIdx] = this.sortHand(hand);
-
-        // 杠后补牌
+        // 杠后补牌 (必须先补牌再排序赋值，否则补牌会丢失)
         if (this.wall.length > 0) {
             const suppTile = this.wall.pop();
             hand.push(suppTile);
             this.lastDrawnTile = suppTile;
             this.wallCount = this.wall.length;
         }
+
+        this.hands[playerIdx] = this.sortHand(hand);
 
         this.currentTurn = playerIdx;
         return true;
@@ -501,34 +501,47 @@ class MahjongEngine {
     }
 
     /**
-     * 4 人 AI 出牌决策与响应引擎
+     * 4 人 AI 出牌决策引擎 (保留刻子/对子/有搭子的牌，优先打孤张，牌局更真实)
      */
     getBestAiMove(playerIdx) {
         const aiHand = this.hands[playerIdx];
         if (!aiHand || aiHand.length === 0) return 0;
 
-        // 优先打出孤张字牌
-        for (let i = 0; i < aiHand.length; i++) {
-            const tile = aiHand[i];
-            const sameCount = aiHand.filter(t => t.name === tile.name).length;
-            if (tile.type === '字' && sameCount === 1) {
-                return i;
-            }
-        }
+        const counts = {};
+        aiHand.forEach(t => { counts[t.name] = (counts[t.name] || 0) + 1; });
 
-        // 次优打出边角孤张 (1或9)
+        let bestIdx = -1;
+        let bestScore = Infinity;
+
         for (let i = 0; i < aiHand.length; i++) {
             const tile = aiHand[i];
-            if (tile.type !== '字' && (tile.num === 1 || tile.num === 9)) {
-                const sameCount = aiHand.filter(t => t.name === tile.name).length;
-                const neighbor = aiHand.some(t => t.type === tile.type && Math.abs(t.num - tile.num) <= 2);
-                if (sameCount === 1 && !neighbor) {
-                    return i;
+            let score = 0;
+            const sameCount = counts[tile.name];
+
+            if (sameCount >= 3) { score += 100; }          // 刻子保留
+            else if (sameCount === 2) { score += 80; }     // 对子保留
+            else if (tile.type === '字') { score += 0; }   // 孤张字牌: 最低优先打出
+            else if (tile.num === 1 || tile.num === 9) {
+                // 边张: 有邻居搭子才保留
+                const hasNeighbor = aiHand.some(t => t.type === tile.type && Math.abs(t.num - tile.num) === 1);
+                score += hasNeighbor ? 50 : 5;
+            } else {
+                // 中张: 计算搭子潜力 (相邻 1-2 张)
+                let potential = 0;
+                for (let d = -2; d <= 2; d++) {
+                    if (d === 0) continue;
+                    const n = tile.num + d;
+                    if (n < 1 || n > 9) continue;
+                    const neighborCount = aiHand.filter(t => t.type === tile.type && t.num === n).length;
+                    if (neighborCount > 0) potential += 30 - Math.abs(d) * 10;
                 }
+                score += potential > 0 ? 40 + potential : 15;
             }
+            // 随机微扰避免 AI 出牌完全可预测
+            score += Math.random() * 3;
+            if (score < bestScore) { bestScore = score; bestIdx = i; }
         }
-
-        return aiHand.length - 1;
+        return bestIdx >= 0 ? bestIdx : aiHand.length - 1;
     }
 
     /**

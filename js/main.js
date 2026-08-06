@@ -5257,13 +5257,13 @@ class GameEngineController {
                     this.pendingDiscardRes = aiRes;
                     this.showHumanResponseActionBar(aiRes);
                     this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
-                    // 联机/单机统一：8 秒内未响应则自动过牌，避免响应按钮长时间悬挂（倒计时结束即轮到下家）
+                    // 联机/单机统一：10 秒内未响应则自动过牌，避免响应按钮长时间悬挂（倒计时结束即轮到下家）
                     if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
                     this._mahjongResponseTimer = setTimeout(() => {
                         if (this.pendingDiscardRes) {
                             this.handleMahjongPassClick();
                         }
-                    }, 8000);
+                    }, 10000);
                     return;
                 }
 
