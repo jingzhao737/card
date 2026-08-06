@@ -3909,6 +3909,7 @@ body.theme-gomoku .overlay-screen {
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain; /* 边界独立: 滚动到导航边界不带动页面 */
     scrollbar-width: none;
     -ms-overflow-style: none;
     cursor: grab;
