@@ -6095,10 +6095,10 @@ body.theme-mahjong #lobbyScreen {
 
 /* 沉底我方 3D 手牌区 (基础通用结构) */
 .mahjong-tiles-bottom {
-    display: flex;
+    display: inline-flex;
     align-items: flex-end;
     justify-content: center;
-    width: 100%;
+    width: fit-content; /* 贴合手牌实际宽度，光晕只包住牌，避免两侧空区发光 */
     max-width: 100%;
     padding-top: 4px;
     box-sizing: border-box;
@@ -6189,6 +6189,8 @@ body.theme-mahjong #lobbyScreen {
         gap: 1.2px !important;
         padding: 0 10px !important;
         box-sizing: border-box !important;
+        width: fit-content !important;
+        max-width: 100% !important;
     }
     .mahjong-tile-card {
         width: calc((100% - 20px) / 14.3) !important;
@@ -7051,6 +7053,8 @@ body.theme-mahjong #lobbyScreen {
     /* PC 端我方沉底手牌：44px 宽 x 60px 高 (清晰大号霸气牌面) */
     .mahjong-tiles-bottom {
         gap: 3.5px !important;
+        width: fit-content !important;
+        max-width: 100% !important;
     }
 
     .mahjong-tile-card {
