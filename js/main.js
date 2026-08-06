@@ -4833,17 +4833,20 @@ class GameEngineController {
             const rand = Math.random();
 
             if (highestBid === 0) {
-                if (rand < 0.20) choice = 3;
-                else if (rand < 0.50) choice = 2;
-                else if (rand < 0.75) choice = 1;
-                else choice = 0;
+                // 还没人叫分时：AI 适当竞叫
+                if (rand < 0.12) choice = 3;
+                else if (rand < 0.30) choice = 2;
+                else if (rand < 0.52) choice = 1;
+                else choice = 0; // 48% PASS
             } else if (highestBid === 1) {
-                if (rand < 0.25) choice = 3;
-                else if (rand < 0.55) choice = 2;
-                else choice = 0;
+                // 已有人叫 1 分：AI 大概率不抢，给玩家机会
+                if (rand < 0.12) choice = 3;
+                else if (rand < 0.25) choice = 2;
+                else choice = 0; // 75% PASS
             } else if (highestBid === 2) {
-                if (rand < 0.30) choice = 3;
-                else choice = 0;
+                // 已有人叫 2 分：AI 只有小概率叫 3 分
+                if (rand < 0.15) choice = 3;
+                else choice = 0; // 85% PASS
             }
 
             if (choice > highestBid) {
@@ -5195,6 +5198,8 @@ class GameEngineController {
             const isOpeningCountdown = !!this.gameState.isOpeningCountdown || !!this._isCountingDownLocally;
             const hasPassed = myPlayer && myPlayer.passedBid;
             const highestBid = this.gameState.highestBid || 0;
+            // 严格轮序：只有轮到自己才能操作叫牌按钮
+            const isMyBidTurn = (this.gameState.currentTurn === myIndex);
 
             const passBtn = document.getElementById('btnBidPass');
             const b1Btn = document.getElementById('btnBid1');
@@ -5202,7 +5207,7 @@ class GameEngineController {
             const b3Btn = document.getElementById('btnBid3');
             const landlordBtn = document.getElementById('btnBidLandlord');
 
-            const isDisabled = isOpeningCountdown || hasPassed;
+            const isDisabled = isOpeningCountdown || hasPassed || !isMyBidTurn;
 
             [passBtn, b1Btn, b2Btn, b3Btn, landlordBtn].forEach(b => {
                 if (b) {
@@ -5343,7 +5348,7 @@ class GameEngineController {
     }
 
     /**
-     * 处理抢手速叫地主逻辑
+     * 处理叫地主逻辑（严格按顺序叫牌，本轮只有 currentTurn 玩家可操作）
      */
     processBid(playerIndex, action) {
         if (this.gameState.phase !== 'BIDDING') return;
@@ -5352,6 +5357,9 @@ class GameEngineController {
         if (this.gameState.isOpeningCountdown) {
             this.gameState.isOpeningCountdown = false;
         }
+
+        // ✅ 严格轮序校验：必须是当前 currentTurn 的玩家才能出牌，防止乱序叫牌
+        if (playerIndex !== this.gameState.currentTurn) return;
 
         const player = this.gameState.players[playerIndex];
         if (!player || player.passedBid) return; // 已经不叫退出的玩家不能再叫
@@ -5373,23 +5381,22 @@ class GameEngineController {
             UIRenderer.showBubble(bubbleTarget, bidVal === 3 ? '👑 3分(地主)' : `👑 ${bidVal}分`);
             UIRenderer.showToast(`👑 ${player.name} 叫了 ${bidVal} 分！`);
 
+            // 叫 3 分或 CLAIM 直接确定地主，立即结束叫地主阶段
             if (bidVal === 3 || action === 'CLAIM') {
                 this.finalizeLandlord(playerIndex);
                 return;
             }
 
-            let nextTurn = (playerIndex + 1) % 3;
-            let count = 0;
-            while (this.gameState.players[nextTurn] && this.gameState.players[nextTurn].passedBid && count < 3) {
-                nextTurn = (nextTurn + 1) % 3;
-                count++;
-            }
-            this.gameState.bidsCount = (this.gameState.bidsCount || 0) + 1;
-            if (this.gameState.bidsCount >= 3) {
-                const winner = this.gameState.highestBidder !== undefined && this.gameState.highestBidder !== -1 ? this.gameState.highestBidder : playerIndex;
-                this.finalizeLandlord(winner);
+            // 叫了 1 分或 2 分：轮到下一家，如果转了一圈回到最高叫分者则确定地主
+            const nextTurn = this._nextActiveBidder(playerIndex);
+            if (nextTurn === -1 || nextTurn === this.gameState.highestBidder) {
+                // 其他所有人都退出，或已经绕回最高叫分者 → 确定地主
+                const winner = this.gameState.highestBidder !== undefined && this.gameState.highestBidder !== -1
+                    ? this.gameState.highestBidder : playerIndex;
+                setTimeout(() => this.finalizeLandlord(winner), 600);
                 return;
             }
+
             this.gameState.currentTurn = nextTurn;
             this.startTurnTimer();
             if (NetworkManager.isHost) {
@@ -5397,6 +5404,7 @@ class GameEngineController {
                 this.triggerAiBidIfNeeded();
             }
             return;
+
         } else if (action === 'PASS' || action === 0) {
             // 玩家点击【不叫】，退出叫地主
             player.passedBid = true;
@@ -5407,30 +5415,35 @@ class GameEngineController {
             // 统计剩下没有退出的玩家
             const activeBidders = this.gameState.players.filter(p => !p.passedBid);
 
-            if (activeBidders.length === 1) {
-                // 其他人都退出了，剩下的唯一一个人自动变成地主！
-                const lastPlayer = activeBidders[0];
-                const lastPlayerIdx = this.gameState.players.findIndex(p => p === lastPlayer);
-                const targetIdx = (lastPlayerIdx !== -1) ? lastPlayerIdx : 0;
-                SoundEngine.playBid();
-                UIRenderer.showToast(`🌾 其他玩家均已退出，${lastPlayer.name} 自动获封地主！`);
-                setTimeout(() => {
-                    this.finalizeLandlord(targetIdx);
-                }, 1000);
-            } else if (activeBidders.length === 0) {
-                // 3 个玩家全都退出了 -> 重新发牌
+            if (activeBidders.length === 0) {
+                // 全员都退出了 → 重新发牌
                 UIRenderer.showToast('全员放弃叫地主，重新发牌！');
                 setTimeout(() => this.startNewRound(), 1500);
+            } else if (activeBidders.length === 1) {
+                // 剩最后一个 → 立即确定地主（若有最高分者取最高分者，否则取最后一位）
+                const winner = (this.gameState.highestBidder !== undefined && this.gameState.highestBidder !== -1)
+                    ? this.gameState.highestBidder
+                    : this.gameState.players.findIndex(p => !p.passedBid);
+                SoundEngine.playBid();
+                UIRenderer.showToast(`🌾 ${this.gameState.players[winner].name} 自动获封地主！`);
+                setTimeout(() => this.finalizeLandlord(winner), 800);
             } else {
-                // 仍有多人未放弃：轮到下一个未放弃叫牌的玩家继续叫牌/思考，并重置倒计时
-                let nextTurn = (playerIndex + 1) % 3;
-                let count = 0;
-                while (this.gameState.players[nextTurn] && this.gameState.players[nextTurn].passedBid && count < 3) {
-                    nextTurn = (nextTurn + 1) % 3;
-                    count++;
+                // 还有多人在叫：跳到下一个未退出的玩家
+                const nextTurn = this._nextActiveBidder(playerIndex);
+                if (nextTurn === -1) {
+                    // 理论上不可达，但做安全兜底
+                    const winner = this.gameState.highestBidder !== undefined && this.gameState.highestBidder !== -1
+                        ? this.gameState.highestBidder : 0;
+                    setTimeout(() => this.finalizeLandlord(winner), 600);
+                } else if (nextTurn === this.gameState.highestBidder && (this.gameState.highestBid || 0) > 0) {
+                    // 已转了一圈回到最高叫分者，且当前已有人叫了分 → 该人成为地主
+                    const winner = this.gameState.highestBidder;
+                    UIRenderer.showToast(`🏆 ${this.gameState.players[winner].name} 以 ${this.gameState.highestBid} 分成为地主！`);
+                    setTimeout(() => this.finalizeLandlord(winner), 800);
+                } else {
+                    this.gameState.currentTurn = nextTurn;
+                    this.startTurnTimer();
                 }
-                this.gameState.currentTurn = nextTurn;
-                this.startTurnTimer();
             }
 
             // 广播叫牌/不叫最新状态，保证所有玩家界面提示与倒计时同步
@@ -5439,6 +5452,18 @@ class GameEngineController {
                 this.triggerAiBidIfNeeded();
             }
         }
+    }
+
+    /**
+     * 从 fromPlayerIndex 开始（不包含自身），找下一个还没退出叫地主的玩家索引
+     * 如果所有人都退出了返回 -1
+     */
+    _nextActiveBidder(fromPlayerIndex) {
+        for (let i = 1; i <= 3; i++) {
+            const idx = (fromPlayerIndex + i) % 3;
+            if (!this.gameState.players[idx].passedBid) return idx;
+        }
+        return -1;
     }
 
     /**
