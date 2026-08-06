@@ -1750,7 +1750,7 @@ class GameEngineController {
         const selectorHtml = `
             <div style="display:flex;gap:8px;margin-bottom:12px;width:100%;">
                 <button id="btnStatsTabDoudizhu" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s;border:1px solid ${!isGomoku ? '#e2a820' : 'rgba(255,255,255,0.1)'};background:${!isGomoku ? 'rgba(226,168,32,0.2)' : 'rgba(0,0,0,0.3)'};color:${!isGomoku ? '#ffd700' : '#94a3b8'};">
-                    <i class="fa-solid fa-cards"></i> 斗地主战绩
+                    <i class="fa-solid fa-layer-group"></i> 斗地主战绩
                 </button>
                 <button id="btnStatsTabGomoku" style="flex:1;padding:7px 10px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s;border:1px solid ${isGomoku ? '#34d399' : 'rgba(255,255,255,0.1)'};background:${isGomoku ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.3)'};color:${isGomoku ? '#34d399' : '#94a3b8'};">
                     <i class="fa-solid fa-chess-board"></i> 五子棋战绩
