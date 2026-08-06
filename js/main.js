@@ -3987,7 +3987,15 @@ class GameEngineController {
                     const canChow = chowOptions.length > 0;
                     const canPong = engine.checkCanPong(mySlot, move.discardedTile);
                     const canKong = engine.checkCanKong(mySlot, move.discardedTile);
-                    const canHu   = engine.checkCanHu(engine.hands[mySlot] || [], move.discardedTile);
+
+                    // 截胡判定: 多家可胡时按出牌者下家起顺时针就近优先
+                    const huInfo = engine.evaluateHuPriority(move.senderSlot, move.discardedTile);
+                    const canHu = huInfo.canHu && !huInfo.huBlocked; // 被截则不弹胡
+                    if (huInfo.huBlocked) {
+                        const seatLabels2 = ['你', '右家', '对家', '左家'];
+                        const blockerSeat = huInfo.huWinner >= 0 ? (seatLabels2[(huInfo.huWinner - mySlot + 4) % 4] || '其他玩家') : '其他玩家';
+                        UIRenderer.showToast(`🈲 你的胡被${blockerSeat}截胡了！`);
+                    }
 
                     if (canChow || canPong || canKong || canHu) {
                         this.pendingDiscardRes = {
@@ -3997,7 +4005,9 @@ class GameEngineController {
                             chowOptions,
                             canPong,
                             canKong,
-                            canHu
+                            canHu,
+                            huBlocked: huInfo.huBlocked,
+                            huWinner: huInfo.huWinner
                         };
                         this.showHumanResponseActionBar(this.pendingDiscardRes);
                         this.updateMahjongStatusUI(`⚠️ 玩家打出 [${move.discardedTile.name}]：请选择【吃 / 碰 / 杠 / 胡 / 过】`);
@@ -5320,8 +5330,15 @@ class GameEngineController {
                     return;
                 }
 
-                // 检查我方 (Seat 0) 对 AI 打出的牌是否有 碰/杠/吃/胡 响应
+                // 检查我方 (Seat 0) 对 AI 打出的牌是否有 碰/杠/吃/胡 响应 (含截胡判定)
                 if (aiRes && (aiRes.canHu || aiRes.canPong || aiRes.canKong || aiRes.canChow)) {
+                    if (aiRes.huBlocked) {
+                        // 我方被更高优先级玩家截胡: 隐藏胡按钮并提示
+                        aiRes.canHu = false;
+                        const seatLabels2 = ['你', '右家', '对家', '左家'];
+                        const blockerSeat = aiRes.huWinner >= 0 ? (seatLabels2[(aiRes.huWinner - mySlot + 4) % 4] || '其他玩家') : '其他玩家';
+                        UIRenderer.showToast(`🈲 你的胡被${blockerSeat}截胡了！`);
+                    }
                     this.pendingDiscardRes = aiRes;
                     this.showHumanResponseActionBar(aiRes);
                     this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
@@ -5597,6 +5614,12 @@ class GameEngineController {
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const isSelfDraw = !this.pendingDiscardRes;
         const extraTile = this.pendingDiscardRes ? this.pendingDiscardRes.discarded : null;
+
+        // 点炮胡时二次校验截胡: 若该弃牌已被更高优先级玩家截胡则禁止胡牌 (防竞态/误触)
+        if (this.pendingDiscardRes && this.pendingDiscardRes.huBlocked) {
+            UIRenderer.showToast('🈲 你的胡已被截胡，无法胡牌！');
+            return;
+        }
 
         if (engine.checkCanHu(engine.hands[mySlot] || [], extraTile)) {
             const huDetails = engine.getHuDetails(mySlot, extraTile, isSelfDraw);

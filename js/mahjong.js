@@ -131,9 +131,14 @@ class MahjongEngine {
 
         // 检查我方 (Seat 0) 对该出牌可响应的动作：胡、碰、杠、吃（吃仅下家/即左家打出时可吃）
         // 此时 Seat 0 尚未摸牌 (13 张), 响应判定与胡牌牌型才正确
-        const canHu = playerIdx !== 0 && this.checkCanHu(this.hands[0], discarded);
         const canPong = playerIdx !== 0 && this.checkCanPong(this.hands[0], discarded);
         const canKong = playerIdx !== 0 && this.checkCanKong(this.hands[0], discarded);
+
+        // 截胡判定: 一张牌多家可胡时, 出牌者下家起顺时针就近优先, 只有优先级最高的一家能胡
+        const huInfo = this.evaluateHuPriority(playerIdx, discarded);
+        const canHu = huInfo.canHu; // 我方是否可胡
+        const huBlocked = huInfo.huBlocked; // 我方可胡但被更高优先级玩家截胡
+        const huWinner = huInfo.huWinner; // 本轮胡牌优先者 (-1 表示无人可胡)
 
         // 我方吃牌逻辑：必须是上家（playerIdx === 3）打出的牌，且手牌能凑成顺子
         const chowOptions = (playerIdx === 3) ? this.getChowOptions(this.hands[0], discarded) : [];
@@ -144,12 +149,42 @@ class MahjongEngine {
             discarder: playerIdx,
             nextPlayer,
             canHu,
+            huBlocked,
+            huWinner,
             canPong,
             canKong,
             canChow,
             chowOptions,
             isGameOver: this.isGameOver,
             winner: this.winner
+        };
+    }
+
+    /**
+     * 截胡判定: 一张牌多家可胡时, 从出牌者下家起顺时针就近, 第一个可胡者优先
+     * @param {number} discarderIdx 出牌者座位
+     * @param {object} tile 打出的牌
+     * @returns {{canHu: boolean, huBlocked: boolean, huWinner: number, candidates: number[]}}
+     */
+    evaluateHuPriority(discarderIdx, tile) {
+        const candidates = [];
+        for (let i = 0; i < 4; i++) {
+            if (i === discarderIdx) continue;
+            if (this.checkCanHu(this.hands[i], tile)) candidates.push(i);
+        }
+        let huWinner = -1;
+        if (candidates.length > 0) {
+            for (let step = 1; step <= 3; step++) {
+                const idx = (discarderIdx + step) % 4;
+                if (candidates.includes(idx)) { huWinner = idx; break; }
+            }
+        }
+        const canHu = candidates.includes(0);
+        return {
+            canHu,
+            huBlocked: canHu && huWinner !== 0, // 我方可胡但被更高优先级者截胡
+            huWinner,
+            candidates
         };
     }
 
