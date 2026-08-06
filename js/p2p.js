@@ -13,12 +13,12 @@ const firebaseConfig = {
     measurementId: "G-1WKXG1DLBJ"
 };
 
-// 初始化 Firebase 改为异步动态加载: 不在 <head> 同步阻塞, 避免 gstatic CDN 慢导致整页按钮绑定延迟
-// SDK 已本地化到 js/vendor/ (从 gstatic 下载托管于本站), 彻底摆脱对 Google CDN 的依赖, 国内/微信访问更快
+// 初始化 Firebase 改为异步动态加载: 不在 <head> 同步阻塞
+// SDK 从 gstatic CDN 加载 (昨版本验证该 CDN 在用户网络下稳定), 避免全部资源集中到 Cloudflare 下载
 const FIREBASE_SDK_URLS = [
-    'js/vendor/firebase-app-compat.js',
-    'js/vendor/firebase-database-compat.js',
-    'js/vendor/firebase-auth-compat.js'
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
 ];
 
 let _firebaseReady = false;
