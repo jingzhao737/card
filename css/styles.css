@@ -3909,6 +3909,7 @@ body.theme-gomoku .overlay-screen {
     scrollbar-width: none;
     -ms-overflow-style: none;
     cursor: grab;
+    flex-shrink: 0; /* 防止被 flex 容器压缩导致导航消失/裁切 */
 }
 
 .game-switch-nav.nav-dragging {
