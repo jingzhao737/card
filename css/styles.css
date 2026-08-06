@@ -6550,30 +6550,6 @@ body.theme-mahjong #lobbyScreen {
     transition: all 0.3s ease;
 }
 
-/* 🀄 顶部墙徽章内嵌的微型砌牌堆 (精简版：无背景框、更小更紧凑) */
-.mahjong-wall-badge .mahjong-visual-wall-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6px;
-    padding: 0 4px;
-    margin: 0;
-    min-height: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    max-width: 110px;
-    vertical-align: middle;
-}
-.mahjong-wall-badge .wall-mini-tile-stack {
-    width: 6.5px;
-    height: 9.5px;
-    border-radius: 1px;
-    box-shadow: 0 1px 0 #022c22;
-}
-.mahjong-wall-badge .wall-mini-tile-stack.double-stack::before {
-    top: -1.2px;
-    height: 2px;
-}
 
 .wall-mini-tile-stack {
     width: 11.5px;
