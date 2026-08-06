@@ -10057,7 +10057,7 @@ class GameEngineController {
                 if (winner === myColor) {
                     const totalMoves = window.gomokuEngine ? window.gomokuEngine.moveHistory.length : 20;
                     const quickBonus = (totalMoves <= 15) ? 10 : 0;
-                    const winCoins = Math.ceil((30 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((40 + quickBonus) * ratio);
                     AuthEngine.updateCoins(winCoins, isPve ? '五子棋切磋胜 (PVE)' : '五子棋胜 (PVP)');
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(20 * ratio);
@@ -10999,10 +10999,10 @@ class GameEngineController {
                 if (winner === myColor) {
                     const totalMoves = window.goEngine ? window.goEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    const winCoins = Math.ceil((30 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((100 + quickBonus) * ratio);
                     AuthEngine.updateCoins(winCoins, isPve ? '围棋切磋胜 (PVE)' : '围棋胜 (PVP)');
                 } else if (winner !== 0) {
-                    const loseCoins = -Math.ceil(20 * ratio);
+                    const loseCoins = -Math.ceil(50 * ratio);
                     AuthEngine.updateCoins(loseCoins, isPve ? '围棋切磋负 (PVE)' : '围棋负 (PVP)');
                 }
 
@@ -11758,9 +11758,9 @@ class GameEngineController {
                 if (winner === myColor) {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    AuthEngine.updateCoins(Math.ceil((30 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
+                    AuthEngine.updateCoins(Math.ceil((100 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
                 } else if (winner && winner !== 'D') {
-                    AuthEngine.updateCoins(-Math.ceil(20 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
+                    AuthEngine.updateCoins(-Math.ceil(50 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
                 }
                 if (AuthEngine.addExp && winner !== 'D') {
                     const isWin = (winner === myColor);
@@ -13753,7 +13753,7 @@ class GameEngineController {
         const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
         const ratio = isPve ? 0.25 : 1.0;
         const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
-        const baseAmount = 100 * fanCount;
+        const baseAmount = 50 * fanCount;
         const winAmount = Math.ceil(baseAmount * ratio);
 
         const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
