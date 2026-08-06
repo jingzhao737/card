@@ -3485,12 +3485,20 @@ class GameEngineController {
             { id: 'meldsLeft',   idx: (mySlot + 3) % 4 }
         ];
 
+        // 手机端：读取当前手牌卡片的实际宽度，让碰/吃/杠牌堆与手牌同尺寸
+        let handTileW = null;
+        const isMobileView = window.innerWidth <= 768;
+        if (isMobileView) {
+            const handTile = document.querySelector('.mahjong-tile-card');
+            if (handTile) handTileW = Math.round(handTile.getBoundingClientRect().width);
+        }
+
         meldMap.forEach(item => {
             const el = document.getElementById(item.id);
             if (el) {
                 const list = engine.melds[item.idx] || [];
                 el.innerHTML = list.map(m => {
-                    const tilesHtml = m.tiles.map(t => `<div class="meld-tile">${this.getMahjongTileFaceHTML(t)}</div>`).join('');
+                    const tilesHtml = m.tiles.map(t => `<div class="meld-tile" ${handTileW ? `style="width:${handTileW}px;height:${Math.round(handTileW * 1.34)}px;"` : ''}>${this.getMahjongTileFaceHTML(t)}</div>`).join('');
                     return `<div class="meld-group">${tilesHtml}</div>`;
                 }).join('');
             }
