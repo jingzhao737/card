@@ -24,6 +24,7 @@ class MahjongEngine {
         this.discards = { 0: [], 1: [], 2: [], 3: [] }; // 4 方弃牌堆
         this.melds = { 0: [], 1: [], 2: [], 3: [] }; // 4 方吃碰杠牌堆
         this.lastDiscard = null; // { playerIdx: 0, tile: tile }
+        this.pendingDraw = false; // 是否等待当前行动玩家摸牌 (出牌后=true, 摸牌/响应后=false; 庄家首牌已摸故开局为 false)
 
         // 生成正宗 136 张麻将牌
         this.wall = this.generateDeck();
@@ -122,34 +123,26 @@ class MahjongEngine {
         this.hands[playerIdx] = this.sortHand(hand);
 
         // 顺时针轮换到下一家 (0 -> 1 -> 2 -> 3)
+        // 注意: 出牌后不立即摸牌! 真实规则为先判定各家碰/杠/胡响应(各家仍 13 张),
+        // 无人响应后才由下家 drawTile 摸牌。摸牌时机由主控层控制 (drawTile 方法)。
         const nextPlayer = (playerIdx + 1) % 4;
+        this.currentTurn = nextPlayer;
+        this.pendingDraw = true; // 轮到下家时需要摸牌
 
         // 检查我方 (Seat 0) 对该出牌可响应的动作：胡、碰、杠、吃（吃仅下家/即左家打出时可吃）
+        // 此时 Seat 0 尚未摸牌 (13 张), 响应判定与胡牌牌型才正确
         const canHu = playerIdx !== 0 && this.checkCanHu(this.hands[0], discarded);
         const canPong = playerIdx !== 0 && this.checkCanPong(this.hands[0], discarded);
         const canKong = playerIdx !== 0 && this.checkCanKong(this.hands[0], discarded);
-        
+
         // 我方吃牌逻辑：必须是上家（playerIdx === 3）打出的牌，且手牌能凑成顺子
         const chowOptions = (playerIdx === 3) ? this.getChowOptions(this.hands[0], discarded) : [];
         const canChow = chowOptions.length > 0;
 
-        // 轮换回合并摸牌
-        if (this.wall.length > 0) {
-            this.currentTurn = nextPlayer;
-            const draw = this.wall.pop();
-            this.hands[nextPlayer].push(draw);
-            this.lastDrawnTile = draw;
-            this.wallCount = this.wall.length;
-        } else {
-            // 牌墙摸完 -> 流局平局
-            this.isGameOver = true;
-            this.winner = -1;
-        }
-
         return {
             discarded,
             discarder: playerIdx,
-            nextPlayer: this.currentTurn,
+            nextPlayer,
             canHu,
             canPong,
             canKong,
@@ -158,6 +151,49 @@ class MahjongEngine {
             isGameOver: this.isGameOver,
             winner: this.winner
         };
+    }
+
+    /**
+     * 给指定玩家摸牌 (仅当轮到其行动且无人响应时调用; 墙空则触发流局)
+     * @returns {object|null} { tile, isGameOver } 或 null (墙空流局)
+     */
+    drawTile(playerIdx) {
+        if (this.isGameOver) return null;
+        if (this.wall.length === 0) {
+            // 牌墙摸完 -> 流局平局
+            this.isGameOver = true;
+            this.winner = -1;
+            return null;
+        }
+        const draw = this.wall.pop();
+        this.hands[playerIdx].push(draw);
+        this.lastDrawnTile = draw;
+        this.wallCount = this.wall.length;
+        this.pendingDraw = false;
+        return { tile: draw, isGameOver: false };
+    }
+
+
+    /**
+     * 消费最新弃牌 (吃/碰/杠时调用): 从弃牌堆移除被用掉的牌并清除 lastDiscard
+     */
+    _consumeLastDiscard(tile) {
+        if (this.lastDiscard && this.lastDiscard.tile) {
+            const owner = this.lastDiscard.playerIdx;
+            const dArr = this.discards[owner];
+            if (dArr) {
+                // 优先移除弃牌堆最后一张 (即刚打出的牌); 兜底按 id/name 匹配
+                const last = dArr[dArr.length - 1];
+                if (last && (last.id === tile.id || last.name === tile.name)) {
+                    dArr.pop();
+                } else {
+                    let di = dArr.findIndex(t => t.id === tile.id);
+                    if (di === -1) di = dArr.findIndex(t => t.name === tile.name);
+                    if (di !== -1) dArr.splice(di, 1);
+                }
+            }
+        }
+        this.lastDiscard = null; // 该弃牌已被拿走, 不再可响应
     }
 
     /**
@@ -212,9 +248,11 @@ class MahjongEngine {
         const p2 = hand.splice(idx2, 1)[0];
 
         const chowTiles = [p1, p2, tile].sort((a, b) => a.num - b.num);
-        this.melds[playerIdx].push({ type: 'CHOW', tiles: chowTiles });
+                            this._consumeLastDiscard(tile); // 被吃的弃牌进入明牌堆
+            this.melds[playerIdx].push({ type: 'CHOW', tiles: chowTiles });
         this.hands[playerIdx] = this.sortHand(hand);
-        this.currentTurn = playerIdx; // 吃牌方获得出牌权
+        this.currentTurn = playerIdx;
+        this.pendingDraw = false; // 响应后由响应方直接出牌, 不额外摸牌 // 吃牌方获得出牌权
         return true;
     }
 
@@ -241,9 +279,12 @@ class MahjongEngine {
         if (matchingIndices.length === 2) {
             const p1 = hand.splice(matchingIndices[1], 1)[0];
             const p2 = hand.splice(matchingIndices[0], 1)[0];
+            // 被碰的弃牌进入明牌堆
+            this._consumeLastDiscard(tile);
             this.melds[playerIdx].push({ type: 'PONG', tiles: [p1, p2, tile] });
             this.hands[playerIdx] = this.sortHand(hand);
             this.currentTurn = playerIdx; // 碰牌方获得出牌回合
+            this.pendingDraw = false; // 响应后由响应方直接出牌, 不额外摸牌
             return true;
         }
         return false;
@@ -305,6 +346,7 @@ class MahjongEngine {
             for (let i = matchingIndices.length - 1; i >= 0; i--) {
                 hand.splice(matchingIndices[i], 1);
             }
+                                this._consumeLastDiscard(tile); // 被杠的弃牌进入明牌堆
             this.melds[playerIdx].push({ type: 'KONG', tiles: [tile, tile, tile, tile] });
 
             // 杠牌补摸牌 (必须先补牌再排序赋值，否则补牌会丢失)
@@ -317,6 +359,7 @@ class MahjongEngine {
             this.hands[playerIdx] = this.sortHand(hand);
 
             this.currentTurn = playerIdx;
+            this.pendingDraw = false; // 响应后由响应方直接出牌, 不额外摸牌
             return true;
         }
         return false;
@@ -360,6 +403,7 @@ class MahjongEngine {
         this.hands[playerIdx] = this.sortHand(hand);
 
         this.currentTurn = playerIdx;
+        this.pendingDraw = false; // 响应后由响应方直接出牌, 不额外摸牌
         return true;
     }
 
@@ -551,6 +595,7 @@ class MahjongEngine {
         return {
             dealer: this.dealer,
             currentTurn: this.currentTurn,
+            pendingDraw: !!this.pendingDraw,
             isGameOver: !!this.isGameOver,
             winner: this.winner,
             wall: this.wall || [],
@@ -585,6 +630,7 @@ class MahjongEngine {
         if (!stateData) return;
         this.dealer = stateData.dealer !== undefined ? stateData.dealer : 0;
         this.currentTurn = stateData.currentTurn !== undefined ? stateData.currentTurn : 0;
+        this.pendingDraw = !!stateData.pendingDraw;
         this.isGameOver = !!stateData.isGameOver;
         this.winner = stateData.winner !== undefined ? stateData.winner : null;
         this.wall = stateData.wall || [];

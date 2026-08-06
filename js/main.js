@@ -3951,8 +3951,21 @@ class GameEngineController {
 
                 // 远程玩家 吃/碰/杠：播放对应语音音效 + 国风大字报提示 (跳过摸牌音与响应检查)
                 if (move.actionType === 'CHOW' || move.actionType === 'PONG' || move.actionType === 'KONG') {
+                    // 其他玩家完成了吃碰杠: 清除本端挂起的响应条 (防止残留/误触发)
+                    this.clearMahjongPendingResponse();
                     const actText = move.actionType === 'CHOW' ? '吃！' : (move.actionType === 'PONG' ? '碰！' : '杠！');
                     this.showMahjongActionToast(`${seatLabels[relativeSender] || '对方'}${actText}`);
+                    return;
+                }
+
+                // 远程玩家选择【过】(不响应): 清除本端响应条, 若轮到 AI 由房主驱动继续
+                if (move.actionType === 'PASS') {
+                    this.clearMahjongPendingResponse();
+                    if (NetworkManager.isHost && window.mahjongEngine && !window.mahjongEngine.isGameOver
+                        && window.mahjongEngine.currentTurn !== mySlot
+                        && this.gameState.players[window.mahjongEngine.currentTurn] && this.gameState.players[window.mahjongEngine.currentTurn].isAi) {
+                        this.triggerAiTurnLoop();
+                    }
                     return;
                 }
 
@@ -3993,6 +4006,16 @@ class GameEngineController {
                 }
 
                 if (isMyTurnNow) {
+                    // 轮到我方: 响应判定之后才摸牌 (修正手牌数, 点炮胡/碰杠判定基于 13 张)
+                    if (window.mahjongEngine.pendingDraw) {
+                        const drawRes = window.mahjongEngine.drawTile(mySlot);
+                        if (!drawRes) {
+                            this.showMahjongSettlement(-1, null);
+                            return;
+                        }
+                        this.animateTileDraw(mySlot, window.mahjongEngine.lastDrawnTile);
+                        this.renderMahjongHandTiles(true);
+                    }
                     this.updateMahjongStatusUI('🀄 4人雀局 · 轮到你出牌！');
                     UIRenderer.showToast('🎲 轮到你出牌！');
                     this.checkSelfActionsOnTurn();
@@ -5157,9 +5180,8 @@ class GameEngineController {
         this.renderMahjongHandTiles(true);
         this.renderMahjongDiscards();
 
-        if (res.nextPlayer !== undefined && !res.isGameOver) {
-            this.animateTileDraw(res.nextPlayer, engine.lastDrawnTile);
-        }
+        // 注意: 下家摸牌动画移交至其行动流程 (triggerAiTurnLoop / 轮到我方时) 统一处理,
+        // 出牌后不再立即摸牌 (响应判定先于摸牌, 修正手牌数错乱)
 
         // 广播出牌与最新全量牌桌状态至 Firebase 云端
         if (!NetworkManager.isAiMode && NetworkManager.roomId) {
@@ -5222,6 +5244,52 @@ class GameEngineController {
                 const curIdx = engine.currentTurn;
                 const isAiSeatNow = (this.gameState.players && this.gameState.players[curIdx]) ? this.gameState.players[curIdx].isAi : (curIdx !== mySlot);
                 if (!isAiSeatNow) return;
+
+                // AI 行动前摸牌 (响应判定之后轮到 AI 才摸; 杠后补摸或庄家首牌已摸则跳过)
+                if (engine.pendingDraw) {
+                    const drawRes = engine.drawTile(curIdx);
+                    if (!drawRes) {
+                        // 牌墙摸完 -> 流局平局
+                        this.showMahjongSettlement(-1, null);
+                        return;
+                    }
+                    this.animateTileDraw(curIdx, engine.lastDrawnTile);
+                    this.renderMahjongHandTiles(true);
+                }
+
+                // AI 自摸胡 / 暗杠检查 (摸牌后)
+                if (engine.checkCanHu(engine.hands[curIdx])) {
+                    engine.isGameOver = true;
+                    engine.winner = curIdx;
+                    if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                        NetworkManager.sendMahjongMove(curIdx, -1, null, engine.exportState(), 'HU');
+                    }
+                    this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true));
+                    return;
+                }
+                const aiSelfKong = engine.getSelfKongOptions(curIdx);
+                if (aiSelfKong.length > 0 && Math.random() < 0.3) {
+                    engine.executeSelfKong(curIdx, aiSelfKong[0]);
+                    this.renderMahjongHandTiles(true);
+                    this.renderMahjongMelds();
+                    // 杠后补摸的牌继续检查能否再胡/再杠
+                    if (engine.checkCanHu(engine.hands[curIdx])) {
+                        engine.isGameOver = true;
+                        engine.winner = curIdx;
+                        if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                            NetworkManager.sendMahjongMove(curIdx, -1, null, engine.exportState(), 'HU');
+                        }
+                        this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true));
+                        return;
+                    }
+                    const skAgain = engine.getSelfKongOptions(curIdx);
+                    if (skAgain.length > 0 && Math.random() < 0.3) {
+                        engine.executeSelfKong(curIdx, skAgain[0]);
+                        this.renderMahjongHandTiles(true);
+                        this.renderMahjongMelds();
+                    }
+                }
+
                 const aiMoveIdx = engine.getBestAiMove(curIdx);
                 const aiRes = engine.discardTile(curIdx, aiMoveIdx);
 
@@ -5267,12 +5335,20 @@ class GameEngineController {
                     return;
                 }
 
-                // 轮到下一家摸牌与打牌
+                // 轮到下一家摸牌与打牌 (摸牌由下家行动流程统一处理)
                 if (engine.currentTurn !== mySlot) {
-                    this.animateTileDraw(engine.currentTurn, engine.lastDrawnTile);
                     this.triggerAiTurnLoop();
                 } else {
-                    this.animateTileDraw(mySlot, engine.lastDrawnTile);
+                    // 轮到我方: 摸牌 (若待摸) + 检查自摸/暗杠
+                    if (engine.pendingDraw) {
+                        const drawRes = engine.drawTile(mySlot);
+                        if (!drawRes) {
+                            this.showMahjongSettlement(-1, null);
+                            return;
+                        }
+                        this.animateTileDraw(mySlot, engine.lastDrawnTile);
+                        this.renderMahjongHandTiles(true);
+                    }
                     this.updateMahjongStatusUI('🀄 轮到你出牌');
                     this.checkSelfActionsOnTurn();
                 }
@@ -5539,10 +5615,11 @@ class GameEngineController {
     }
 
     /**
-     * 点击【过】按钮逻辑
+     * 清除本端挂起的吃碰杠胡响应 (响应条/计时器/弹窗/高亮)
      */
-    handleMahjongPassClick() {
+    clearMahjongPendingResponse() {
         if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
+        this.pendingDiscardRes = null;
         const actionBar = document.getElementById('mahjongActionBar');
         if (actionBar) actionBar.style.display = 'none';
         const actTimerEl = document.getElementById('mahjongActionTimer');
@@ -5550,19 +5627,33 @@ class GameEngineController {
         const chowModal = document.getElementById('mahjongChowModal');
         if (chowModal) chowModal.style.display = 'none';
         this.clearMahjongActionHighlight();
+    }
+
+    /**
+     * 点击【过】按钮逻辑
+     */
+    handleMahjongPassClick() {
+        this.clearMahjongPendingResponse();
 
         const engine = window.mahjongEngine;
         if (!engine) return;
 
-        if (this.pendingDiscardRes) {
-            this.pendingDiscardRes = null;
-            // 跳过我方响应，继续 AI 轮转
-            if (engine.currentTurn !== 0) {
-                this.triggerAiTurnLoop();
-            } else {
-                this.updateMahjongStatusUI('🀄 轮到你出牌');
-            }
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+
+        // 轮到自己出牌时点过 (无响应场景) 无需额外动作
+        if (engine.currentTurn === mySlot) {
+            this.updateMahjongStatusUI('🀄 轮到你出牌');
+            return;
         }
+
+        // 联机客户端: 广播 PASS 通知房主继续驱动 AI (避免双端各自驱动导致状态分叉)
+        if (!NetworkManager.isAiMode && NetworkManager.roomId && !NetworkManager.isHost) {
+            NetworkManager.sendMahjongMove(mySlot, -1, null, engine.exportState(), 'PASS');
+            return;
+        }
+
+        // 房主 / 单机 AI: 直接驱动 AI 轮转
+        this.triggerAiTurnLoop();
     }
 
     /**
