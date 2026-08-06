@@ -3936,12 +3936,16 @@ body.theme-gomoku .overlay-screen {
     font-weight: 700;
     color: #94a3b8;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     user-select: none;
+}
+
+.game-nav-btn.active {
+    transform: scale(1.04);
 }
 
 .game-nav-btn:hover {

@@ -503,8 +503,13 @@ class GameEngineController {
                 const navRect = navFollowEl.getBoundingClientRect();
                 const btnRect = activeNavBtn.getBoundingClientRect();
                 const btnLeftInNav = btnRect.left - navRect.left + navFollowEl.scrollLeft;
-                const targetScroll = btnLeftInNav - (navFollowEl.clientWidth - btnRect.width) / 2;
-                navFollowEl.scrollLeft = Math.max(0, targetScroll);
+                const targetScroll = Math.max(0, btnLeftInNav - (navFollowEl.clientWidth - btnRect.width) / 2);
+                // 平滑滚动导航到当前游戏按钮居中 (不再瞬间跳变)
+                if (navFollowEl.scrollTo) {
+                    navFollowEl.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                } else {
+                    navFollowEl.scrollLeft = targetScroll;
+                }
             }
         };
         this.switchGameLobby = switchGameLobby;
