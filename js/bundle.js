@@ -11261,6 +11261,7 @@ class GameEngineController {
             this.xqSelected = { r, c };
             this.xqMoveDots = engine.getLegalMoves(r, c);
             this.renderXiangqiBoard();
+            this.playXiangqiSelectSound(); // 选子音效
             return;
         }
 
@@ -11274,6 +11275,7 @@ class GameEngineController {
                     this.xqSelected = null;
                     this.xqMoveDots = [];
                     this.renderXiangqiBoard();
+                    this.playXiangqiMoveSound(); // 落子音效
 
                     // 联机广播走子
                     if (!engine.isAiMode && NetworkManager.sendXiangqiMove) {
@@ -11340,6 +11342,7 @@ class GameEngineController {
                 const res = engine.move(mv.fr, mv.fc, mv.tr, mv.tc);
                 if (!res) return;
                 this.renderXiangqiBoard();
+                this.playXiangqiMoveSound(); // AI 落子音效
 
                 if (engine.isGameOver) {
                     this.stopXiangqiTurnTimer();
@@ -11452,6 +11455,30 @@ class GameEngineController {
     }
 
     /**
+     * 播放落子音效 (sound/placing-a-piece.mp3)
+     */
+    playXiangqiMoveSound() {
+        try {
+            const audio = new Audio('sound/placing-a-piece.mp3');
+            audio.volume = 0.9;
+            const p = audio.play();
+            if (p && p.catch) p.catch(() => {});
+        } catch (e) {}
+    }
+
+    /**
+     * 播放选子音效 (sound/mahjangclack-1.wav 清脆咔嗒)
+     */
+    playXiangqiSelectSound() {
+        try {
+            const audio = new Audio('sound/mahjangclack-1.wav');
+            audio.volume = 0.55;
+            const p = audio.play();
+            if (p && p.catch) p.catch(() => {});
+        } catch (e) {}
+    }
+
+    /**
      * 开启联机象棋对局 (随机红黑, 固定 9x10)
      */
     startXiangqiOnlineGame(roomId, isHost = false, hostIsRedSynced = null) {
@@ -11535,6 +11562,7 @@ class GameEngineController {
             const res = engine.move(move.fr, move.fc, move.tr, move.tc);
             if (!res) return;
             this.renderXiangqiBoard();
+            this.playXiangqiMoveSound(); // 对方落子音效
             if (engine.isGameOver) {
                 this.stopXiangqiTurnTimer();
                 this.handleXiangqiEnd(engine.winner, engine.winReason);
