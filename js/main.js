@@ -5709,7 +5709,16 @@ class GameEngineController {
         }
 
         const player = this.gameState.players[playerIndex];
-        if (!player || player.passedBid) return; // 已退出的玩家不能再操作
+        if (!player) return;
+
+        const isClaimAction = (action === 'CLAIM' || action === 1 || action === 2 || action === 3);
+        // 纯抢地主模式修复：超时自动“不叫”仅是托管，不应剥夺玩家主动叫地主权利。
+        // 若玩家因超时被标记 passedBid，此时点击叫地主应优先生效（点击优先于超时托管）。
+        if (isClaimAction && player.passedBid) {
+            player.passedBid = false;
+        } else if (player.passedBid) {
+            return; // 已退出的玩家不能再操作
+        }
 
         const rel = UIRenderer.getRelativePlayerIndices(NetworkManager.myPlayerIndex);
         let bubbleTarget = 'bubbleSelf';
