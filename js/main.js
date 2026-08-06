@@ -448,37 +448,25 @@ class GameEngineController {
                 this.updateHeaderVisibility();
             }
 
-            // 前向: 旧卡向左滑出, 新卡从右滑入; 后向: 旧卡向右滑出, 新卡从左滑入
-            const outCls = direction > 0 ? 'lobby-card-out' : 'lobby-card-out-right';
-            const inCls = direction > 0 ? 'lobby-card-in' : 'lobby-card-in-left';
+            // ========== 切换执行 (防竞态) ==========
+            // 1. 清理上一次动画的 pending 回调与残留类, 避免快速连续切换时卡片状态错乱 (区域/页面消失 bug)
+            if (this._lobbySwitchTimer) { clearTimeout(this._lobbySwitchTimer); this._lobbySwitchTimer = null; }
+            if (this._lobbySwitchTimer2) { clearTimeout(this._lobbySwitchTimer2); this._lobbySwitchTimer2 = null; }
+            this._lobbySwitchBusy = false;
+            cardsAll.forEach(c => { if (c) c.classList.remove('lobby-card-out', 'lobby-card-out-right', 'lobby-card-in', 'lobby-card-in-left'); });
 
-            if (oldCard && oldCard !== newCard && !this._lobbySwitchBusy) {
-                // 顺序滑动过渡: 旧卡先滑出, 完成后新卡再从同方向滑入 (避免两卡并存导致的错位/闪动/高度跳动)
-                this._lobbySwitchBusy = true;
-                // 切换前回到顶部, 避免高度变化引发滚动跳动
-                const lobbyScr = document.getElementById('lobbyScreen');
-                if (lobbyScr) lobbyScr.scrollTop = 0;
+            // 2. 硬切: 只显示目标卡 (旧卡立即隐藏, 新卡滑入动画)
+            cardsAll.forEach(c => { if (c) c.style.display = (c === newCard) ? 'block' : 'none'; });
+            const lobbyScr = document.getElementById('lobbyScreen');
+            if (lobbyScr) lobbyScr.scrollTop = 0;
 
-                oldCard.classList.add(outCls);
-                setTimeout(() => {
-                    oldCard.style.display = 'none';
-                    oldCard.classList.remove(outCls);
-                    newCard.style.display = 'block';
-                    newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
-                    void newCard.offsetWidth; // 强制 reflow 触发动画
-                    newCard.classList.add(inCls);
-                    this._lobbySwitchBusy = false;
-                    setTimeout(() => newCard.classList.remove(inCls), 350);
-                }, 280);
-            } else {
-                // 首次加载 / 动画忙时: 直接切换 (新卡带滑入动画)
-                cardsAll.forEach(c => { if (c) c.style.display = 'none'; });
-                newCard.style.display = 'block';
-                newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
-                void newCard.offsetWidth;
-                newCard.classList.add('lobby-card-in');
-                setTimeout(() => newCard.classList.remove('lobby-card-in'), 350);
-            }
+            // 3. 新卡按方向滑入 (前向从右滑入, 后向从左滑入)
+            void newCard.offsetWidth; // 强制 reflow 触发动画
+            newCard.classList.add(inCls);
+            this._lobbySwitchTimer2 = setTimeout(() => {
+                newCard.classList.remove(inCls);
+                this._lobbySwitchTimer2 = null;
+            }, 350);
         };
         this.switchGameLobby = switchGameLobby;
 
@@ -563,8 +551,10 @@ class GameEngineController {
                 touchStartY = e.touches[0].clientY;
             }, { passive: true });
 
-            // 横向滑动意图明显时阻止纵向滚动 (避免左右滑时页面上下跳动)
+            // 横向滑动意图明显时阻止纵向滚动 (避免左右滑时页面上下跳动); 导航区自身滚动不受影响
             lobbyScr.addEventListener('touchmove', (e) => {
+                const inNav = e.target && e.target.closest && e.target.closest('.game-switch-nav');
+                if (inNav) return; // 导航区横向滚动交给浏览器自身处理
                 const dx = e.touches[0].clientX - touchStartX;
                 const dy = e.touches[0].clientY - touchStartY;
                 if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
