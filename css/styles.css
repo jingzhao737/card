@@ -8373,7 +8373,7 @@ body.theme-xiangqi {
 @media (max-width: 768px) {
     /* 手机端象棋棋子字单独调大 (电脑端保持基础 clamp) */
     .xq-piece {
-        font-size: clamp(0.95rem, 4.6vw, 1.4rem);
+        font-size: clamp(0.88rem, 4.2vw, 1.3rem);
     }
     /* 手机端外圈线改细 (电脑端保持 2px/5px) */
     .xq-piece::before {
