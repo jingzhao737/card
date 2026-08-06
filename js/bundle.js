@@ -6659,45 +6659,52 @@ class GameEngineController {
             this.activeGameType = gameType;
             NetworkManager.gameType = gameType;
 
-            if (gameType === 'GO') {
-                document.body.classList.add('theme-go');
-                if (btnNavGo)       btnNavGo.classList.add('active');
-                if (btnNavDoudizhu) btnNavDoudizhu.classList.remove('active');
-                if (btnNavGomoku)   btnNavGomoku.classList.remove('active');
-                if (btnNavMahjong)  btnNavMahjong.classList.remove('active');
-                if (cardGo)         cardGo.style.display = 'block';
-                if (cardDoudizhu)   cardDoudizhu.style.display = 'none';
-                if (cardGomoku)     cardGomoku.style.display = 'none';
-                if (cardMahjong)    cardMahjong.style.display = 'none';
-            } else if (gameType === 'MAHJONG') {
-                document.body.classList.add('theme-mahjong');
-                if (btnNavMahjong)  btnNavMahjong.classList.add('active');
-                if (btnNavGo)       btnNavGo.classList.remove('active');
-                if (btnNavDoudizhu) btnNavDoudizhu.classList.remove('active');
-                if (btnNavGomoku)   btnNavGomoku.classList.remove('active');
-                if (cardGo)         cardGo.style.display = 'none';
-                if (cardDoudizhu)   cardDoudizhu.style.display = 'none';
-                if (cardGomoku)     cardGomoku.style.display = 'none';
-                if (cardMahjong)    cardMahjong.style.display = 'block';
-            } else if (gameType === 'GOMOKU') {
-                document.body.classList.add('theme-gomoku');
-                if (btnNavGomoku)   btnNavGomoku.classList.add('active');
-                if (btnNavGo)       btnNavGo.classList.remove('active');
-                if (btnNavDoudizhu) btnNavDoudizhu.classList.remove('active');
-                if (btnNavMahjong)  btnNavMahjong.classList.remove('active');
-                if (cardGo)         cardGo.style.display = 'none';
-                if (cardDoudizhu)   cardDoudizhu.style.display = 'none';
-                if (cardGomoku)     cardGomoku.style.display = 'block';
-                if (cardMahjong)    cardMahjong.style.display = 'none';
+            // 主题切换
+            if (gameType === 'GO') document.body.classList.add('theme-go');
+            else if (gameType === 'MAHJONG') document.body.classList.add('theme-mahjong');
+            else if (gameType === 'GOMOKU') document.body.classList.add('theme-gomoku');
+
+            // 导航激活状态
+            const navBtns = { GO: btnNavGo, DOUDIZHU: btnNavDoudizhu, GOMOKU: btnNavGomoku, MAHJONG: btnNavMahjong };
+            Object.keys(navBtns).forEach(k => { if (navBtns[k]) navBtns[k].classList.toggle('active', k === gameType); });
+
+            // 卡片滑动切换动画: 旧卡向左滑出淡出, 新卡从右滑入淡入
+            const cardMap = { GO: cardGo, DOUDIZHU: cardDoudizhu, GOMOKU: cardGomoku, MAHJONG: cardMahjong };
+            const newCard = cardMap[gameType];
+            if (!newCard) return;
+
+            const cardsAll = [cardGo, cardDoudizhu, cardGomoku, cardMahjong];
+            let oldCard = null;
+            Object.keys(cardMap).forEach(k => {
+                const c = cardMap[k];
+                if (c && c !== newCard && c.style.display !== 'none') oldCard = c;
+            });
+
+            // 清理可能残留的滑出动画类
+            cardsAll.forEach(c => { if (c) c.classList.remove('lobby-card-out'); });
+
+            if (oldCard && oldCard !== newCard && !this._lobbySwitchBusy) {
+                // 滑动过渡: 旧卡滑出 + 新卡滑入
+                this._lobbySwitchBusy = true;
+                oldCard.classList.add('lobby-card-out');
+                newCard.style.display = 'block';
+                newCard.classList.remove('lobby-card-in');
+                void newCard.offsetWidth; // 强制 reflow 触发动画
+                newCard.classList.add('lobby-card-in');
+                setTimeout(() => {
+                    oldCard.style.display = 'none';
+                    oldCard.classList.remove('lobby-card-out');
+                    this._lobbySwitchBusy = false;
+                    setTimeout(() => newCard.classList.remove('lobby-card-in'), 350);
+                }, 270);
             } else {
-                if (btnNavDoudizhu) btnNavDoudizhu.classList.add('active');
-                if (btnNavGo)       btnNavGo.classList.remove('active');
-                if (btnNavGomoku)   btnNavGomoku.classList.remove('active');
-                if (btnNavMahjong)  btnNavMahjong.classList.remove('active');
-                if (cardGo)         cardGo.style.display = 'none';
-                if (cardDoudizhu)   cardDoudizhu.style.display = 'block';
-                if (cardGomoku)     cardGomoku.style.display = 'none';
-                if (cardMahjong)    cardMahjong.style.display = 'none';
+                // 首次加载 / 动画忙时: 直接切换 (新卡带滑入动画)
+                cardsAll.forEach(c => { if (c) c.style.display = 'none'; });
+                newCard.style.display = 'block';
+                newCard.classList.remove('lobby-card-in');
+                void newCard.offsetWidth;
+                newCard.classList.add('lobby-card-in');
+                setTimeout(() => newCard.classList.remove('lobby-card-in'), 350);
             }
         };
         this.switchGameLobby = switchGameLobby;

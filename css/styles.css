@@ -7913,3 +7913,23 @@ body.theme-go {
         display: none;
     }
 }
+/* ============================================================
+   🎠 主页游戏大厅卡片滑动切换动画
+   ============================================================ */
+.lobby-card-out {
+    animation: lobbyCardOut 0.26s ease forwards;
+}
+
+.lobby-card-in {
+    animation: lobbyCardIn 0.32s ease;
+}
+
+@keyframes lobbyCardOut {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(-70px); opacity: 0; }
+}
+
+@keyframes lobbyCardIn {
+    from { transform: translateX(70px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
