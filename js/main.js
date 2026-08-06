@@ -2191,12 +2191,13 @@ class GameEngineController {
                 const isLastMove = engine.lastMove && engine.lastMove.r === r && engine.lastMove.c === c;
                 const isWinStone = winNodes.some(n => n.r === r && n.c === c);
 
-                // 清除可能残留的 hover 预览（该格已有正式棋子时）
-                const hoverLeft = cell.querySelector('.hover-preview');
-                if (hoverLeft) hoverLeft.remove();
+                // 清除可能残留的 hover 预览与 2-Tap 预览（该格已有正式棋子时）
+                cell.querySelectorAll('.hover-preview, .preview').forEach(s => s.remove());
 
-                if (!stone || stone.classList.contains('preview')) {
-                    if (stone) stone.remove();
+                // 重新查询正式棋子（排除预览残留，避免 stone 指向已移除元素导致棋子不显示）
+                stone = cell.querySelector('.gomoku-stone:not(.hover-preview):not(.preview)');
+
+                if (!stone) {
                     // 仅当这颗棋子是新落下的，新建 DOM 节点并播放微随机物理落子音效
                     stone = document.createElement('div');
                     stone.className = `gomoku-stone ${val === 1 ? 'black' : 'white'}`;
