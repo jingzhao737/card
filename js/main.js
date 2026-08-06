@@ -4804,6 +4804,11 @@ class GameEngineController {
                         UIRenderer.showToast('🔥 3秒到！叫地主开始！');
                         SoundEngine.playBid();
 
+                        // Bug 修复：无论轮到玩家还是 AI，都必须启动回合倒计时。
+                        // 否则轮到玩家（currentTurn=0）时 triggerAiBidIfNeeded 会因 isAi=false
+                        // 直接 return，导致回合倒计时从未启动，玩家不操作则游戏永久卡死。
+                        this.startTurnTimer();
+
                         this.triggerAiBidIfNeeded();
                     }
                     this.updateControlButtons(NetworkManager.myPlayerIndex);
