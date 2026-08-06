@@ -3902,8 +3902,8 @@ body.theme-gomoku .overlay-screen {
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
-    margin: 2px auto 4px;
-    padding: 8px 6px 0;
+    margin: 2px auto -8px;
+    padding: 8px 6px 12px; /* 底部留出active阴影空间, 负margin补偿视觉高度 */
     width: max-content;
     max-width: 90%;
     overflow-x: auto;
