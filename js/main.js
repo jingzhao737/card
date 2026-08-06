@@ -3197,19 +3197,18 @@ class GameEngineController {
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (swiping) return; // 刚滑动过，忽略本次点击
+                    // 预选支持：无论是否轮到自己回合都允许选中/取消（非回合时按钮不亮，轮到自己时自动点亮）
                     const engine = window.mahjongEngine;
-                    const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
-                    if (!engine || engine.isGameOver || engine.currentTurn !== mySlot) {
-                        UIRenderer.showToast('⏳ 正在等待其他玩家出牌...');
-                        return;
-                    }
+                    if (!engine || engine.isGameOver) return;
                     if (this.selectedMahjongTileIndex === index) {
                         // 再点已选中的牌：取消选中
                         this.selectedMahjongTileIndex = -1;
                         this.hideMahjongDiscardBar();
-                        this.renderMahjongHandTiles();
+                        containerBottom.querySelectorAll('.mahjong-tile-card').forEach(c => {
+                            c.classList.remove('selected');
+                        });
                     } else {
-                        // 点选/滑动切换到此牌
+                        // 点选/滑动切换到此牌（预选）
                         this.selectedMahjongTileIndex = index;
                         if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
                             SoundEngine.playCardFlipSound();
@@ -3769,7 +3768,7 @@ class GameEngineController {
             }
         });
 
-        // 🀄 回合强调：轮到我方时手牌区金色脉冲边框 + 顶部状态高亮
+        // 回合强调：轮到我方时手牌区金色脉冲边框 + 顶部状态高亮
         const isMyTurn = (engine.currentTurn === mySlot && !engine.isGameOver);
         const handWrap = document.getElementById('mahjongHandTilesContainer');
         const turnStatus = document.getElementById('mahjongTurnStatus');
@@ -3781,9 +3780,13 @@ class GameEngineController {
             if (isMyTurn) turnStatus.classList.add('my-turn-active');
             else turnStatus.classList.remove('my-turn-active');
         }
-        // 非我方回合时隐藏选牌出牌条并清空选中
-        if (!isMyTurn) {
-            this.selectedMahjongTileIndex = -1;
+        // 预选支持：非我方回合不清空选中（玩家可提前选好牌），仅隐藏出牌按钮；
+        // 轮到自己时若有预选，自动点亮出牌按钮，可直接出牌
+        if (isMyTurn) {
+            if (this.selectedMahjongTileIndex >= 0) {
+                this.showMahjongDiscardBar(this.selectedMahjongTileIndex);
+            }
+        } else {
             this.hideMahjongDiscardBar();
         }
 
