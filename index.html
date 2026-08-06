@@ -589,13 +589,15 @@
 
                     <!-- 5. 南家 (Bottom / 我方) - 极其沉底避让视线 -->
                     <div class="table-player-seat seat-bottom" id="mahjongSeatBottom">
-                        <!-- 我方头像与信息 -->
-                        <div class="seat-user-pill bottom-pill">
-                            <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
-                            <span class="p-name" id="mNameBottom">我方玩家</span>
-                            <span class="wind-tag" id="mWindBottom">南</span>
-                            <span class="dealer-tag" id="mDealerBottom" style="display:none;">庄</span>
-                            <!-- 出牌按钮：固定在 ID 信息右侧，选中牌后亮起可点击 -->
+                        <!-- 我方头像与信息 + 独立出牌键（pill 右侧独立放置） -->
+                        <div class="bottom-info-row">
+                            <div class="seat-user-pill bottom-pill">
+                                <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
+                                <span class="p-name" id="mNameBottom">我方玩家</span>
+                                <span class="wind-tag" id="mWindBottom">南</span>
+                                <span class="dealer-tag" id="mDealerBottom" style="display:none;">庄</span>
+                            </div>
+                            <!-- 出牌按钮：独立于 ID 框右侧，胡桃木色，选中牌后亮起可点击 -->
                             <button class="btn-mahjong-discard" id="btnMahjongDiscard" type="button" title="选中手牌后点击出牌">
                                 <i class="fa-solid fa-hand-back-fist"></i> 出牌
                             </button>
