@@ -8295,7 +8295,7 @@ body.theme-xiangqi {
     justify-content: center;
     font-weight: 900;
     font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif;
-    font-size: clamp(0.62rem, 2.5vw, 1.1rem);
+    font-size: clamp(0.68rem, 2.7vw, 1.22rem);
     z-index: 5;
     cursor: pointer;
     transition: transform 0.12s ease, box-shadow 0.12s ease;
