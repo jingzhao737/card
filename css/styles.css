@@ -8246,14 +8246,14 @@ body.theme-xiangqi {
 }
 
 .xq-board-svg line {
-    stroke: rgba(55, 28, 5, 0.95);
-    stroke-width: 0.07;
+    stroke: rgba(55, 28, 5, 0.9);
+    stroke-width: 0.04;
     stroke-linecap: round;
 }
 
 .xq-board-svg path {
-    stroke: rgba(55, 28, 5, 0.7);
-    stroke-width: 0.06;
+    stroke: rgba(55, 28, 5, 0.65);
+    stroke-width: 0.035;
     stroke-linecap: round;
 }
 
@@ -8286,8 +8286,8 @@ body.theme-xiangqi {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 88%;
-    height: 88%;
+    width: 90%;
+    height: 90%;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -8297,50 +8297,51 @@ body.theme-xiangqi {
     font-size: clamp(0.85rem, 3.8vw, 1.35rem);
     z-index: 5;
     cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
     user-select: none;
-    border: 1.5px solid;
+    /* 木色底: 真象棋象牙木质感 */
+    background: radial-gradient(circle at 36% 28%, #fdf6e3 0%, #f0dfae 38%, #ddbd7e 72%, #c69d55 100%);
+    background-image:
+        radial-gradient(circle at 36% 28%, #fdf6e3 0%, #f0dfae 38%, #ddbd7e 72%, #c69d55 100%),
+        repeating-linear-gradient(115deg, rgba(150, 100, 40, 0.05) 0px, rgba(150, 100, 40, 0.05) 1px, transparent 1px, transparent 4px);
     box-shadow:
-        0 3px 7px rgba(0, 0, 0, 0.55),
-        0 6px 12px rgba(0, 0, 0, 0.25),
-        inset 0 -3px 5px rgba(0, 0, 0, 0.35),
-        inset 0 2px 3px rgba(255, 255, 255, 0.45);
+        0 3px 6px rgba(0, 0, 0, 0.5),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 2px 3px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 4px rgba(120, 75, 25, 0.25);
 }
 
-.xq-piece::before {
-    content: '';
-    position: absolute;
-    top: 7%;
-    left: 18%;
-    width: 42%;
-    height: 30%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 40% 40%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
-    pointer-events: none;
-}
-
+/* 一圈线 + 中心字 (真象棋样式) */
 .xq-piece.red {
-    background: radial-gradient(circle at 36% 30%, #fff1f0 0%, #fda4af 22%, #e11d48 62%, #9f1239 100%);
-    color: #831843;
-    border-color: #9f1239;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    color: #b91c1c;
+    border: 2.5px solid #b91c1c;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.5),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1.5px #f8e3c0,
+        inset 0 2px 3px rgba(255, 255, 255, 0.5),
+        inset 0 -2px 4px rgba(120, 75, 25, 0.2);
 }
 
 .xq-piece.black {
-    background: radial-gradient(circle at 36% 30%, #fafafa 0%, #dbe3ea 20%, #52606e 58%, #111827 100%);
-    color: #1e293b;
-    border-color: #1e293b;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+    color: #1c1917;
+    border: 2.5px solid #1c1917;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.5),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1.5px #f8e3c0,
+        inset 0 2px 3px rgba(255, 255, 255, 0.5),
+        inset 0 -2px 4px rgba(120, 75, 25, 0.2);
 }
 
 .xq-piece.selected {
-    transform: translate(-50%, -50%) scale(1.12);
+    transform: translate(-50%, -50%) scale(1.1);
     box-shadow:
         0 0 0 3px rgba(250, 204, 21, 0.9),
-        0 0 18px rgba(250, 204, 21, 0.5),
-        0 6px 14px rgba(0, 0, 0, 0.6),
-        inset 0 -3px 5px rgba(0, 0, 0, 0.35),
-        inset 0 2px 3px rgba(255, 255, 255, 0.45);
+        0 0 16px rgba(250, 204, 21, 0.45),
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1.5px #f8e3c0,
+        inset 0 2px 3px rgba(255, 255, 255, 0.5);
     z-index: 8;
 }
 
@@ -8380,9 +8381,9 @@ body.theme-xiangqi {
     box-shadow:
         0 0 0 2px rgba(250, 204, 21, 0.95),
         0 0 12px rgba(250, 204, 21, 0.4),
-        0 4px 10px rgba(0, 0, 0, 0.5),
-        inset 0 -3px 5px rgba(0, 0, 0, 0.3),
-        inset 0 2px 3px rgba(255, 255, 255, 0.4);
+        0 4px 10px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 1.5px #f8e3c0,
+        inset 0 2px 3px rgba(255, 255, 255, 0.5);
 }
 
 /* 被将军闪烁 */
