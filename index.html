@@ -589,8 +589,99 @@
             </div>
 
             <!-- 网页主页最下方不起眼的版本号与最后修改时间 -->
+
+<div class="lobby-card hero-lobby-card theme-ink" id="xiangqiLobbyCard" style="display:none; background:#0b0b0d; border:2px solid #3f3f46; border-radius:6px; min-height:500px; box-shadow:0 16px 48px rgba(0,0,0,0.9);">
+            <div class="lobby-header xiangqi-header">
+                <div class="brand-hero-left">
+                    <div class="brand-text">
+                        <h1 class="brand-title">游鲸象棋</h1>
+                        <p class="brand-subtitle">CHINESE CHESS · 楚河汉界</p>
+                    </div>
+                    <div class="hero-tags">
+                        <span class="badge-tag ink"><i class="fa-solid fa-chess-knight"></i> 红先黑后 · 车马炮</span>
+                    </div>
+                </div>
+                <div class="gomoku-stones-decoration" title="红方先行 / 黑方后手">
+                    <div class="mini-stone xq-red-stone"></div>
+                    <div class="mini-stone black-stone"></div>
+                </div>
+            </div>
+
+            <div class="lobby-form">
+                <div class="auth-banner-card emerald-auth" id="xqAuthBanner">
+                    <div class="auth-banner-left">
+                        <div class="auth-avatar-badge" id="xqAuthAvatar">🤠</div>
+                        <div class="auth-banner-info">
+                            <div class="auth-banner-nick" id="xqUserNick">未登录 (游客)</div>
+                            <div class="auth-banner-sub" id="xqUserSub">🪙 知因币: 0</div>
+                        </div>
+                    </div>
+                    <div class="auth-banner-actions">
+                        <button class="btn-auth-action green" id="btnXqAuth" type="button">个人信息</button>
+                    </div>
+                </div>
+
+                <div class="mode-selection">
+                    <button class="mode-card primary-card green-theme" id="btnCreateXiangqiRoom">
+                        <div class="card-icon-wrap green">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">
+                                <span>创建象棋对局</span>
+                                <span class="pill-badge green">房主 · 10知因币</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right card-arrow"></i>
+                    </button>
+
+                    <div class="mode-card join-card">
+                        <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入 6 位象棋房间号</div>
+                        <div class="join-input-row">
+                            <input type="text" id="joinXiangqiInput" placeholder="6 位房间号" maxlength="6">
+                            <button class="btn-join-action green" id="btnJoinXiangqi">进入对局 <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <button class="mode-card public-card green-theme" id="btnPublicXiangqiRooms">
+                        <div class="card-icon-wrap cyan">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">
+                                <span>在线象棋大厅</span>
+                                <span class="pill-badge cyan">实时列表</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right card-arrow"></i>
+                    </button>
+
+                    <div class="divider"><span>人机切磋</span></div>
+
+                    <button class="mode-card ai-card" id="btnPlayXiangqiAi">
+                        <div class="card-icon-wrap cyan">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">
+                                <span>AI 棋圣练习</span>
+                                <span class="pill-badge cyan">智能博弈 · 1知因币</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right card-arrow"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <span><i class="fa-solid fa-chess-knight"></i> 红先黑后 · 步步为营</span>
+            </div>
+        </div>
+
+  
+        
             <div class="app-version-footer" style="text-align: center; padding: 12px 0 18px 0; font-size: 0.68rem; color: rgba(255, 255, 255, 0.35); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0.3px; user-select: none;">
-                v38.36 · 最后修改时间：2026-08-07 02:18
+                v38.37 · 最后修改时间：2026-08-07 02:20
             </div>
         </div>
 
@@ -985,95 +1076,7 @@
         </div>
 
         <!-- 游鲸中国象棋 大厅卡 -->
-        <div class="lobby-card hero-lobby-card theme-ink" id="xiangqiLobbyCard" style="display:none; background:#0b0b0d; border:2px solid #3f3f46; border-radius:6px; min-height:500px; box-shadow:0 16px 48px rgba(0,0,0,0.9);">
-            <div class="lobby-header xiangqi-header">
-                <div class="brand-hero-left">
-                    <div class="brand-text">
-                        <h1 class="brand-title">游鲸象棋</h1>
-                        <p class="brand-subtitle">CHINESE CHESS · 楚河汉界</p>
-                    </div>
-                    <div class="hero-tags">
-                        <span class="badge-tag ink"><i class="fa-solid fa-chess-knight"></i> 红先黑后 · 车马炮</span>
-                    </div>
-                </div>
-                <div class="gomoku-stones-decoration" title="红方先行 / 黑方后手">
-                    <div class="mini-stone xq-red-stone"></div>
-                    <div class="mini-stone black-stone"></div>
-                </div>
-            </div>
-
-            <div class="lobby-form">
-                <div class="auth-banner-card emerald-auth" id="xqAuthBanner">
-                    <div class="auth-banner-left">
-                        <div class="auth-avatar-badge" id="xqAuthAvatar">🤠</div>
-                        <div class="auth-banner-info">
-                            <div class="auth-banner-nick" id="xqUserNick">未登录 (游客)</div>
-                            <div class="auth-banner-sub" id="xqUserSub">🪙 知因币: 0</div>
-                        </div>
-                    </div>
-                    <div class="auth-banner-actions">
-                        <button class="btn-auth-action green" id="btnXqAuth" type="button">个人信息</button>
-                    </div>
-                </div>
-
-                <div class="mode-selection">
-                    <button class="mode-card primary-card green-theme" id="btnCreateXiangqiRoom">
-                        <div class="card-icon-wrap green">
-                            <i class="fa-solid fa-plus"></i>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-title">
-                                <span>创建象棋对局</span>
-                                <span class="pill-badge green">房主 · 10知因币</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right card-arrow"></i>
-                    </button>
-
-                    <div class="mode-card join-card">
-                        <div class="card-title-sm"><i class="fa-solid fa-key"></i> 输入 6 位象棋房间号</div>
-                        <div class="join-input-row">
-                            <input type="text" id="joinXiangqiInput" placeholder="6 位房间号" maxlength="6">
-                            <button class="btn-join-action green" id="btnJoinXiangqi">进入对局 <i class="fa-solid fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-
-                    <button class="mode-card public-card green-theme" id="btnPublicXiangqiRooms">
-                        <div class="card-icon-wrap cyan">
-                            <i class="fa-solid fa-list-check"></i>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-title">
-                                <span>在线象棋大厅</span>
-                                <span class="pill-badge cyan">实时列表</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right card-arrow"></i>
-                    </button>
-
-                    <div class="divider"><span>人机切磋</span></div>
-
-                    <button class="mode-card ai-card" id="btnPlayXiangqiAi">
-                        <div class="card-icon-wrap cyan">
-                            <i class="fa-solid fa-brain"></i>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-title">
-                                <span>AI 棋圣练习</span>
-                                <span class="pill-badge cyan">智能博弈 · 1知因币</span>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right card-arrow"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="lobby-footer">
-                <span><i class="fa-solid fa-chess-knight"></i> 红先黑后 · 步步为营</span>
-            </div>
-        </div>
-
-        <!-- 游鲸中国象棋 对局室 (Xiangqi Game Screen) -->
+              <!-- 游鲸中国象棋 对局室 (Xiangqi Game Screen) -->
         <div id="xiangqiGameScreen" class="overlay-screen xq-screen-wrap" style="display: none;">
             <div class="xq-container">
                 <div class="xq-header-area">
