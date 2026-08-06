@@ -3902,10 +3902,10 @@ body.theme-gomoku .overlay-screen {
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
-    margin: 2px auto -8px;
-    padding: 8px 10px 12px; /* 四边留空间: 上(NEW角标) 下(active阴影) 左右(边框/滚动边缘) */
-    -webkit-mask-image: linear-gradient(to right, black 93%, transparent 100%); /* 右侧滚动边缘渐隐, 替代生硬裁切 */
-    mask-image: linear-gradient(to right, black 93%, transparent 100%);
+    margin: 2px auto -4px;
+    padding: 8px 10px 8px; /* 四边留空间: 上(NEW角标) 下(active阴影) 左右(边框/滚动边缘) */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%); /* 左右滚动边缘渐隐, 替代生硬裁切 */
+    mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
     width: max-content;
     max-width: 90%;
     overflow-x: auto;
@@ -5480,7 +5480,7 @@ body.theme-mahjong #lobbyScreen {
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
     color: #0f172a !important;
     border-color: #fbbf24 !important;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.5) !important;
+    box-shadow: none;
     font-weight: 900 !important;
 }
 
@@ -5489,7 +5489,7 @@ body.theme-mahjong #lobbyScreen {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
     color: #ffffff !important;
     border-color: #34d399 !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5) !important;
+    box-shadow: none;
     font-weight: 900 !important;
 }
 
@@ -5498,7 +5498,7 @@ body.theme-mahjong #lobbyScreen {
     background: linear-gradient(135deg, #923a2a 0%, #752a1c 50%, #571f16 100%) !important;
     color: #fffbeb !important;
     border-color: #f59e0b !important;
-    box-shadow: 0 4px 18px rgba(146, 58, 42, 0.65), 0 0 14px rgba(245, 158, 11, 0.5) !important;
+    box-shadow: none;
     font-weight: 900 !important;
 }
 
