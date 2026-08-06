@@ -14297,6 +14297,7 @@ class GameEngineController {
         const isMahjong = (currentType === 'MAHJONG');
         const isGomoku  = (currentType === 'GOMOKU');
         const isGo      = (currentType === 'GO');
+        const isXiangqi = (currentType === 'XIANGQI');
 
         if (isMahjong) {
             NetworkManager.gameType = 'MAHJONG';
