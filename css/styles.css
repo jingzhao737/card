@@ -3903,7 +3903,9 @@ body.theme-gomoku .overlay-screen {
     justify-content: flex-start;
     gap: 8px;
     margin: 2px auto -8px;
-    padding: 8px 6px 12px; /* 底部留出active阴影空间, 负margin补偿视觉高度 */
+    padding: 8px 10px 12px; /* 四边留空间: 上(NEW角标) 下(active阴影) 左右(边框/滚动边缘) */
+    -webkit-mask-image: linear-gradient(to right, black 93%, transparent 100%); /* 右侧滚动边缘渐隐, 替代生硬裁切 */
+    mask-image: linear-gradient(to right, black 93%, transparent 100%);
     width: max-content;
     max-width: 90%;
     overflow-x: auto;
