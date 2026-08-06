@@ -731,6 +731,23 @@ class P2PManager {
         });
     }
 
+    sendGomokuTimeout(winnerColor) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuTimeout').set({
+            winnerColor,
+            ts: Date.now()
+        });
+    }
+
+    onGomokuTimeout(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('gomokuTimeout').off();
+        this.roomRef.child('gomokuTimeout').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
     onGomokuMove(callback) {
         if (!this.roomRef) return;
         this.roomRef.child('gomokuMove').off();

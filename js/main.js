@@ -38,6 +38,10 @@ class GameEngineController {
 
         this.turnTimerId = null;
         this.timerSeconds = 20;
+
+        // 五子棋回合倒计时 (30 秒超时托管/判负)
+        this._gomokuTimerInterval = null;
+        this._gomokuTimerSeconds = 30;
     }
 
     init() {
@@ -587,6 +591,9 @@ class GameEngineController {
                         this.renderGomokuBoard();
                         this.updateGomokuStatusUI(`已撤回，本局还可悔棋 ${this.gomokuUndoLeft} 次`);
                         UIRenderer.showToast(`↺ 悔棋成功！单局剩余 ${this.gomokuUndoLeft} 次`);
+                        // 悔棋后回到玩家回合：重启倒计时
+                        if (engine.currentTurn === engine.playerColor) this.startGomokuTurnTimer();
+                        else this.stopGomokuTurnTimer();
                     }
                     return;
                 }
@@ -637,6 +644,7 @@ class GameEngineController {
                     this.renderGomokuBoard();
                     this.updateGomokuStatusUI('黑方落子中 (你)');
                     UIRenderer.showToast('🟢 重新开始！你是先手黑棋');
+                    this.startGomokuTurnTimer(); // 重新开局：玩家先手启动倒计时
                     return;
                 }
 
@@ -1179,6 +1187,12 @@ class GameEngineController {
             clearTimeout(this._aiBidTimer);
             this._aiBidTimer = null;
         }
+        if (this._gomokuTimerInterval) {
+            clearInterval(this._gomokuTimerInterval);
+            this._gomokuTimerInterval = null;
+        }
+        const gBadge = document.getElementById('gomokuTimerBadge');
+        if (gBadge) gBadge.style.display = 'none';
         this.gameState.phase = 'LOBBY';
     }
 
@@ -1819,6 +1833,13 @@ class GameEngineController {
         UIRenderer.showToast(isMyTurn ? '🎲 随机先后手：你执先手黑棋！' : '🎲 随机先后手：你执后手白棋！');
         this.showGomokuCenterBanner(isMyTurn);
 
+        // 联机开局：房主启动回合倒计时（自己先手立即启动，后手等对方落子后重启）
+        if (isHost && isMyTurn) {
+            this.startGomokuTurnTimer();
+        } else {
+            this.stopGomokuTurnTimer();
+        }
+
         // 监听云端落子广播
         NetworkManager.onGomokuMove((move) => {
             if (!move || move.senderSlot === NetworkManager.myPlayerIndex) return;
@@ -1827,12 +1848,31 @@ class GameEngineController {
                 const res = engine.placeStone(move.r, move.c);
                 this.renderGomokuBoard();
                 if (res && res.isGameOver) {
+                    this.stopGomokuTurnTimer();
                     this.handleGomokuWin(res.winner);
                 } else {
                     const isNowMyTurn = engine.currentTurn === myColor;
                     this.updateGomokuStatusUI(isNowMyTurn ? (myColor === 1 ? '⚫ 轮到你落子' : '⚪ 轮到你落子') : '⏳ 对方思考中...');
+                    // 对方落完轮到己方：房主重启倒计时（对方回合时停止）
+                    if (isNowMyTurn) {
+                        if (NetworkManager.isHost) this.startGomokuTurnTimer();
+                    } else {
+                        this.stopGomokuTurnTimer();
+                    }
                 }
             }
+        });
+
+        // 监听联机超时判负广播（房主判定超时后同步给对手）
+        NetworkManager.onGomokuTimeout((data) => {
+            if (!data || !data.winnerColor) return;
+            const engine = window.gomokuEngine;
+            if (!engine || engine.isGameOver) return;
+            const winnerColor = data.winnerColor;
+            engine.isGameOver = true;
+            engine.winner = winnerColor;
+            this.stopGomokuTurnTimer();
+            this.handleGomokuWin(winnerColor);
         });
 
         // 监听在线悔棋申请广播
@@ -1907,6 +1947,13 @@ class GameEngineController {
 
         // 切换游戏前清理斗地主残留定时器
         this.stopDoudizhuTimers();
+
+        // 单机 AI 模式标记：斗地主/麻将 AI 模式均有设置，此处必须同步设置，
+        // 否则 startGomokuTurnTimer 会因「非 AI 模式且非房主」直接跳过倒计时
+        NetworkManager.isAiMode = true;
+        NetworkManager.isHost = true;
+        NetworkManager.myPlayerIndex = 0;
+
         if (lobbyScr) {
             lobbyScr.style.display = 'none';
             lobbyScr.classList.remove('active');
@@ -1952,15 +1999,18 @@ class GameEngineController {
         if (iAmBlack) {
             this.updateGomokuStatusUI('⚫ 轮到你落子 (先手黑棋)');
             UIRenderer.showToast('🎲 随机分配完成：你执先手黑棋！');
+            this.startGomokuTurnTimer(); // 玩家先手：启动倒计时
         } else {
             this.updateGomokuStatusUI('🤖 AI 棋圣 (先手黑棋) 思考中...');
             UIRenderer.showToast('🎲 随机分配完成：AI 棋圣执先手黑棋！');
+            this.stopGomokuTurnTimer(); // AI 先手：不启动玩家倒计时
             setTimeout(() => {
                 const aiMove = window.gomokuEngine.getBestAiMove();
                 if (aiMove) {
                     window.gomokuEngine.placeStone(aiMove.r, aiMove.c);
                     this.renderGomokuBoard();
                     this.updateGomokuStatusUI('⚪ 轮到你落子 (后手白棋)');
+                    this.startGomokuTurnTimer(); // AI 落完轮到玩家：启动倒计时
                 }
             }, 800);
         }
@@ -2018,9 +2068,11 @@ class GameEngineController {
             NetworkManager.sendGomokuMove(r, c, myColor);
 
             if (res.isGameOver) {
+                this.stopGomokuTurnTimer();
                 this.handleGomokuWin(res.winner);
             } else {
                 this.updateGomokuStatusUI('⏳ 对方思考中...');
+                this.stopGomokuTurnTimer(); // 轮到对方：停止本地计时（房主主导）
             }
             return;
         }
@@ -2032,6 +2084,7 @@ class GameEngineController {
         this.renderGomokuBoard();
 
         if (res.isGameOver) {
+            this.stopGomokuTurnTimer();
             this.handleGomokuWin(res.winner);
             return;
         }
@@ -2039,6 +2092,7 @@ class GameEngineController {
         // 若为单机 AI 模式，触发 AI 落子 (模拟拟人化随机思考 600ms ~ 1400ms)
         if (engine.isAiMode && engine.currentTurn !== engine.playerColor) {
             this.updateGomokuStatusUI('🤖 AI 棋圣思考中...');
+            this.stopGomokuTurnTimer(); // AI 思考期间不显示玩家倒计时
             const randomThinkTime = Math.floor(Math.random() * 800 + 600); // 600ms - 1400ms 随机思考时长
             setTimeout(() => {
                 const aiMove = engine.getBestAiMove();
@@ -2046,9 +2100,11 @@ class GameEngineController {
                     const aiRes = engine.placeStone(aiMove.r, aiMove.c);
                     this.renderGomokuBoard();
                     if (aiRes && aiRes.isGameOver) {
+                        this.stopGomokuTurnTimer();
                         this.handleGomokuWin(aiRes.winner);
                     } else {
                         this.updateGomokuStatusUI('⚫ 黑方落子中 (你)');
+                        this.startGomokuTurnTimer(); // AI 落完轮到玩家：重新启动倒计时
                     }
                 }
             }, randomThinkTime);
@@ -2141,9 +2197,156 @@ class GameEngineController {
     }
 
     /**
+     * 启动/重置五子棋 30 秒回合倒计时
+     * - 单机 AI 模式：玩家回合超时自动落子（托管）
+     * - 联机模式：仅房主主导计时，当前回合玩家超时判负并广播
+     */
+    startGomokuTurnTimer() {
+        this.stopGomokuTurnTimer();
+
+        const engine = window.gomokuEngine;
+        const badge = document.getElementById('gomokuTimerBadge');
+        const secsEl = document.getElementById('gomokuTimerSecs');
+        if (!engine || engine.isGameOver) {
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+
+        // 联机模式非房主不本地计时（以房主广播为准），但仍显示剩余秒数由房主状态同步
+        if (!NetworkManager.isAiMode && !NetworkManager.isHost) {
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+
+        this._gomokuTimerSeconds = 30;
+        if (badge) badge.style.display = 'inline-flex';
+        if (secsEl) secsEl.textContent = '30';
+
+        this._gomokuTimerInterval = setInterval(() => {
+            const gScr = document.getElementById('gomokuGameScreen');
+            if (!gScr || gScr.style.display === 'none' || !window.gomokuEngine || window.gomokuEngine.isGameOver) {
+                this.stopGomokuTurnTimer();
+                return;
+            }
+
+            this._gomokuTimerSeconds--;
+            if (secsEl) secsEl.textContent = Math.max(0, this._gomokuTimerSeconds);
+            if (badge) {
+                if (this._gomokuTimerSeconds <= 5) badge.classList.add('urgent');
+                else badge.classList.remove('urgent');
+            }
+
+            if (this._gomokuTimerSeconds <= 0) {
+                this.stopGomokuTurnTimer();
+                this.handleGomokuTimeout();
+            }
+        }, 1000);
+    }
+
+    /**
+     * 停止五子棋回合倒计时
+     */
+    stopGomokuTurnTimer() {
+        if (this._gomokuTimerInterval) {
+            clearInterval(this._gomokuTimerInterval);
+            this._gomokuTimerInterval = null;
+        }
+        const badge = document.getElementById('gomokuTimerBadge');
+        if (badge) badge.style.display = 'none';
+    }
+
+    /**
+     * AI 回合超时兜底：重新驱动 AI 落子 (单机模式 AI 理论上自动落子，此处防竞态卡死)
+     */
+    triggerAiGomokuIfNeeded() {
+        const engine = window.gomokuEngine;
+        if (!engine || engine.isGameOver) return;
+        if (engine.isAiMode && engine.currentTurn !== engine.playerColor) {
+            const aiMove = engine.getBestAiMove();
+            if (aiMove) {
+                const aiRes = engine.placeStone(aiMove.r, aiMove.c);
+                this.renderGomokuBoard();
+                if (aiRes && aiRes.isGameOver) {
+                    this.stopGomokuTurnTimer();
+                    this.handleGomokuWin(aiRes.winner);
+                } else {
+                    this.updateGomokuStatusUI(engine.currentTurn === engine.playerColor ? '⚫ 轮到你落子' : '🤖 AI 思考中...');
+                    if (engine.currentTurn === engine.playerColor) this.startGomokuTurnTimer();
+                }
+            }
+        }
+    }
+
+    /**
+     * 五子棋回合超时自动处理
+     * - 单机 AI：玩家回合超时 -> 自动随机落一子（托管）
+     * - 联机：房主判定当前回合玩家超时 -> 对方获胜，广播超时结果
+     */
+    handleGomokuTimeout() {
+        const engine = window.gomokuEngine;
+        if (!engine || engine.isGameOver) return;
+
+        if (engine.isAiMode) {
+            // 单机 AI 模式：若轮到玩家且超时，自动落一子（简单托管）
+            if (engine.currentTurn === engine.playerColor) {
+                const emptyCells = [];
+                for (let r = 0; r < engine.BOARD_SIZE; r++) {
+                    for (let c = 0; c < engine.BOARD_SIZE; c++) {
+                        if (engine.board[r][c] === 0) emptyCells.push({ r, c });
+                    }
+                }
+                if (emptyCells.length === 0) return;
+                const pick = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                const res = engine.placeStone(pick.r, pick.c);
+                this.renderGomokuBoard();
+                UIRenderer.showToast('⏱ 思考超时，已自动落子！');
+                if (res && res.isGameOver) {
+                    this.handleGomokuWin(res.winner);
+                    return;
+                }
+                // 托管后轮到 AI，触发 AI 落子
+                this.updateGomokuStatusUI('🤖 AI 棋圣思考中...');
+                setTimeout(() => {
+                    const aiMove = engine.getBestAiMove();
+                    if (aiMove) {
+                        const aiRes = engine.placeStone(aiMove.r, aiMove.c);
+                        this.renderGomokuBoard();
+                        if (aiRes && aiRes.isGameOver) {
+                            this.handleGomokuWin(aiRes.winner);
+                        } else {
+                            this.updateGomokuStatusUI(engine.currentTurn === engine.playerColor ? '⚫ 轮到你落子' : '🤖 AI 思考中...');
+                            this.startGomokuTurnTimer();
+                        }
+                    }
+                }, 700);
+            } else {
+                // AI 回合理论上不会超时（AI 自动落子），兜底重驱
+                this.triggerAiGomokuIfNeeded();
+            }
+            return;
+        }
+
+        // 联机模式：房主判定当前回合玩家超时判负
+        if (!NetworkManager.isHost) return;
+        const timeoutColor = engine.currentTurn;
+        const winnerColor = timeoutColor === 1 ? 2 : 1;
+        UIRenderer.showToast(`⏱ 玩家超时未落子，${winnerColor === 1 ? '黑方' : '白方'}获胜！`);
+        engine.isGameOver = true;
+        engine.winner = winnerColor;
+        this.handleGomokuWin(winnerColor);
+        // 广播超时结果给对手（复用 gomokuMove 通道不适用，单独发超时信号）
+        if (NetworkManager.sendGomokuTimeout) {
+            NetworkManager.sendGomokuTimeout(winnerColor);
+        }
+    }
+
+    /**
      * 处理胜负结算
      */
     handleGomokuWin(winner) {
+        // 对局结束：停止回合倒计时
+        this.stopGomokuTurnTimer();
+
         let msg = '';
         if (winner === 1) msg = '🎉 恭喜黑方获得胜利 (五子连珠)！';
         else if (winner === 2) msg = '🤖 游鲸 AI 棋圣获得胜利！';
