@@ -7707,7 +7707,8 @@ class GameEngineController {
                 if (inNav) return; // 导航区横向滚动交给浏览器自身处理
                 const dx = e.touches[0].clientX - touchStartX;
                 const dy = e.touches[0].clientY - touchStartY;
-                if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                // 横向主导 (水平位移超过纵向) 即阻止页面滚动, 保证左右滑时页面不跟着动
+                if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
                     if (e.cancelable) e.preventDefault();
                 }
             }, { passive: false });
@@ -7726,8 +7727,8 @@ class GameEngineController {
                         // 左滑切换下一个游戏 (动画向左滑出/从右滑入)
                         switchGameLobby(gameOrder[(curIdx + 1) % gameOrder.length], 1);
                     } else {
-                        // 右滑切换上一个游戏 (动画向右滑出/从左滑入)
-                        switchGameLobby(gameOrder[(curIdx + 3) % gameOrder.length], -1);
+                        // 右滑切换上一个游戏 (动画向右滑出/从左滑入)  (curIdx + 长度 - 1) % 长度 = 上一个
+                        switchGameLobby(gameOrder[(curIdx + gameOrder.length - 1) % gameOrder.length], -1);
                     }
                 }
             }, { passive: true });

@@ -99,6 +99,7 @@ body.theme-gomoku .app-header {
 body.theme-mahjong,
 body.theme-mahjong .game-container,
 body.theme-mahjong #lobbyScreen {
+    touch-action: pan-y; /* 横向手势交给JS切换游戏, 纵向允许滚动, 页面不跟手 */
     background-color: #031c15 !important;
     background-image:
         radial-gradient(ellipse 85% 65% at 50% 45%, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 60%, #01140e 100%),
@@ -3896,6 +3897,7 @@ body.theme-gomoku .overlay-screen {
 
 /* 顶部游鲸多游戏大厅切换 Navigation Bar */
 .game-switch-nav {
+    touch-action: pan-x; /* 导航区自身横向滚动, 不触发页面/切换干扰 */
     display: flex;
     align-items: center;
     justify-content: flex-start;
