@@ -500,18 +500,18 @@
         <div id="mahjongGameScreen" class="overlay-screen mahjong-screen-wrap" style="display: none;">
             <div class="mahjong-table-vertical-container">
                 <!-- 顶部对局状态指示 (纯质居中) -->
-                <div class="mahjong-top-bar">
+                <div class="mahjong-top-bar" id="mahjongTopBar">
                     <div class="mahjong-turn-status top-status" id="mahjongTurnStatus">
                         <span class="status-dot jade"></span>
                         <span id="mahjongTurnText">🀄 东风圈 · 你的回合</span>
                     </div>
+                    <!-- 听牌徽章 (动态生成/隐藏) -->
+                    <div class="mahjong-ting-badge" id="mahjongTingBadge" style="display:none;"></div>
                     <div class="mahjong-wall-badge" id="mahjongWallBadge" title="剩余牌墙数量">
                         <i class="fa-solid fa-layer-group"></i> 剩 <span id="mahjongWallCount">84</span> 张
+                        <span class="wall-inline-stacks" id="mahjongVisualWallRow" title="剩余牌墙（即拿即销）"></span>
                     </div>
                 </div>
-
-                <!-- 🀄 剩余牌墙 3D 微型立体砌牌堆 (位于剩余张数区域下方) -->
-                <div class="mahjong-visual-wall-row" id="mahjongVisualWallRow" title="剩余牌墙（即拿即销）"></div>
 
                 <!-- 🀄 国风金光动作大字报 (吃/碰/杠/胡 特效) -->
                 <div id="mahjongActionToast" class="mahjong-action-toast-banner" style="display: none;">

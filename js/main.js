@@ -3071,6 +3071,11 @@ class GameEngineController {
         if (countEl) countEl.textContent = engine.wallCount;
         this.renderMahjongVisualWall();
 
+        // 听牌提示：轮到我方出牌（13或14张手牌）时计算可胡张
+        const isMyTurnAndDrawn = (engine.currentTurn === mySlot && (engine.hands[mySlot] || []).length % 3 === 2);
+        const tingInfo = (engine.currentTurn === mySlot && !engine.isGameOver) ? this.getMahjongTingInfo() : null;
+        this.renderMahjongTingBadge(tingInfo);
+
         const containerBottom = document.getElementById('mahjongHandTilesContainer');
         if (!containerBottom) return;
 
@@ -3089,7 +3094,6 @@ class GameEngineController {
         // 2. 渲染我方 (Seat mySlot) 手牌
         containerBottom.innerHTML = '';
         const myHand = engine.hands[mySlot] || [];
-        const isMyTurnAndDrawn = (engine.currentTurn === mySlot && myHand.length % 3 === 2);
 
         myHand.forEach((tile, index) => {
             const card = document.createElement('div');
@@ -3102,10 +3106,18 @@ class GameEngineController {
                 card.classList.add('is-drawn-tile');
             }
 
+            // 🀄 听牌高亮：听牌状态下，能够凑成胡牌的关键搭子金色微光
+            if (tingInfo && tingInfo.tingSet && tingInfo.tingSet.has(tile.name)) {
+                card.classList.add('ting-key-tile');
+            }
+
             if (this.selectedMahjongTileIndex === index) {
                 card.classList.add('selected');
             }
             card.innerHTML = this.getMahjongTileFaceHTML(tile);
+            // 记录牌名到 face 上，供碰/杠高亮匹配
+            const faceEl = card.querySelector('.m-face');
+            if (faceEl) faceEl.dataset.tileName = tile.name;
 
             card.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -3218,6 +3230,91 @@ class GameEngineController {
     }
 
     /**
+     * 🀄 听牌检测：遍历所有可能的牌张，返回能胡的牌集合
+     * @returns {null|{tingSet:Set<string>, tingCount:number, tingTiles:string[]}}
+     */
+    getMahjongTingInfo() {
+        const engine = window.mahjongEngine;
+        if (!engine) return null;
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const myHand = engine.hands[mySlot] || [];
+        // 听牌判断：13 张（打完牌等待摸牌）或 14 张（刚摸牌未打出）均可判断
+        const lenMod = myHand.length % 3;
+        if (lenMod !== 1 && lenMod !== 2) return null;
+        const isFourteen = (lenMod === 2); // 14 张：刚摸牌，需先虚拟打出一张再判断
+
+        // 手牌已有的牌名计数，用于排除已有 4 张的牌
+        const handCount = {};
+        myHand.forEach(t => { handCount[t.name] = (handCount[t.name] || 0) + 1; });
+
+        const tingSet = new Set();
+        const tingTiles = [];
+        const types = ['万', '条', '筒'];
+        const candidates = [];
+        types.forEach(t => { for (let n = 1; n <= 9; n++) candidates.push({ type: t, num: n, name: `${n}${t}`, id: `cand_${t}_${n}` }); });
+        const winds = ['东', '南', '西', '北'];
+        winds.forEach((w, idx) => candidates.push({ type: '字', num: idx + 1, name: `${w}风`, id: `cand_风_${w}` }));
+        const dragons = [{ name: '红中', num: 5 }, { name: '发财', num: 6 }, { name: '白板', num: 7 }];
+        dragons.forEach(d => candidates.push({ type: '字', num: d.num, name: d.name, id: `cand_箭_${d.name}` }));
+
+        for (const cand of candidates) {
+            // 该牌已在手 4 张，无法再胡
+            if ((handCount[cand.name] || 0) >= 4) continue;
+            try {
+                if (isFourteen) {
+                    // 14 张：遍历打出任意一张后，剩下的 13 张 + cand 能否胡
+                    const seen = new Set();
+                    for (let i = 0; i < myHand.length; i++) {
+                        const drop = myHand[i];
+                        const dropKey = drop.name + '_' + i;
+                        if (seen.has(drop.name)) continue;
+                        seen.add(drop.name);
+                        const rest = myHand.filter((_, idx) => idx !== i);
+                        if (engine.checkCanHu(rest, cand)) {
+                            if (!tingSet.has(cand.name)) {
+                                tingSet.add(cand.name);
+                                tingTiles.push(cand.name);
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    if (engine.checkCanHu(myHand, cand)) {
+                        if (!tingSet.has(cand.name)) {
+                            tingSet.add(cand.name);
+                            tingTiles.push(cand.name);
+                        }
+                    }
+                }
+            } catch (e) { /* 单张检测异常忽略 */ }
+        }
+
+        if (tingTiles.length === 0) return null;
+        return { tingSet, tingCount: tingTiles.length, tingTiles };
+    }
+
+    /**
+     * 🀄 渲染听牌徽章（顶部状态胶囊右侧）
+     */
+    renderMahjongTingBadge(tingInfo) {
+        let badge = document.getElementById('mahjongTingBadge');
+        if (!tingInfo) {
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+        if (!badge) {
+            const topBar = document.getElementById('mahjongTopBar');
+            if (!topBar) return;
+            badge = document.createElement('div');
+            badge.id = 'mahjongTingBadge';
+            badge.className = 'mahjong-ting-badge';
+            topBar.appendChild(badge);
+        }
+        badge.innerHTML = `<span class="ting-title">🎯 听牌</span><span class="ting-count">${tingInfo.tingCount}张</span><span class="ting-tiles">${tingInfo.tingTiles.join(' ')}</span>`;
+        badge.style.display = 'inline-flex';
+    }
+
+    /**
      * 🀄 发牌动画中渐进渲染 4 家手牌 (按步数递增: 4 -> 8 -> 12 -> 13/14)
      */
     renderMahjongHandTilesPartial(step) {
@@ -3270,6 +3367,11 @@ class GameEngineController {
         }
 
         this.renderMahjongVisualWall();
+
+        // 重渲染后恢复碰/杠高亮（若响应仍未结束）
+        if (this.pendingDiscardRes) {
+            this.highlightMahjongActionTiles(this.pendingDiscardRes);
+        }
     }
 
     /**
@@ -3555,6 +3657,19 @@ class GameEngineController {
             }
         });
 
+        // 🀄 回合强调：轮到我方时手牌区金色脉冲边框 + 顶部状态高亮
+        const isMyTurn = (engine.currentTurn === mySlot && !engine.isGameOver);
+        const handWrap = document.getElementById('mahjongHandTilesContainer');
+        const turnStatus = document.getElementById('mahjongTurnStatus');
+        if (handWrap) {
+            if (isMyTurn) handWrap.classList.add('my-turn-glow');
+            else handWrap.classList.remove('my-turn-glow');
+        }
+        if (turnStatus) {
+            if (isMyTurn) turnStatus.classList.add('my-turn-active');
+            else turnStatus.classList.remove('my-turn-active');
+        }
+
         // 每次状态更新重新启动 25 秒倒计时
         this.resetMahjongTurnTimer();
     }
@@ -3805,6 +3920,42 @@ class GameEngineController {
         if (btnPass) btnPass.style.display = 'inline-block';
 
         if (actionBar) actionBar.style.display = 'flex';
+
+        // 🀄 碰/杠牌型高亮：高亮手牌中可与桌面弃牌组成碰/杠的搭子（金色脉冲提示）
+        this.highlightMahjongActionTiles(res);
+    }
+
+    /**
+     * 🀄 高亮可碰/可杠的手牌搭子（金色脉冲微光）
+     */
+    highlightMahjongActionTiles(res) {
+        const container = document.getElementById('mahjongHandTilesContainer');
+        if (!container || !res) return;
+
+        // 清除旧高亮
+        container.querySelectorAll('.mahjong-tile-card').forEach(c => c.classList.remove('action-highlight'));
+
+        if (!res.canPong && !res.canKong) return;
+        if (!res.discarded) return;
+
+        const targetName = res.discarded.name;
+        container.querySelectorAll('.mahjong-tile-card').forEach(card => {
+            const face = card.querySelector('.m-face');
+            if (!face) return;
+            const tileName = face.dataset.tileName;
+            if (tileName === targetName) {
+                card.classList.add('action-highlight');
+            }
+        });
+    }
+
+    /**
+     * 清除手牌上的碰/杠高亮（响应结束或重新渲染时调用）
+     */
+    clearMahjongActionHighlight() {
+        const container = document.getElementById('mahjongHandTilesContainer');
+        if (!container) return;
+        container.querySelectorAll('.mahjong-tile-card').forEach(c => c.classList.remove('action-highlight'));
     }
 
     /**
@@ -3976,6 +4127,7 @@ class GameEngineController {
         if (actionBar) actionBar.style.display = 'none';
         const chowModal = document.getElementById('mahjongChowModal');
         if (chowModal) chowModal.style.display = 'none';
+        this.clearMahjongActionHighlight();
 
         const engine = window.mahjongEngine;
         if (!engine) return;
