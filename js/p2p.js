@@ -473,7 +473,11 @@ class P2PManager {
                 let assignedSlot = -1;
 
                 // 1. 检查是否是房主 (槽位 0) 重连/加入
-                if (roomData.hostSid === this.sessionId || (players[0] && (players[0].sid === this.sessionId || players[0].name === nickname))) {
+                // 注意：只有 sid 匹配才认定房主重连；单纯同名不应覆盖房主槽位，
+                // 防止不同设备用相同昵称加入时误抢房主身份
+                const isHostSidMatch = roomData.hostSid && roomData.hostSid === this.sessionId;
+                const isSlot0SidMatch = players[0] && players[0].sid && players[0].sid === this.sessionId;
+                if (isHostSidMatch || isSlot0SidMatch) {
                     assignedSlot = 0;
                     this.isHost = true;
                 } else {
