@@ -11158,13 +11158,23 @@ class GameEngineController {
             for (let c = 0; c < 9; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'xq-cell';
-
                 cell.dataset.r = r;
                 cell.dataset.c = c;
-                cell.addEventListener('click', () => this.handleXiangqiCellClick(r, c));
                 boardContainer.appendChild(cell);
             }
         }
+
+        // 事件委托: 点击棋盘任意位置(含棋子)按坐标换算交叉点, 避免棋子覆盖格子导致点击失效
+        boardContainer.addEventListener('click', (e) => {
+            const rect = boardContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 8.6 - 0.3;
+            const y = (e.clientY - rect.top) / rect.height * 9.6 - 0.3;
+            const c = Math.round(x);
+            const r = Math.round(y);
+            if (c >= 0 && c <= 8 && r >= 0 && r <= 9) {
+                this.handleXiangqiCellClick(r, c);
+            }
+        });
 
         // 楚河汉界文字
         const river = document.createElement('div');
