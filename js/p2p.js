@@ -14,11 +14,11 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase 改为异步动态加载: 不在 <head> 同步阻塞, 避免 gstatic CDN 慢导致整页按钮绑定延迟
-// 游戏本体 (AI/本地) 完全不依赖 Firebase; 云端房间/排行榜/账号就绪后自动生效
+// SDK 已本地化到 js/vendor/ (从 gstatic 下载托管于本站), 彻底摆脱对 Google CDN 的依赖, 国内/微信访问更快
 const FIREBASE_SDK_URLS = [
-    'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js',
-    'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js'
+    'js/vendor/firebase-app-compat.js',
+    'js/vendor/firebase-database-compat.js',
+    'js/vendor/firebase-auth-compat.js'
 ];
 
 let _firebaseReady = false;
