@@ -7985,6 +7985,43 @@ body.theme-xiangqi {
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.2);
 }
 
+/* ===== 象棋大厅卡: 绿色元素统一改为象棋棋子木色 (仅象棋卡生效) ===== */
+#xiangqiLobbyCard .emerald-auth {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.16), rgba(0, 0, 0, 0.5));
+    border-color: rgba(185, 138, 78, 0.45);
+}
+
+#xiangqiLobbyCard .green-theme,
+#xiangqiLobbyCard .primary-card.green-theme,
+#xiangqiLobbyCard .public-card.green-theme {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.22) 0%, rgba(40, 25, 8, 0.65) 100%);
+    border-color: rgba(185, 138, 78, 0.5);
+}
+
+#xiangqiLobbyCard .primary-card.green-theme:hover,
+#xiangqiLobbyCard .public-card.green-theme:hover {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.32) 0%, rgba(50, 30, 10, 0.8) 100%);
+    border-color: rgba(201, 162, 85, 0.7);
+}
+
+#xiangqiLobbyCard .btn-auth-action.green,
+#xiangqiLobbyCard .btn-join-action.green {
+    background: linear-gradient(135deg, #d9ab6a, #b98a4e) !important;
+    color: #3b2410 !important;
+}
+
+#xiangqiLobbyCard .pill-badge.green {
+    background: rgba(120, 80, 30, 0.28);
+    border: 1px solid rgba(201, 162, 85, 0.5);
+    color: #e8c98f;
+}
+
+#xiangqiLobbyCard .card-icon-wrap.green {
+    background: rgba(140, 95, 40, 0.22);
+    border: 1px solid rgba(201, 162, 85, 0.45);
+    color: #e8c98f;
+}
+
 /* 象棋大厅卡 Header (红木漆面) */
 .hero-lobby-card.theme-ink .lobby-header.xiangqi-header {
     background: linear-gradient(180deg, #a03434 0%, #7c2222 60%, #571414 100%) !important;
