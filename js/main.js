@@ -4744,7 +4744,8 @@ class GameEngineController {
         this.updateControlButtons(NetworkManager.myPlayerIndex);
 
         const totalDuration = 3000; // 3.0 秒
-        const startTime = Date.now();
+        // 关键修复：全员统一以云端绝对时间戳为基准计算，消灭网络延迟造成的倒计时不同步
+        const startTime = (this.gameState && this.gameState.openingStartTime) ? this.gameState.openingStartTime : Date.now();
         const step = 50;
 
         let lastPlayedSec = -1;
@@ -4781,7 +4782,9 @@ class GameEngineController {
             }
         };
 
-        updateLights(3);
+        const initialElapsed = Date.now() - startTime;
+        const initialSecs = Math.max(0, Math.ceil((totalDuration - initialElapsed) / 1000));
+        updateLights(initialSecs);
 
         clearInterval(this._startCountdownTimer);
         this._startCountdownTimer = setInterval(() => {
