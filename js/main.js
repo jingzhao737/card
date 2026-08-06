@@ -547,13 +547,53 @@ class GameEngineController {
             setTimeout(updateNavScrollMask, 100);
             updateNavScrollMask();
 
-            // 鼠标滚轮横向滚动导航栏 (仅导航可滚动时拦截, 不干扰页面纵向滚动)
+            // 惯性滚动 + 边界弹性 (滚轮/拖拽结束后平滑衰减, 到底回弹)
+            let navVel = 0;
+            let navAnimId = null;
+            let navOvershoot = 0;
+            const navInertiaTick = () => {
+                const maxS = navEl.scrollWidth - navEl.clientWidth;
+                if (maxS <= 0) { navAnimId = null; navEl.style.transform = ''; return; }
+                // 边界弹性: 到最左/最右时速度反向衰减 + 视觉超出回弹
+                if (navEl.scrollLeft <= 0 && navVel < 0) {
+                    navOvershoot = Math.min(18, navOvershoot + (-navVel) * 0.25);
+                    navVel = -navVel * 0.4;
+                    navEl.style.transform = 'translateX(' + navOvershoot + 'px)';
+                } else if (navEl.scrollLeft >= maxS && navVel > 0) {
+                    navOvershoot = Math.min(18, navOvershoot + navVel * 0.25);
+                    navVel = -navVel * 0.4;
+                    navEl.style.transform = 'translateX(' + (-navOvershoot) + 'px)';
+                } else {
+                    navEl.scrollLeft += navVel;
+                    if (navOvershoot > 0.5) {
+                        navOvershoot *= 0.78;
+                        const dir = navVel < 0 ? 1 : -1;
+                        navEl.style.transform = 'translateX(' + (navOvershoot * dir) + 'px)';
+                    } else if (navOvershoot !== 0) {
+                        navOvershoot = 0;
+                        navEl.style.transform = '';
+                    }
+                }
+                navVel *= 0.9; // 阻尼衰减
+                if (Math.abs(navVel) < 0.4 && navOvershoot === 0) {
+                    navAnimId = null;
+                    navEl.style.transform = '';
+                    return;
+                }
+                navAnimId = requestAnimationFrame(navInertiaTick);
+            };
+            // 鼠标滚轮: 累积速度带动画惯性
             navEl.addEventListener('wheel', (e) => {
                 if (navEl.scrollWidth <= navEl.clientWidth) return;
-                if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return; // 横向滚轮优先原生
+                if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
                 e.preventDefault();
-                navEl.scrollLeft += e.deltaY;
+                navVel += e.deltaY;
+                if (!navAnimId) navAnimId = requestAnimationFrame(navInertiaTick);
             }, { passive: false });
+            // 拖拽开始时停止惯性动画, 避免冲突
+            navEl.addEventListener('mousedown', () => {
+                if (navAnimId) { cancelAnimationFrame(navAnimId); navAnimId = null; navVel = 0; navEl.style.transform = ''; navOvershoot = 0; }
+            });
 
             let navDragging = false;
             let navStartX = 0;
