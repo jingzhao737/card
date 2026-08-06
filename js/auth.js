@@ -628,7 +628,19 @@ class AuthManager {
             if (callback) callback(cached);
         }
 
+        // 8 秒超时兜底: 云端查询极慢/挂起时不再无限"加载中", 降级为提示 (游戏不受影响)
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            console.warn('[Auth] 排行榜查询超时(8s), 降级处理');
+            if (callback && !servedCache) callback(null);
+        }, 8000);
+
         this.db.ref('users').orderByChild('yinCoins').limitToLast(15).once('value').then(snap => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
             const map = snap.val() || {};
             const list = [];
             Object.keys(map).forEach(key => {
@@ -644,6 +656,9 @@ class AuthManager {
             } catch (e) {}
             if (callback && !servedCache) callback(top10);
         }).catch(err => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
             console.error('[Auth] 排行榜加载失败:', err);
             if (callback && !servedCache) callback([]);
         });

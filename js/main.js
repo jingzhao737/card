@@ -1886,8 +1886,8 @@ class GameEngineController {
 
         AuthEngine.fetchLeaderboard(list => {
             if (!list) {
-                // 云端 SDK 尚未就绪 (异步加载中)
-                ticker.innerHTML = '<span style="color:#94a3b8"><i class="fa-solid fa-spinner fa-spin"></i> 云端排行榜加载中...</span>';
+                // 云端 SDK 尚未就绪或查询超时: 明确提示, 不再无限"加载中"
+                ticker.innerHTML = '<span style="color:#94a3b8"><i class="fa-solid fa-cloud-arrow-down"></i> 排行榜暂不可用 · 游戏不受影响</span>';
                 return;
             }
             if (list.length === 0) {
@@ -1936,8 +1936,8 @@ class GameEngineController {
         AuthEngine.fetchLeaderboard(list => {
             container.innerHTML = '';
             if (!list) {
-                // 云端 SDK 尚未就绪 (异步加载中)
-                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 云端连接中，稍后自动加载...</div>';
+                // 云端 SDK 尚未就绪或查询超时
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:25px;font-size:0.85rem;"><i class="fa-solid fa-cloud-arrow-down"></i> 排行榜暂不可用，游戏不受影响</div>';
                 return;
             }
             if (list.length === 0) {
