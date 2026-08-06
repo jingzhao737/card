@@ -8828,52 +8828,6 @@ class GameEngineController {
     /**
      * 重置界面并退出当前房间 (无论是人机还是玩家对局，只要无真人玩家立即删除云端房间)
      */
-    resetToLobby() {
-        // 彻底清空麻将与斗地主所有定时器，防止离开大厅后后台 AI 继续走牌并播音效！
-        this.stopMahjongGame();
-        if (this.turnTimerInterval) {
-            clearInterval(this.turnTimerInterval);
-            this.turnTimerInterval = null;
-        }
-        if (this.turnTimerId) {
-            clearInterval(this.turnTimerId);
-            this.turnTimerId = null;
-        }
-        this.gameState.phase = 'LOBBY';
-
-        const doResetUI = () => {
-            const lobbyScr = document.getElementById('lobbyScreen');
-            const waitingScr = document.getElementById('waitingScreen');
-            const doudizhuScr = document.getElementById('gameScreen');
-            const gomokuScr = document.getElementById('gomokuGameScreen');
-            const mahjongScr = document.getElementById('mahjongGameScreen');
-            const goScr = document.getElementById('goGameScreen');
-            const xiangqiScr = document.getElementById('xiangqiGameScreen');
-
-            // 统一隐藏所有游戏对局屏 (含围棋/象棋)
-            [waitingScr, doudizhuScr, gomokuScr, mahjongScr, goScr, xiangqiScr].forEach(s => {
-                if (s) { s.style.display = 'none'; s.classList.remove('active'); }
-            });
-
-            // 清理围棋/象棋回合计时器
-            if (this.stopGoTurnTimer) this.stopGoTurnTimer();
-            if (this.stopXiangqiTurnTimer) this.stopXiangqiTurnTimer();
-
-            if (lobbyScr) { lobbyScr.style.display = 'flex'; lobbyScr.classList.add('active'); }
-
-            this.updateHeaderVisibility();
-            if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardSort) SoundEngine.playCardSort();
-        };
-
-        if (typeof NetworkManager !== 'undefined' && NetworkManager.leaveRoom) {
-            NetworkManager.leaveRoom(() => {
-                doResetUI();
-            });
-        } else {
-            doResetUI();
-        }
-    }
-
     /**
      * 打开个人战绩名片与排行榜弹窗 (支持每日改名一次 + 更换头像)
      */
@@ -14750,10 +14704,11 @@ class GameEngineController {
         const mahjongScr = document.getElementById('mahjongGameScreen');
         const gomokuScr  = document.getElementById('gomokuGameScreen');
         const goScr      = document.getElementById('goGameScreen');
+        const xiangqiScr = document.getElementById('xiangqiGameScreen');
         const isMahjongExit = (this.activeGameType === 'MAHJONG') || (mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none'));
         const isGomokuExit  = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
         const isGoExit      = (this.activeGameType === 'GO') || (goScr && (goScr.classList.contains('active') || goScr.style.display !== 'none'));
-        const isXiangqiExit = (this.activeGameType === 'XIANGQI');
+        const isXiangqiExit = (this.activeGameType === 'XIANGQI') || (xiangqiScr && (xiangqiScr.classList.contains('active') || xiangqiScr.style.display !== 'none'));
 
         this._stopKeepAlive();
         if (this._mahjongWatchdogId) { clearInterval(this._mahjongWatchdogId); this._mahjongWatchdogId = null; }
@@ -14804,7 +14759,11 @@ class GameEngineController {
         if (gameOverModal) gameOverModal.style.display = 'none';
         if (gomokuScr)     { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
         if (goScr)         { goScr.style.display = 'none'; goScr.classList.remove('active'); }
+        if (xiangqiScr)    { xiangqiScr.style.display = 'none'; xiangqiScr.classList.remove('active'); }
         if (mahjongScr)    { mahjongScr.style.display = 'none'; mahjongScr.classList.remove('active'); }
+        // 清理围棋/象棋回合计时器, 防止退出后后台 AI 继续走/计时
+        if (this.stopGoTurnTimer) this.stopGoTurnTimer();
+        if (this.stopXiangqiTurnTimer) this.stopXiangqiTurnTimer();
         if (mahjongSettle) { mahjongSettle.style.display = 'none'; mahjongSettle.classList.remove('active'); }
         if (roomInfoBar)   roomInfoBar.style.display = 'none';
         if (btnLeaveRoom)  btnLeaveRoom.style.display = 'none';
