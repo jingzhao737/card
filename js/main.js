@@ -4790,17 +4790,15 @@ class GameEngineController {
             if (elapsed >= totalDuration) {
                 clearInterval(this._startCountdownTimer);
                 this._isCountingDownLocally = false;
+                this.gameState.isOpeningCountdown = false;
                 setTimeout(() => {
                     if (overlay) overlay.style.display = 'none';
                     if (NetworkManager.isHost) {
-                        this.gameState.isOpeningCountdown = false;
-                        NetworkManager.broadcastState(this.gameState); // 仅由房主主导开局状态解锁并广播
-                        UIRenderer.showToast('🔥 3秒到！手速抢地主开始！');
+                        NetworkManager.broadcastState(this.gameState);
+                        UIRenderer.showToast('🔥 3秒到！叫地主开始！');
                         SoundEngine.playBid();
 
-                        if (NetworkManager.isAiMode) {
-                            this.scheduleAiBids();
-                        }
+                        this.triggerAiBidIfNeeded();
                     }
                     this.updateControlButtons(NetworkManager.myPlayerIndex);
                 }, 200);
@@ -4809,20 +4807,45 @@ class GameEngineController {
     }
 
     /**
-     * AI 单机模式下的手速叫牌模拟
+     * AI 单机/补齐模式下的顺时针轮流叫牌智能决策
      */
-    scheduleAiBids() {
-        [1, 2].forEach(aiIdx => {
-            const delay = 2200 + Math.random() * 2600; // 给玩家留出 2 秒以上的抢按时间
-            setTimeout(() => {
-                if (this.gameState.phase === 'BIDDING' && !this.gameState.players[aiIdx].passedBid) {
-                    // AI 有 40% 几率抢叫，60% 几率放弃不叫
-                    const willClaim = Math.random() < 0.4;
-                    this.processBid(aiIdx, willClaim ? 'CLAIM' : 'PASS');
-                    NetworkManager.broadcastState(this.gameState);
-                }
-            }, delay);
-        });
+    triggerAiBidIfNeeded() {
+        if (!NetworkManager.isHost || this.gameState.phase !== 'BIDDING') return;
+
+        const turn = this.gameState.currentTurn;
+        const player = this.gameState.players[turn];
+        if (!player || !player.isAi || player.passedBid) return;
+
+        if (this._aiBidTimer) clearTimeout(this._aiBidTimer);
+
+        const delay = 800 + Math.random() * 800; // 0.8s ~ 1.6s 优雅思考延时
+        this._aiBidTimer = setTimeout(() => {
+            if (this.gameState.phase !== 'BIDDING' || this.gameState.currentTurn !== turn) return;
+
+            const highestBid = this.gameState.highestBid || 0;
+            let choice = 0; // 0 = PASS
+            const rand = Math.random();
+
+            if (highestBid === 0) {
+                if (rand < 0.20) choice = 3;
+                else if (rand < 0.50) choice = 2;
+                else if (rand < 0.75) choice = 1;
+                else choice = 0;
+            } else if (highestBid === 1) {
+                if (rand < 0.25) choice = 3;
+                else if (rand < 0.55) choice = 2;
+                else choice = 0;
+            } else if (highestBid === 2) {
+                if (rand < 0.30) choice = 3;
+                else choice = 0;
+            }
+
+            if (choice > highestBid) {
+                this.processBid(turn, choice);
+            } else {
+                this.processBid(turn, 'PASS');
+            }
+        }, delay);
     }
 
     /**
@@ -5163,20 +5186,29 @@ class GameEngineController {
             playControls.style.display = 'none';
 
             const myPlayer = this.gameState.players[myIndex];
-            const isOpeningCountdown = !!this.gameState.isOpeningCountdown;
+            const isOpeningCountdown = !!this.gameState.isOpeningCountdown || !!this._isCountingDownLocally;
             const hasPassed = myPlayer && myPlayer.passedBid;
+            const highestBid = this.gameState.highestBid || 0;
 
             const passBtn = document.getElementById('btnBidPass');
+            const b1Btn = document.getElementById('btnBid1');
+            const b2Btn = document.getElementById('btnBid2');
+            const b3Btn = document.getElementById('btnBid3');
             const landlordBtn = document.getElementById('btnBidLandlord');
 
-            if (isOpeningCountdown || hasPassed) {
-                // 3秒倒计时中，或者已经放弃的玩家，置灰按钮
-                if (passBtn) { passBtn.disabled = true; passBtn.classList.add('disabled'); }
-                if (landlordBtn) { landlordBtn.disabled = true; landlordBtn.classList.add('disabled'); }
-            } else {
-                // 倒计时结束，全员拼手速！
-                if (passBtn) { passBtn.disabled = false; passBtn.classList.remove('disabled'); }
-                if (landlordBtn) { landlordBtn.disabled = false; landlordBtn.classList.remove('disabled'); }
+            const isDisabled = isOpeningCountdown || hasPassed;
+
+            [passBtn, b1Btn, b2Btn, b3Btn, landlordBtn].forEach(b => {
+                if (b) {
+                    b.disabled = isDisabled;
+                    if (isDisabled) b.classList.add('disabled');
+                    else b.classList.remove('disabled');
+                }
+            });
+
+            if (!isDisabled) {
+                if (b1Btn && highestBid >= 1) { b1Btn.disabled = true; b1Btn.classList.add('disabled'); }
+                if (b2Btn && highestBid >= 2) { b2Btn.disabled = true; b2Btn.classList.add('disabled'); }
             }
         } else if (this.gameState.phase === 'PLAYING') {
             biddingControls.style.display = 'none';
@@ -5356,6 +5388,7 @@ class GameEngineController {
             this.startTurnTimer();
             if (NetworkManager.isHost) {
                 NetworkManager.broadcastState(this.gameState);
+                this.triggerAiBidIfNeeded();
             }
             return;
         } else if (action === 'PASS' || action === 0) {
@@ -5397,6 +5430,7 @@ class GameEngineController {
             // 广播叫牌/不叫最新状态，保证所有玩家界面提示与倒计时同步
             if (NetworkManager.isHost) {
                 NetworkManager.broadcastState(this.gameState);
+                this.triggerAiBidIfNeeded();
             }
         }
     }
