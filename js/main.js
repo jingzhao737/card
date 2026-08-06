@@ -2216,14 +2216,18 @@ class GameEngineController {
                 if (isWinStone) stone.classList.add('win-stone');
                 else stone.classList.remove('win-stone');
 
-                // 落子序号标记 (仅当棋格内无已有序号 span 时重建)
+                // 落子序号标记：只显示最近 5 步，避免全部棋子带数字显得繁杂
                 let numSpan = stone.querySelector('.stone-num');
                 if (numSpan) numSpan.remove();
-                const moveNum = moveNumberMap[`${r},${c}`] || '';
-                numSpan = document.createElement('span');
-                numSpan.className = 'stone-num' + (val === 1 ? ' on-black' : ' on-white') + (String(moveNum).length >= 2 ? ' len-2' : '');
-                numSpan.textContent = moveNum;
-                stone.appendChild(numSpan);
+                const moveNum = moveNumberMap[`${r},${c}`] || 0;
+                const totalMoves = (engine.moveHistory || []).length;
+                const isRecent = moveNum > 0 && (totalMoves - moveNum) < 5;
+                if (isRecent) {
+                    numSpan = document.createElement('span');
+                    numSpan.className = 'stone-num' + (val === 1 ? ' on-black' : ' on-white') + (String(moveNum).length >= 2 ? ' len-2' : '');
+                    numSpan.textContent = moveNum;
+                    stone.appendChild(numSpan);
+                }
             }
         });
 
