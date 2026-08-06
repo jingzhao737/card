@@ -2892,6 +2892,26 @@ class GameEngineController {
         if (btnChow) btnChow.onclick = () => this.handleMahjongChowClick();
         if (btnPong) btnPong.onclick = () => this.handleMahjongPongClick();
         if (btnKong) btnKong.onclick = () => this.handleMahjongKongClick();
+
+        // 📱 手机端滑动选牌后的出牌/取消按钮
+        const btnDiscard = document.getElementById('btnMahjongDiscardConfirm');
+        if (btnDiscard) {
+            btnDiscard.onclick = () => {
+                const idx = this.selectedMahjongTileIndex;
+                if (idx === undefined || idx === null || idx < 0) return;
+                this.selectedMahjongTileIndex = -1;
+                this.hideMahjongDiscardBar();
+                this.handleMahjongTileDiscard(idx);
+            };
+        }
+        const btnDiscardCancel = document.getElementById('btnMahjongDiscardCancel');
+        if (btnDiscardCancel) {
+            btnDiscardCancel.onclick = () => {
+                this.selectedMahjongTileIndex = -1;
+                this.hideMahjongDiscardBar();
+                this.renderMahjongHandTiles();
+            };
+        }
         if (btnHu) btnHu.onclick = () => this.handleMahjongHuClick();
         if (btnPass) btnPass.onclick = () => this.handleMahjongPassClick();
     }
@@ -3142,21 +3162,64 @@ class GameEngineController {
             const faceEl = card.querySelector('.m-face');
             if (faceEl) faceEl.dataset.tileName = tile.name;
 
-            card.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (this.selectedMahjongTileIndex === index) {
-                    // 第 2 次点击：确认打出此牌！
-                    this.selectedMahjongTileIndex = -1;
-                    this.handleMahjongTileDiscard(index);
-                } else {
-                    // 第 1 次点击：高亮凸起选中此牌！
-                    this.selectedMahjongTileIndex = index;
-                    if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
-                        SoundEngine.playCardFlipSound();
+            // 📱 手机端：滑动选择 + 点击出牌（滑动经过即高亮，点出牌按钮打出）
+            const isMobileTouch = ('ontouchstart' in window) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+            if (isMobileTouch) {
+                // 触摸滑动选择：手指滑到哪张牌就高亮哪张
+                card.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    // 找到手指正下方的牌
+                    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const target = el ? el.closest('.mahjong-tile-card') : null;
+                    if (target && target.dataset.index !== undefined) {
+                        const idx = parseInt(target.dataset.index, 10);
+                        if (this.selectedMahjongTileIndex !== idx) {
+                            // 轻量切换高亮（只改 class，不重建整手牌，保证滑动流畅）
+                            this.selectedMahjongTileIndex = idx;
+                            containerBottom.querySelectorAll('.mahjong-tile-card').forEach(c => {
+                                c.classList.toggle('selected', parseInt(c.dataset.index, 10) === idx);
+                            });
+                            this.showMahjongDiscardBar(idx);
+                        }
                     }
-                    this.renderMahjongHandTiles();
-                }
-            });
+                }, { passive: false });
+
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.selectedMahjongTileIndex === index) {
+                        // 再点已选中的牌：取消选中
+                        this.selectedMahjongTileIndex = -1;
+                        this.hideMahjongDiscardBar();
+                        this.renderMahjongHandTiles();
+                    } else {
+                        // 点选/滑动切换到此牌
+                        this.selectedMahjongTileIndex = index;
+                        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
+                            SoundEngine.playCardFlipSound();
+                        }
+                        this.renderMahjongHandTiles();
+                        this.showMahjongDiscardBar(index);
+                    }
+                });
+            } else {
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.selectedMahjongTileIndex === index) {
+                        // 第 2 次点击：确认打出此牌！
+                        this.selectedMahjongTileIndex = -1;
+                        this.handleMahjongTileDiscard(index);
+                    } else {
+                        // 第 1 次点击：高亮凸起选中此牌！
+                        this.selectedMahjongTileIndex = index;
+                        if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
+                            SoundEngine.playCardFlipSound();
+                        }
+                        this.renderMahjongHandTiles();
+                    }
+                });
+            }
 
             containerBottom.appendChild(card);
         });
@@ -3700,6 +3763,11 @@ class GameEngineController {
             if (isMyTurn) turnStatus.classList.add('my-turn-active');
             else turnStatus.classList.remove('my-turn-active');
         }
+        // 非我方回合时隐藏选牌出牌条并清空选中
+        if (!isMyTurn) {
+            this.selectedMahjongTileIndex = -1;
+            this.hideMahjongDiscardBar();
+        }
 
         // 每次状态更新重新启动 25 秒倒计时
         this.resetMahjongTurnTimer();
@@ -3739,6 +3807,32 @@ class GameEngineController {
     /**
      * 我方打牌与 4 人 AI 顺序轮转
      */
+    /**
+     * 📱 手机端：显示滑动选牌后的出牌确认条
+     */
+    showMahjongDiscardBar(index) {
+        const bar = document.getElementById('mahjongDiscardBar');
+        const tip = document.getElementById('mahjongDiscardTip');
+        const engine = window.mahjongEngine;
+        if (!bar) return;
+        if (!engine || engine.isGameOver || engine.currentTurn !== (NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0)) {
+            this.hideMahjongDiscardBar();
+            return;
+        }
+        const hand = engine.hands[NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0] || [];
+        const tile = hand[index];
+        if (tip && tile) tip.textContent = `已选：${tile.name}`;
+        bar.style.display = 'flex';
+    }
+
+    /**
+     * 📱 手机端：隐藏出牌确认条
+     */
+    hideMahjongDiscardBar() {
+        const bar = document.getElementById('mahjongDiscardBar');
+        if (bar) bar.style.display = 'none';
+    }
+
     handleMahjongTileDiscard(tileIndex) {
         if (this.isMahjongDealingAnim) return;
         const engine = window.mahjongEngine;
@@ -3751,6 +3845,7 @@ class GameEngineController {
         // 隐藏动作条
         const actionBar = document.getElementById('mahjongActionBar');
         if (actionBar) actionBar.style.display = 'none';
+        this.hideMahjongDiscardBar();
 
         const res = engine.discardTile(mySlot, tileIndex);
         if (!res) return;

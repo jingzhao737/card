@@ -6718,6 +6718,63 @@ body.theme-mahjong #lobbyScreen {
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5), 0 0 0 2px rgba(52, 211, 153, 0.3) !important;
 }
 
+/* 📱 手机端滑动选牌后的出牌确认条 */
+.mahjong-discard-confirm-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    border-radius: 20px;
+    padding: 5px 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(245, 158, 11, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 60;
+    margin: 2px auto 6px auto;
+    width: fit-content;
+    max-width: 92%;
+}
+.mahjong-discard-confirm-bar .discard-tip {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fde68a;
+    white-space: nowrap;
+}
+.btn-mahjong-discard-confirm {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: 1px solid #fbbf24;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 900;
+    padding: 6px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.45);
+    transition: all 0.18s ease;
+}
+.btn-mahjong-discard-confirm:active {
+    transform: scale(0.95);
+}
+.btn-mahjong-discard-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.btn-mahjong-discard-cancel:active {
+    transform: scale(0.95);
+}
+
 .btn-mahjong-act.act-chow:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 6px 18px rgba(5, 150, 105, 0.7) !important;
