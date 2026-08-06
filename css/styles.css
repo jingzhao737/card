@@ -8540,3 +8540,49 @@ body.theme-xiangqi {
 }
 .mini-xq-piece.red  { color: #c23a2b; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
 .mini-xq-piece.black { color: #191919; text-shadow: 0 1px 1px rgba(0,0,0,0.15); }
+/* ===== 斗地主改卡片白色系 (仅斗地主卡 + 导航斗地主按钮, 其他游戏不受影响) ===== */
+#btnNavDoudizhu.active,
+.game-nav-btn.active#btnNavDoudizhu {
+    background: linear-gradient(135deg, #faf7f1 0%, #e8dfce 100%) !important;
+    border-color: rgba(139, 115, 85, 0.55) !important;
+    color: #4a3620 !important;
+    font-weight: 900 !important;
+    box-shadow: none !important;
+}
+#btnNavDoudizhu:hover:not(.active) {
+    color: #f5f0e6 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(139, 115, 85, 0.4) !important;
+}
+#doudizhuLobbyCard .badge-tag {
+    background: rgba(255, 255, 255, 0.85);
+    color: #6b4f2a;
+    border: 1px solid rgba(139, 115, 85, 0.3);
+}
+#doudizhuLobbyCard .card-icon-wrap.gold {
+    background: rgba(250, 247, 241, 0.92);
+    border: 1px solid rgba(139, 115, 85, 0.35);
+    color: #6b4f2a;
+}
+#doudizhuLobbyCard .pill-badge.gold {
+    background: rgba(250, 247, 241, 0.92);
+    border: 1px solid rgba(139, 115, 85, 0.4);
+    color: #6b4f2a;
+}
+#doudizhuLobbyCard .mode-card.primary-card,
+#doudizhuLobbyCard .mode-card.primary-card:hover {
+    background: linear-gradient(135deg, rgba(250, 247, 241, 0.92) 0%, rgba(232, 223, 206, 0.95) 100%);
+    border-color: rgba(139, 115, 85, 0.4);
+}
+/* 斗地主主按钮 (复制/开始): 金色 -> 白色系 */
+.btn-copy-gold, .btn-start-game-gold {
+    background: linear-gradient(135deg, #faf7f1 0%, #e8dfce 100%) !important;
+    border: 1px solid rgba(139, 115, 85, 0.45) !important;
+    color: #4a3620 !important;
+    box-shadow: 0 4px 14px rgba(139, 115, 85, 0.25) !important;
+}
+.btn-copy-gold:hover, .btn-start-game-gold:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f0e8d9 100%) !important;
+    box-shadow: 0 6px 18px rgba(139, 115, 85, 0.35) !important;
+    transform: translateY(-1px);
+}
