@@ -2893,8 +2893,8 @@ class GameEngineController {
         if (btnPong) btnPong.onclick = () => this.handleMahjongPongClick();
         if (btnKong) btnKong.onclick = () => this.handleMahjongKongClick();
 
-        // 📱 手机端滑动选牌后的出牌/取消按钮
-        const btnDiscard = document.getElementById('btnMahjongDiscardConfirm');
+        // 📱 手机端出牌按钮：固定在 ID 信息右侧，选中牌后亮起可点击
+        const btnDiscard = document.getElementById('btnMahjongDiscard');
         if (btnDiscard) {
             btnDiscard.onclick = () => {
                 const idx = this.selectedMahjongTileIndex;
@@ -2902,14 +2902,6 @@ class GameEngineController {
                 this.selectedMahjongTileIndex = -1;
                 this.hideMahjongDiscardBar();
                 this.handleMahjongTileDiscard(idx);
-            };
-        }
-        const btnDiscardCancel = document.getElementById('btnMahjongDiscardCancel');
-        if (btnDiscardCancel) {
-            btnDiscardCancel.onclick = () => {
-                this.selectedMahjongTileIndex = -1;
-                this.hideMahjongDiscardBar();
-                this.renderMahjongHandTiles();
             };
         }
         if (btnHu) btnHu.onclick = () => this.handleMahjongHuClick();
@@ -3808,29 +3800,31 @@ class GameEngineController {
      * 我方打牌与 4 人 AI 顺序轮转
      */
     /**
-     * 📱 手机端：显示滑动选牌后的出牌确认条
+     * 📱 手机端：选中手牌后点亮出牌按钮（固定在 ID 信息右侧）
      */
     showMahjongDiscardBar(index) {
-        const bar = document.getElementById('mahjongDiscardBar');
-        const tip = document.getElementById('mahjongDiscardTip');
+        const btn = document.getElementById('btnMahjongDiscard');
         const engine = window.mahjongEngine;
-        if (!bar) return;
+        if (!btn) return;
         if (!engine || engine.isGameOver || engine.currentTurn !== (NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0)) {
             this.hideMahjongDiscardBar();
             return;
         }
         const hand = engine.hands[NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0] || [];
         const tile = hand[index];
-        if (tip && tile) tip.textContent = `已选：${tile.name}`;
-        bar.style.display = 'flex';
+        btn.classList.add('armed');
+        btn.title = tile ? `出牌：${tile.name}` : '出牌';
     }
 
     /**
-     * 📱 手机端：隐藏出牌确认条
+     * 📱 手机端：取消选中时熄灭出牌按钮
      */
     hideMahjongDiscardBar() {
-        const bar = document.getElementById('mahjongDiscardBar');
-        if (bar) bar.style.display = 'none';
+        const btn = document.getElementById('btnMahjongDiscard');
+        if (btn) {
+            btn.classList.remove('armed');
+            btn.title = '选中手牌后点击出牌';
+        }
     }
 
     handleMahjongTileDiscard(tileIndex) {
