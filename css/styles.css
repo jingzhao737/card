@@ -6727,11 +6727,11 @@ body.theme-mahjong #lobbyScreen {
     transform: translateY(-8px);
 }
 
-/* 📱 手机端出牌按钮：独立于 ID 框右侧，与 ID 框同高对齐，胡桃木色，圆角小 */
+/* 📱 手机端出牌按钮：独立于 ID 框右侧，与 ID 框同高对齐，默认灰色，选中后变胡桃木色 */
 .btn-mahjong-discard {
-    background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 60%, #4a2e15 100%);
-    border: 1px solid rgba(222, 184, 135, 0.5);
-    color: #f3e2c7;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
     font-size: 0.72rem;
     font-weight: 800;
     height: 25px;
@@ -6743,16 +6743,15 @@ body.theme-mahjong #lobbyScreen {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 235, 205, 0.25);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
     transition: all 0.2s ease;
     flex-shrink: 0;
 }
 .btn-mahjong-discard.armed {
-    background: linear-gradient(135deg, #c98a3d 0%, #a06a2b 60%, #7a4d1d 100%);
-    border-color: rgba(255, 215, 160, 0.85);
-    color: #fff8ec;
-    box-shadow: 0 3px 12px rgba(201, 138, 61, 0.55), inset 0 1px 0 rgba(255, 235, 205, 0.35);
-    transform: scale(1.03);
+    background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 60%, #4a2e15 100%);
+    border: 1px solid rgba(222, 184, 135, 0.5);
+    color: #f3e2c7;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 235, 205, 0.25);
 }
 .btn-mahjong-discard.armed:active {
     transform: scale(0.95);
