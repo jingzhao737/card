@@ -5999,11 +5999,14 @@ class GameEngineController {
         if (winnerIdx !== -1) {
             coinDiffs[winnerIdx] = winAmount;
             if (isSelfDraw || discarderIdx === -1) {
-                // 自摸：其余 3 家平摊 (三家分包)
-                const perPlayerLoss = Math.ceil(winAmount / 3);
+                // 自摸：其余 3 家平摊, 保证三家扣除合计 == winAmount (零和, 消除 ceil 取整误差)
+                const base = Math.floor(winAmount / 3);
+                const remainder = winAmount - base * 3;
+                let cnt = 0;
                 for (let i = 0; i < 4; i++) {
                     if (i !== winnerIdx) {
-                        coinDiffs[i] = -perPlayerLoss;
+                        coinDiffs[i] = -(base + (cnt < remainder ? 1 : 0));
+                        cnt++;
                     }
                 }
             } else {
