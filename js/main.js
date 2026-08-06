@@ -476,6 +476,50 @@ class GameEngineController {
         if (btnNavMahjong)  btnNavMahjong.addEventListener('click', () => switchGameLobby('MAHJONG'));
         if (btnNavXiangqi)  btnNavXiangqi.addEventListener('click', () => switchGameLobby('XIANGQI'));
 
+        // 导航区鼠标拖拽滚动 (桌面端, 与手机端触摸滚动体验一致)
+        const navEl = document.querySelector('.game-switch-nav');
+        if (navEl) {
+            let navDragging = false;
+            let navStartX = 0;
+            let navStartScroll = 0;
+            let navDragged = false;
+
+            navEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                navDragging = true;
+                navDragged = false;
+                navStartX = e.clientX;
+                navStartScroll = navEl.scrollLeft;
+                navEl.classList.add('nav-dragging');
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!navDragging) return;
+                const dx = e.clientX - navStartX;
+                if (Math.abs(dx) > 5) navDragged = true;
+                navEl.scrollLeft = navStartScroll - dx;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!navDragging) return;
+                navDragging = false;
+                navEl.classList.remove('nav-dragging');
+                // 拖拽后短暂抑制按钮点击, 避免误触发游戏切换
+                if (navDragged) {
+                    navEl.dataset.suppressClick = '1';
+                    setTimeout(() => { navEl.dataset.suppressClick = ''; }, 200);
+                }
+            });
+
+            // 捕获阶段拦截拖拽后的误点击
+            navEl.addEventListener('click', (e) => {
+                if (navEl.dataset.suppressClick === '1') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        }
+
         // 绑定麻将模式按键
         const btnMahjongAuth = document.getElementById('btnMahjongAuth');
         if (btnMahjongAuth) {

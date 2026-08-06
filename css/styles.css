@@ -3901,13 +3901,19 @@ body.theme-gomoku .overlay-screen {
     justify-content: flex-start;
     gap: 8px;
     margin: 10px auto 4px;
-    width: 90%;
-    max-width: 560px;
+    width: max-content;
+    max-width: 90%;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    cursor: grab;
+}
+
+.game-switch-nav.nav-dragging {
+    cursor: grabbing;
+    user-select: none;
 }
 
 /* 导航横向滚动时隐藏滚动条 */
@@ -7838,7 +7844,7 @@ body.theme-go {
         width: 97%;
         gap: 5px;
         margin: 8px auto 4px;
-        max-width: none;
+        max-width: 97%;
     }
 
     .game-nav-btn {
