@@ -592,6 +592,53 @@ class AuthManager {
         }).catch(() => {});
     }
 
+    /**
+     * 独立记录象棋战绩
+     */
+    recordXiangqiMatchResult(isWin, isDraw = false) {
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const accountKey = this.userData.accountKey;
+
+        const currentXq = this.userData.xqStats || {
+            totalGames: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            matchHistory: []
+        };
+
+        const newTotal = (currentXq.totalGames || 0) + 1;
+        const newWins = (currentXq.wins || 0) + (isWin ? 1 : 0);
+        const newDraws = (currentXq.draws || 0) + (isDraw ? 1 : 0);
+        const newLosses = (currentXq.losses || 0) + (!isWin && !isDraw ? 1 : 0);
+
+        const roleText = isWin ? '楚河汉界' : (isDraw ? '平局' : '败局');
+        const historyItem = {
+            id: Date.now(),
+            gameType: 'XIANGQI',
+            isWin: isWin,
+            isDraw: isDraw,
+            role: roleText,
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        const currentHistory = Array.isArray(currentXq.matchHistory) ? currentXq.matchHistory : [];
+        const newHistory = [historyItem, ...currentHistory].slice(0, 10);
+
+        const newXqStats = {
+            totalGames: newTotal,
+            wins: newWins,
+            losses: newLosses,
+            draws: newDraws,
+            matchHistory: newHistory
+        };
+
+        this.db.ref('users/' + accountKey + '/xqStats').set(newXqStats).then(() => {
+            if (!this.userData.xqStats) this.userData.xqStats = {};
+            Object.assign(this.userData.xqStats, newXqStats);
+        }).catch(() => {});
+    }
+
     /* ====================================================================
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
@@ -814,6 +861,8 @@ class AuthManager {
             fee = 10;
         } else if (gameType === 'GO') {
             fee = 10;
+        } else if (gameType === 'XIANGQI') {
+            fee = 10;
         } else if (gameType === 'MAHJONG') {
             fee = 30;
         } else {
@@ -887,6 +936,10 @@ class AuthManager {
         const goUserNick = document.getElementById('goUserNick');
         const goUserSub  = document.getElementById('goUserSub');
         const goBtnAuth  = document.getElementById('btnGoAuth');
+        const xqAuthAvatar = document.getElementById('xqAuthAvatar');
+        const xqUserNick = document.getElementById('xqUserNick');
+        const xqUserSub  = document.getElementById('xqUserSub');
+        const xqBtnAuth  = document.getElementById('btnXqAuth');
         const mAuthAvatar = document.getElementById('mahjongAuthAvatar');
         const mUserNick = document.getElementById('mahjongUserNick');
         const mUserSub  = document.getElementById('mahjongUserSub');
@@ -931,6 +984,11 @@ class AuthManager {
             if (goUserSub)   goUserSub.textContent   = `🪙 知因币: ${currentYin}`;
             if (goBtnAuth)   goBtnAuth.textContent   = '个人信息';
 
+            setAvatarWithLevel(xqAuthAvatar, this.userData.avatar || '🤠');
+            if (xqUserNick)  xqUserNick.textContent  = this.userData.nickname;
+            if (xqUserSub)   xqUserSub.textContent   = `🪙 知因币: ${currentYin}`;
+            if (xqBtnAuth)   xqBtnAuth.textContent   = '个人信息';
+
             setAvatarWithLevel(mAuthAvatar, this.userData.avatar || '🤠');
             if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
             if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
@@ -963,6 +1021,11 @@ class AuthManager {
             if (goUserNick)  goUserNick.textContent   = '未登录 (游客)';
             if (goUserSub)   goUserSub.textContent    = '🪙 知因币: 0';
             if (goBtnAuth)   goBtnAuth.textContent    = '登录 / 注册';
+
+            if (xqAuthAvatar) xqAuthAvatar.textContent = '👤';
+            if (xqUserNick)  xqUserNick.textContent   = '未登录 (游客)';
+            if (xqUserSub)   xqUserSub.textContent    = '🪙 知因币: 0';
+            if (xqBtnAuth)   xqBtnAuth.textContent    = '登录 / 注册';
 
             if (mAuthAvatar) mAuthAvatar.textContent = '👤';
             if (mUserNick)   mUserNick.textContent   = '未登录 (游客)';

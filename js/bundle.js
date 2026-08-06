@@ -1988,7 +1988,8 @@ class P2PManager {
 
             const isGomoku = gameType === 'GOMOKU';
             const isGo = gameType === 'GO';
-            const isTwoPlayer = isGomoku || isGo;
+            const isXiangqi = gameType === 'XIANGQI';
+            const isTwoPlayer = isGomoku || isGo || isXiangqi;
             const initialLobby = {
                 players: isTwoPlayer ? [
                     { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
@@ -2105,7 +2106,7 @@ class P2PManager {
 
                 const lobby = roomData.lobbyData || { players: [] };
                 const players = lobby.players || [];
-                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : ((gameType === 'GOMOKU' || gameType === 'GO') ? 1 : 2);
+                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : ((gameType === 'GOMOKU' || gameType === 'GO' || gameType === 'XIANGQI') ? 1 : 2);
 
                 // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3, 3=玩家4)
                 let assignedSlot = -1;
@@ -2649,6 +2650,120 @@ class P2PManager {
     clearGoRematchVotes() {
         if (!this.roomRef) return;
         this.roomRef.child('goRematchVotes').remove();
+    }
+
+    /* ============================================================
+       ♞ 中国象棋 (XIANGQI) 云端通信方法
+       ============================================================ */
+    sendXiangqiMove(fr, fc, tr, tc) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqMove').set({
+            fr, fc, tr, tc,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiMove(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqMove').off();
+        this.roomRef.child('xqMove').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiStart(roomId, hostIsRed = true) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqStart').set({
+            ts: Date.now(),
+            hostNick: this.nickname,
+            hostIsRed
+        });
+    }
+
+    onXiangqiStart(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqStart').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiEnd(reason, winnerColor) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqEnd').set({
+            reason,
+            winnerColor,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiEnd(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqEnd').off();
+        this.roomRef.child('xqEnd').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiUndoRequest(applicantNick) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoReq').set({
+            applicantNick,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiUndoRequest(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoReq').off();
+        this.roomRef.child('xqUndoReq').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiUndoResponse(approved) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoResp').set({
+            approved,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiUndoResponse(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoResp').off();
+        this.roomRef.child('xqUndoResp').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiRematchVote(ready) {
+        if (!this.roomRef || this.myPlayerIndex === null) return;
+        this.roomRef.child(`xqRematchVotes/${this.myPlayerIndex}`).set({
+            ready,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiRematchVote(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqRematchVotes').off();
+        this.roomRef.child('xqRematchVotes').on('value', snap => {
+            const val = snap.val();
+            if (callback) callback(val || {});
+        });
+    }
+
+    clearXiangqiRematchVotes() {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqRematchVotes').remove();
     }
 
     sendMahjongStart(roomId) {
@@ -3299,6 +3414,53 @@ class AuthManager {
         }).catch(() => {});
     }
 
+    /**
+     * 独立记录象棋战绩
+     */
+    recordXiangqiMatchResult(isWin, isDraw = false) {
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const accountKey = this.userData.accountKey;
+
+        const currentXq = this.userData.xqStats || {
+            totalGames: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            matchHistory: []
+        };
+
+        const newTotal = (currentXq.totalGames || 0) + 1;
+        const newWins = (currentXq.wins || 0) + (isWin ? 1 : 0);
+        const newDraws = (currentXq.draws || 0) + (isDraw ? 1 : 0);
+        const newLosses = (currentXq.losses || 0) + (!isWin && !isDraw ? 1 : 0);
+
+        const roleText = isWin ? '楚河汉界' : (isDraw ? '平局' : '败局');
+        const historyItem = {
+            id: Date.now(),
+            gameType: 'XIANGQI',
+            isWin: isWin,
+            isDraw: isDraw,
+            role: roleText,
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        const currentHistory = Array.isArray(currentXq.matchHistory) ? currentXq.matchHistory : [];
+        const newHistory = [historyItem, ...currentHistory].slice(0, 10);
+
+        const newXqStats = {
+            totalGames: newTotal,
+            wins: newWins,
+            losses: newLosses,
+            draws: newDraws,
+            matchHistory: newHistory
+        };
+
+        this.db.ref('users/' + accountKey + '/xqStats').set(newXqStats).then(() => {
+            if (!this.userData.xqStats) this.userData.xqStats = {};
+            Object.assign(this.userData.xqStats, newXqStats);
+        }).catch(() => {});
+    }
+
     /* ====================================================================
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
@@ -3521,6 +3683,8 @@ class AuthManager {
             fee = 10;
         } else if (gameType === 'GO') {
             fee = 10;
+        } else if (gameType === 'XIANGQI') {
+            fee = 10;
         } else if (gameType === 'MAHJONG') {
             fee = 30;
         } else {
@@ -3594,6 +3758,10 @@ class AuthManager {
         const goUserNick = document.getElementById('goUserNick');
         const goUserSub  = document.getElementById('goUserSub');
         const goBtnAuth  = document.getElementById('btnGoAuth');
+        const xqAuthAvatar = document.getElementById('xqAuthAvatar');
+        const xqUserNick = document.getElementById('xqUserNick');
+        const xqUserSub  = document.getElementById('xqUserSub');
+        const xqBtnAuth  = document.getElementById('btnXqAuth');
         const mAuthAvatar = document.getElementById('mahjongAuthAvatar');
         const mUserNick = document.getElementById('mahjongUserNick');
         const mUserSub  = document.getElementById('mahjongUserSub');
@@ -3638,6 +3806,11 @@ class AuthManager {
             if (goUserSub)   goUserSub.textContent   = `🪙 知因币: ${currentYin}`;
             if (goBtnAuth)   goBtnAuth.textContent   = '个人信息';
 
+            setAvatarWithLevel(xqAuthAvatar, this.userData.avatar || '🤠');
+            if (xqUserNick)  xqUserNick.textContent  = this.userData.nickname;
+            if (xqUserSub)   xqUserSub.textContent   = `🪙 知因币: ${currentYin}`;
+            if (xqBtnAuth)   xqBtnAuth.textContent   = '个人信息';
+
             setAvatarWithLevel(mAuthAvatar, this.userData.avatar || '🤠');
             if (mUserNick)   mUserNick.textContent   = this.userData.nickname;
             if (mUserSub)    mUserSub.textContent    = `🪙 知因币: ${currentYin}`;
@@ -3670,6 +3843,11 @@ class AuthManager {
             if (goUserNick)  goUserNick.textContent   = '未登录 (游客)';
             if (goUserSub)   goUserSub.textContent    = '🪙 知因币: 0';
             if (goBtnAuth)   goBtnAuth.textContent    = '登录 / 注册';
+
+            if (xqAuthAvatar) xqAuthAvatar.textContent = '👤';
+            if (xqUserNick)  xqUserNick.textContent   = '未登录 (游客)';
+            if (xqUserSub)   xqUserSub.textContent    = '🪙 知因币: 0';
+            if (xqBtnAuth)   xqBtnAuth.textContent    = '登录 / 注册';
 
             if (mAuthAvatar) mAuthAvatar.textContent = '👤';
             if (mUserNick)   mUserNick.textContent   = '未登录 (游客)';
@@ -6249,6 +6427,617 @@ class MahjongEngine {
 window.MahjongEngine = MahjongEngine;
 window.mahjongEngine = new MahjongEngine();
 
+/* ===== js/xiangqi.js ===== */
+/**
+ * 游鲸中国象棋 核心对局引擎 (Xiangqi / Chinese Chess Engine)
+ * 支持: 9x10 棋盘、车马炮相仕帅兵卒走法(含蹩马腿/塞象眼/将帅对面/炮架)、
+ *       将军/应将/将死/困毙判定、启发式 AI、悔棋、联机双人对战
+ */
+class XiangqiEngine {
+    constructor() {
+        this.board = null;      // 10 行 x 9 列, 每格 null 或 { color: 'R'|'B', type: 'K'|'A'|'B'|'N'|'R'|'C'|'P' }
+        this.currentTurn = 'R'; // 红方先行
+        this.moveHistory = [];  // [{fr, fc, tr, tc, piece, captured, check}]
+        this.isGameOver = false;
+        this.winner = null;     // 'R' | 'B' | 'D'(和)
+        this.winReason = null;  // 'CHECKMATE' | 'STALEMATE' | 'RESIGN' | 'TIMEOUT'
+        this.lastMove = null;
+        this.isAiMode = false;
+        this.playerColor = 'R';
+        this.inCheck = false;
+        this.lastCaptureMove = 0; // 最后吃子的步数 (60 回合无吃子判和)   // 当前轮到方是否被将军
+    }
+
+    /** 棋子显示名 */
+    static pieceName(color, type) {
+        const names = {
+            K: { R: '帅', B: '将' },
+            A: { R: '仕', B: '士' },
+            B: { R: '相', B: '象' },
+            N: { R: '马', B: '马' },
+            R: { R: '车', B: '车' },
+            C: { R: '炮', B: '炮' },
+            P: { R: '兵', B: '卒' }
+        };
+        return names[type] ? names[type][color] : type;
+    }
+
+    /** 子力价值 */
+    static pieceValue(type) {
+        switch (type) {
+            case 'K': return 10000;
+            case 'R': return 9;
+            case 'N': return 4;
+            case 'C': return 4.5;
+            case 'B': return 2;
+            case 'A': return 2;
+            case 'P': return 1;
+            default: return 0;
+        }
+    }
+
+    /**
+     * 重置并初始化标准布局
+     */
+    reset(isAi = false, playerColor = 'R') {
+        this.board = Array(10).fill(null).map(() => Array(9).fill(null));
+        this.currentTurn = 'R';
+        this.moveHistory = [];
+        this.isGameOver = false;
+        this.winner = null;
+        this.winReason = null;
+        this.lastMove = null;
+        this.isAiMode = isAi;
+        this.playerColor = playerColor;
+        this.inCheck = false;
+
+        const backLine = ['R', 'N', 'B', 'A', 'K', 'A', 'B', 'N', 'R'];
+        // 黑方 (上方, 行 0)
+        backLine.forEach((type, c) => {
+            this.board[0][c] = { color: 'B', type };
+        });
+        this.board[2][1] = { color: 'B', type: 'C' };
+        this.board[2][7] = { color: 'B', type: 'C' };
+        [0, 2, 4, 6, 8].forEach(c => { this.board[3][c] = { color: 'B', type: 'P' }; });
+        // 红方 (下方, 行 9)
+        backLine.forEach((type, c) => {
+            this.board[9][c] = { color: 'R', type };
+        });
+        this.board[7][1] = { color: 'R', type: 'C' };
+        this.board[7][7] = { color: 'R', type: 'C' };
+        [0, 2, 4, 6, 8].forEach(c => { this.board[6][c] = { color: 'R', type: 'P' }; });
+
+        return true;
+    }
+
+    /** 获取 (r,c) 位置的棋子 */
+    getPiece(r, c) {
+        if (r < 0 || r > 9 || c < 0 || c > 8) return null;
+        return this.board[r][c];
+    }
+
+    /** 找到某方帅/将的位置 */
+    findKing(color) {
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = this.board[r][c];
+                if (p && p.color === color && p.type === 'K') return { r, c };
+            }
+        }
+        return null;
+    }
+
+    /** 某方是否被将军 (对方任意子能吃到己方帅/将) */
+    isCheck(color) {
+        const king = this.findKing(color);
+        if (!king) return false;
+        const opp = color === 'R' ? 'B' : 'R';
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = this.board[r][c];
+                if (p && p.color === opp) {
+                    if (this._canAttack(r, c, king.r, king.c)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** 攻击判定: (fr,fc) 的棋子按走法规则能否攻击到 (tr,tc) (不含送将检查, 用于将军检测) */
+    _canAttack(fr, fc, tr, tc) {
+        const p = this.board[fr][fc];
+        if (!p) return false;
+        const dr = tr - fr;
+        const dc = tc - fc;
+        const adr = Math.abs(dr);
+        const adc = Math.abs(dc);
+
+        switch (p.type) {
+            case 'R': // 车: 直线且路径无子
+                if (dr !== 0 && dc !== 0) return false;
+                return this._pathClear(fr, fc, tr, tc);
+            case 'N': // 马: 日字 + 蹩马腿
+                if (!((adr === 1 && adc === 2) || (adr === 2 && adc === 1))) return false;
+                if (adr === 2) { // 纵跳, 马腿在 (fr + dr/2, fc)
+                    if (this.board[fr + dr / 2][fc]) return false;
+                } else {
+                    if (this.board[fr][fc + dc / 2]) return false;
+                }
+                return true;
+            case 'B': // 相/象: 田字 + 塞象眼 + 不过河
+                if (adr !== 2 || adc !== 2) return false;
+                if (this.board[fr + dr / 2][fc + dc / 2]) return false; // 塞象眼
+                // 红相在下方(行5-9), 黑象在上方(行0-4)
+                if (p.color === 'R' && tr < 5) return false;
+                if (p.color === 'B' && tr > 4) return false;
+                return true;
+            case 'A': // 仕/士: 九宫斜走一格
+                if (adr !== 1 || adc !== 1) return false;
+                return this._inPalace(tr, tc, p.color);
+            case 'K': // 帅/将: 九宫直走一格 (攻击判定不含将帅对面, 对面检查在走法层)
+                if (adr + adc !== 1) return false;
+                return this._inPalace(tr, tc, p.color);
+            case 'C': // 炮: 直线, 吃子必须隔一个炮架
+                if (dr !== 0 && dc !== 0) return false;
+                const blockers = this._countBlockers(fr, fc, tr, tc);
+                if (blockers === 1) return true; // 隔一子吃
+                return false;
+            case 'P': // 兵/卒
+                if (p.color === 'R') {
+                    // 红兵向上(r 减小); 未过河(行>=5)只能向前; 过河(行<=4)可横走
+                    if (tr === fr - 1 && tc === fc) return true;
+                    if (fr <= 4 && tr === fr && adc === 1) return true;
+                    return false;
+                } else {
+                    if (tr === fr + 1 && tc === fc) return true;
+                    if (fr >= 5 && tr === fr && adc === 1) return true;
+                    return false;
+                }
+            default:
+                return false;
+        }
+    }
+
+    /** 判断 (r,c) 是否在 color 方的九宫内 */
+    _inPalace(r, c, color) {
+        if (c < 3 || c > 5) return false;
+        if (color === 'R') return r >= 7 && r <= 9;
+        return r >= 0 && r <= 2;
+    }
+
+    /** 直线路径是否无子 (不含起点终点) */
+    _pathClear(fr, fc, tr, tc) {
+        if (fr === tr) {
+            const step = tc > fc ? 1 : -1;
+            for (let c = fc + step; c !== tc; c += step) {
+                if (this.board[fr][c]) return false;
+            }
+        } else {
+            const step = tr > fr ? 1 : -1;
+            for (let r = fr + step; r !== tr; r += step) {
+                if (this.board[r][fc]) return false;
+            }
+        }
+        return true;
+    }
+
+    /** 统计 (fr,fc) 到 (tr,tc) 直线间的棋子数 (不含两端) */
+    _countBlockers(fr, fc, tr, tc) {
+        let count = 0;
+        if (fr === tr) {
+            const step = tc > fc ? 1 : -1;
+            for (let c = fc + step; c !== tc; c += step) {
+                if (this.board[fr][c]) count++;
+            }
+        } else {
+            const step = tr > fr ? 1 : -1;
+            for (let r = fr + step; r !== tr; r += step) {
+                if (this.board[r][fc]) count++;
+            }
+        }
+        return count;
+    }
+
+    /** 将帅对面: 两帅同列且中间无子 */
+    _kingsFacing(fr, fc, tr, tc, color) {
+        // 走完后检查: 若走的是帅/将, 与对方帅/将同列无遮挡 -> 非法
+        if (this.board[fr][fc] && this.board[fr][fc].type === 'K') {
+            const opp = color === 'R' ? 'B' : 'R';
+            const oppKing = this.findKing(opp);
+            if (oppKing && oppKing.c === tc) {
+                if (this._countBlockers(fr, fc, oppKing.r, oppKing.c) === 0) return true;
+            }
+        }
+        return false;
+    }
+
+    /** 获取 (r,c) 棋子的全部合法走法 (含不能送将检查) */
+    getLegalMoves(r, c) {
+        const p = this.board[r][c];
+        if (!p) return [];
+        if (p.color !== this.currentTurn) return [];
+        if (this.isGameOver) return [];
+
+        const moves = [];
+        const dirs4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+        switch (p.type) {
+            case 'R': // 车
+                for (const [dr, dc] of dirs4) {
+                    let nr = r + dr, nc = c + dc;
+                    while (nr >= 0 && nr <= 9 && nc >= 0 && nc <= 8) {
+                        const target = this.board[nr][nc];
+                        if (!target) {
+                            moves.push({ r: nr, c: nc });
+                        } else {
+                            if (target.color !== p.color) moves.push({ r: nr, c: nc });
+                            break;
+                        }
+                        nr += dr;
+                        nc += dc;
+                    }
+                }
+                break;
+            case 'N': { // 马
+                const jumps = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+                for (const [dr, dc] of jumps) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr < 0 || nr > 9 || nc < 0 || nc > 8) continue;
+                    // 蹩马腿
+                    if (Math.abs(dr) === 2) {
+                        if (this.board[r + dr / 2][c]) continue;
+                    } else {
+                        if (this.board[r][c + dc / 2]) continue;
+                    }
+                    const target = this.board[nr][nc];
+                    if (!target || target.color !== p.color) moves.push({ r: nr, c: nc });
+                }
+                break;
+            }
+            case 'B': { // 相/象
+                const jumps = [[-2, -2], [-2, 2], [2, -2], [2, 2]];
+                for (const [dr, dc] of jumps) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr < 0 || nr > 9 || nc < 0 || nc > 8) continue;
+                    if (this.board[r + dr / 2][c + dc / 2]) continue; // 塞象眼
+                    if (p.color === 'R' && nr < 5) continue;
+                    if (p.color === 'B' && nr > 4) continue;
+                    const target = this.board[nr][nc];
+                    if (!target || target.color !== p.color) moves.push({ r: nr, c: nc });
+                }
+                break;
+            }
+            case 'A': { // 仕/士
+                const jumps = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+                for (const [dr, dc] of jumps) {
+                    const nr = r + dr, nc = c + dc;
+                    if (!this._inPalace(nr, nc, p.color)) continue;
+                    const target = this.board[nr][nc];
+                    if (!target || target.color !== p.color) moves.push({ r: nr, c: nc });
+                }
+                break;
+            }
+            case 'K': { // 帅/将
+                for (const [dr, dc] of dirs4) {
+                    const nr = r + dr, nc = c + dc;
+                    if (!this._inPalace(nr, nc, p.color)) continue;
+                    const target = this.board[nr][nc];
+                    if (!target || target.color !== p.color) moves.push({ r: nr, c: nc });
+                }
+                break;
+            }
+            case 'C': { // 炮
+                for (const [dr, dc] of dirs4) {
+                    let nr = r + dr, nc = c + dc;
+                    let jumped = false;
+                    while (nr >= 0 && nr <= 9 && nc >= 0 && nc <= 8) {
+                        const target = this.board[nr][nc];
+                        if (!target) {
+                            if (!jumped) moves.push({ r: nr, c: nc }); // 无炮架只可走空位
+                        } else {
+                            if (!jumped) {
+                                jumped = true; // 遇到第一个子作为炮架, 继续找炮架后的子
+                            } else {
+                                if (target.color !== p.color) moves.push({ r: nr, c: nc }); // 隔一子吃
+                                break;
+                            }
+                        }
+                        nr += dr;
+                        nc += dc;
+                    }
+                }
+                break;
+            }
+            case 'P': { // 兵/卒
+                const forward = p.color === 'R' ? -1 : 1;
+                const crossable = p.color === 'R' ? (r <= 4) : (r >= 5); // 过河后可横走
+                const candidates = [{ r: r + forward, c: c }];
+                if (crossable) {
+                    candidates.push({ r, c: c - 1 }, { r, c: c + 1 });
+                }
+                for (const { r: nr, c: nc } of candidates) {
+                    if (nr < 0 || nr > 9 || nc < 0 || nc > 8) continue;
+                    const target = this.board[nr][nc];
+                    if (!target || target.color !== p.color) moves.push({ r: nr, c: nc });
+                }
+                break;
+            }
+        }
+
+        // 过滤: 不能送将 (走完后己方被将军) + 将帅对面
+        const legal = [];
+        for (const mv of moves) {
+            const captured = this.board[mv.r][mv.c];
+            this.board[mv.r][mv.c] = p;
+            this.board[r][c] = null;
+            const isSelfCheck = this.isCheck(p.color);
+            const facing = this._kingsFacingAfter(r, c, mv.r, mv.c, p);
+            this.board[r][c] = p;
+            this.board[mv.r][mv.c] = captured;
+            if (!isSelfCheck && !facing) legal.push(mv);
+        }
+        return legal;
+    }
+
+    /** 走子后是否形成将帅对面 */
+    _kingsFacingAfter(fr, fc, tr, tc, piece) {
+        if (piece.type !== 'K') return false;
+        const opp = piece.color === 'R' ? 'B' : 'R';
+        const oppKing = this.findKing(opp);
+        // 帅已走到新位置 (tr,tc), 从新位置到对方将之间无遮挡则构成对面
+        if (oppKing && oppKing.c === tc) {
+            if (this._countBlockers(tr, tc, oppKing.r, oppKing.c) === 0) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 执行走子
+     * @returns {object|null} { piece, captured, check, gameOver, winner, winReason }
+     */
+    move(fr, fc, tr, tc) {
+        if (this.isGameOver) return null;
+        const p = this.board[fr][fc];
+        if (!p || p.color !== this.currentTurn) return null;
+
+        // 校验走法合法性
+        const legal = this.getLegalMoves(fr, fc);
+        if (!legal.some(m => m.r === tr && m.c === tc)) return null;
+
+        const captured = this.board[tr][tc];
+        this.board[tr][tc] = p;
+        this.board[fr][fc] = null;
+
+        // 记录最后吃子步数 (60 回合无吃子判和)
+        const moveNumber = this.moveHistory.length + 1;
+        if (captured) this.lastCaptureMove = moveNumber;
+
+        // 将军判定 (对手)
+        const opp = p.color === 'R' ? 'B' : 'R';
+        const check = this.isCheck(opp);
+
+        // 将死/困毙/判和判定
+        let gameOver = false;
+        let winner = null;
+        let winReason = null;
+        if (check) {
+            if (!this.hasAnyLegalMove(opp)) {
+                gameOver = true;
+                winner = p.color;
+                winReason = 'CHECKMATE';
+            }
+        } else {
+            if (!this.hasAnyLegalMove(opp)) {
+                // 困毙 (无子可走且未被将军) - 多数规则判负
+                gameOver = true;
+                winner = p.color;
+                winReason = 'STALEMATE';
+            }
+        }
+        // 60 回合 (120 半回合) 无吃子判和
+        if (!gameOver && moveNumber - this.lastCaptureMove >= 120) {
+            gameOver = true;
+            winner = 'D';
+            winReason = 'DRAWN';
+        }
+
+        this.lastMove = { fr, fc, tr, tc, piece: { ...p }, captured: captured ? { ...captured } : null, check, moveNumber: this.moveHistory.length + 1 };
+        this.moveHistory.push({
+            fr, fc, tr, tc, piece: { ...p },
+            captured: captured ? { r: tr, c: tc, piece: { ...captured } } : null,
+            check,
+            inCheckBefore: this.inCheck
+        });
+
+        this.inCheck = check;
+        this.isGameOver = gameOver;
+        this.winner = winner;
+        this.winReason = winReason;
+        this.currentTurn = opp;
+
+        return { piece: p, captured, check, gameOver, winner, winReason };
+    }
+
+    /** 当前方 (或指定方) 是否有任意合法走法 */
+    hasAnyLegalMove(color) {
+        const col = color || this.currentTurn;
+        // 临时切换回合, 确保 getLegalMoves 的回合校验与检查方一致
+        const savedTurn = this.currentTurn;
+        this.currentTurn = col;
+        let found = false;
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = this.board[r][c];
+                if (p && p.color === col) {
+                    if (this.getLegalMoves(r, c).length > 0) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (found) break;
+        }
+        this.currentTurn = savedTurn;
+        return found;
+    }
+
+    /** 悔棋一步 (AI 模式撤回双方两步) */
+    undo() {
+        if (this.moveHistory.length === 0 || this.isGameOver) return false;
+        const popCount = (this.isAiMode && this.moveHistory.length >= 2) ? 2 : 1;
+        for (let i = 0; i < popCount; i++) {
+            if (this.moveHistory.length === 0) break;
+            const mv = this.moveHistory.pop();
+            this.board[mv.fr][mv.fc] = { ...mv.piece };
+            if (mv.captured) {
+                this.board[mv.captured.r][mv.captured.c] = { ...mv.captured.piece };
+            } else {
+                this.board[mv.tr][mv.tc] = null;
+            }
+        }
+        this.isGameOver = false;
+        this.winner = null;
+        this.winReason = null;
+        const last = this.moveHistory[this.moveHistory.length - 1];
+        this.currentTurn = last ? (last.piece.color === 'R' ? 'B' : 'R') : 'R';
+        this.lastMove = last ? { fr: last.fr, fc: last.fc, tr: last.tr, tc: last.tc, piece: { ...last.piece }, captured: last.captured ? { ...last.captured.piece } : null, check: last.check, moveNumber: this.moveHistory.length } : null;
+        this.inCheck = this.isCheck(this.currentTurn);
+        return true;
+    }
+
+    /** 认输 */
+    resign(color) {
+        if (this.isGameOver) return false;
+        this.isGameOver = true;
+        this.winReason = 'RESIGN';
+        this.winner = color === 'R' ? 'B' : 'R';
+        return true;
+    }
+
+    /** 子力 + 位置评估 (正值对红方有利) */
+    evaluate() {
+        let score = 0;
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = this.board[r][c];
+                if (!p) continue;
+                let val = XiangqiEngine.pieceValue(p.type);
+                // 位置加成
+                if (p.type === 'P') {
+                    // 兵过河越深入越有价值
+                    if (p.color === 'R') {
+                        if (r <= 4) val += (5 - r) * 0.4 + 1.2;
+                    } else {
+                        if (r >= 5) val += (r - 4) * 0.4 + 1.2;
+                    }
+                    // 靠近中路(列4)略加分
+                    val += (4 - Math.abs(c - 4)) * 0.05;
+                } else if (p.type === 'N' || p.type === 'C') {
+                    // 马/炮活动性好: 远离边角 + 接近河界
+                    const centralBonus = (4 - Math.abs(c - 4)) * 0.1;
+                    const riverBonus = p.color === 'R' ? (Math.abs(r - 4) * 0.08) : (Math.abs(r - 5) * 0.08);
+                    val += centralBonus + riverBonus;
+                }
+                score += (p.color === 'R') ? val : -val;
+            }
+        }
+        return score;
+    }
+
+    /** 生成某方所有走法 [{fr, fc, tr, tc, score}] */
+    _generateAllMoves(color) {
+        const moves = [];
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const p = this.board[r][c];
+                if (p && p.color === color) {
+                    const legal = this.getLegalMoves(r, c);
+                    legal.forEach(m => moves.push({ fr: r, fc: c, tr: m.r, tc: m.c }));
+                }
+            }
+        }
+        return moves;
+    }
+
+    /** 评估一步棋的启发分数 */
+    _evaluateMove(fr, fc, tr, tc, color) {
+        const piece = this.board[fr][fc];
+        const target = this.board[tr][tc];
+        let score = 0;
+
+        // 吃子价值
+        if (target) {
+            score += XiangqiEngine.pieceValue(target.type) * 10;
+            if (target.type === 'K') score += 100000; // 直接吃帅
+        }
+
+        // 暂存走子评估
+        const captured = target;
+        this.board[tr][tc] = piece;
+        this.board[fr][fc] = null;
+
+        // 将军加分
+        const opp = color === 'R' ? 'B' : 'R';
+        if (this.isCheck(opp)) {
+            score += 60;
+            if (!this.hasAnyLegalMove(opp)) score += 100000; // 将死
+        }
+
+        // 位置变化
+        const afterVal = this._piecePositionValue(piece, tr, tc);
+        const beforeVal = this._piecePositionValue(piece, fr, fc);
+        score += (afterVal - beforeVal) * 0.8;
+
+        // 被吃风险 (简单: 目标位置是否被对方攻击) - 轻惩罚
+        if (!target) {
+            // 简化: 不计算对方攻击, 略
+        }
+
+        this.board[fr][fc] = piece;
+        this.board[tr][tc] = captured;
+
+        return score;
+    }
+
+    /** 棋子位置价值 */
+    _piecePositionValue(piece, r, c) {
+        let v = 0;
+        if (piece.type === 'P') {
+            if (piece.color === 'R') {
+                if (r <= 4) v += (5 - r) * 0.4 + 1.2;
+            } else {
+                if (r >= 5) v += (r - 4) * 0.4 + 1.2;
+            }
+            v += (4 - Math.abs(c - 4)) * 0.05;
+        } else if (piece.type === 'N' || piece.type === 'C') {
+            v += (4 - Math.abs(c - 4)) * 0.1;
+            v += piece.color === 'R' ? Math.abs(r - 4) * 0.08 : Math.abs(r - 5) * 0.08;
+        }
+        return v;
+    }
+
+    /** 智能 AI 最佳走法 (启发式: 吃子 > 将军 > 位置 + 随机扰动) */
+    getBestAiMove() {
+        const aiColor = this.currentTurn;
+        const moves = this._generateAllMoves(aiColor);
+        if (moves.length === 0) return null;
+
+        let best = null;
+        let bestScore = -Infinity;
+        for (const mv of moves) {
+            const score = this._evaluateMove(mv.fr, mv.fc, mv.tr, mv.tc, aiColor) + Math.random() * 15;
+            if (score > bestScore) {
+                bestScore = score;
+                best = mv;
+            }
+        }
+        return best;
+    }
+}
+
+const xiangqiEngine = new XiangqiEngine();
+window.xiangqiEngine = xiangqiEngine;
+
 /* ===== js/main.js ===== */
 /* 全局禁止双指手势缩放 (Pinch zoom prevention while preserving fast clicks) */
 (function disablePinchZoom() {
@@ -7282,6 +8071,168 @@ class GameEngineController {
             });
         }
 
+        // ============================================================
+        // ♞ 游鲸中国象棋 大厅按钮绑定
+        // ============================================================
+
+        // 象棋个人信息
+        const btnXqAuth = document.getElementById('btnXqAuth');
+        if (btnXqAuth) {
+            btnXqAuth.addEventListener('click', () => {
+                if (AuthEngine.user && AuthEngine.userData) {
+                    this.openStatsModal('MY_STATS');
+                } else {
+                    const authModal = document.getElementById('authModal');
+                    if (authModal) authModal.style.display = 'flex';
+                }
+            });
+        }
+
+        // 创建象棋在线对局
+        const btnCreateXiangqiRoom = document.getElementById('btnCreateXiangqiRoom');
+        if (btnCreateXiangqiRoom) {
+            btnCreateXiangqiRoom.addEventListener('click', () => {
+                const nickname = getNickname();
+                this.activeGameType = 'XIANGQI';
+                NetworkManager.gameType = 'XIANGQI';
+                NetworkManager.createRoom(nickname, (roomId) => {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(roomId);
+                    }
+                    UIRenderer.showToast(`✅ 象棋在线房间创建成功：#${roomId} (房间号已复制)`);
+                    this.setupWaitingScreen(roomId);
+                }, (err) => {
+                    UIRenderer.showToast(err || '创建象棋房间失败');
+                }, 'XIANGQI');
+            });
+        }
+
+        // 输入房间号加入象棋
+        const btnJoinXiangqi = document.getElementById('btnJoinXiangqi');
+        const joinXiangqiInput = document.getElementById('joinXiangqiInput');
+        if (btnJoinXiangqi && joinXiangqiInput) {
+            btnJoinXiangqi.addEventListener('click', () => {
+                const roomId = joinXiangqiInput.value.trim();
+                if (!roomId || roomId.length !== 6) {
+                    UIRenderer.showToast('⚠️ 请输入正确的 6 位象棋房间号');
+                    return;
+                }
+                const nickname = getNickname();
+                NetworkManager.joinRoom(roomId, nickname, () => {
+                    UIRenderer.showToast(`✅ 成功进入象棋房间 #${roomId}`);
+                    this.enterRoomAsClient(roomId);
+                }, (err) => {
+                    UIRenderer.showToast(err || '加入象棋房间失败');
+                });
+            });
+        }
+
+        // 在线象棋房间大厅
+        const btnPublicXiangqiRooms = document.getElementById('btnPublicXiangqiRooms');
+        if (btnPublicXiangqiRooms && publicModal) {
+            btnPublicXiangqiRooms.addEventListener('click', () => {
+                currentPublicGameType = 'XIANGQI';
+                publicModal.style.display = 'flex';
+                this.refreshPublicRoomsList('XIANGQI');
+            });
+        }
+
+        // 象棋单机 AI
+        const btnPlayXiangqiAi = document.getElementById('btnPlayXiangqiAi');
+        if (btnPlayXiangqiAi) {
+            btnPlayXiangqiAi.addEventListener('click', () => this.startXiangqiAiMode());
+        }
+
+        // 象棋悔棋 (AI 模式直接撤回, 联机发申请)
+        const btnXqUndo = document.getElementById('btnXqUndo');
+        if (btnXqUndo) {
+            btnXqUndo.addEventListener('click', () => {
+                const engine = window.xiangqiEngine;
+                if (!engine) return;
+                if (this.xqUndoLeft === undefined) this.xqUndoLeft = 3;
+                if (this.xqUndoLeft <= 0) {
+                    UIRenderer.showToast('⚠️ 单局最多只能悔棋 3 次哦！');
+                    return;
+                }
+                if (engine.moveHistory.length === 0) {
+                    UIRenderer.showToast('⚠️ 棋盘上暂无走子可撤回');
+                    return;
+                }
+
+                if (engine.isAiMode) {
+                    const success = engine.undo();
+                    if (success) {
+                        this.xqUndoLeft--;
+                        const countEl = document.getElementById('xqUndoCount');
+                        if (countEl) countEl.textContent = this.xqUndoLeft;
+                        if (this.xqUndoLeft <= 0) {
+                            btnXqUndo.disabled = true;
+                            btnXqUndo.classList.add('disabled');
+                        }
+                        this.xqSelected = null;
+                        this.xqMoveDots = [];
+                        this.renderXiangqiBoard();
+                        this.updateXiangqiStatusUI(`↺ 已撤回，本局还可悔棋 ${this.xqUndoLeft} 次`);
+                        if (engine.currentTurn === engine.playerColor) this.startXiangqiTurnTimer();
+                        else { this.stopXiangqiTurnTimer(); this.triggerXiangqiAiMove(); }
+                    }
+                    return;
+                }
+
+                UIRenderer.showToast('📩 已向对方发送悔棋申请，请等待回应...');
+                NetworkManager.sendXiangqiUndoRequest(NetworkManager.nickname);
+            });
+        }
+
+        // 象棋认输
+        const btnXqResign = document.getElementById('btnXqResign');
+        if (btnXqResign) {
+            btnXqResign.addEventListener('click', () => {
+                const engine = window.xiangqiEngine;
+                if (!engine || engine.isGameOver) return;
+                const myColor = engine.playerColor;
+                if (!engine.isAiMode && NetworkManager.isHost !== undefined && !NetworkManager.isHost && engine.currentTurn !== myColor) {
+                    UIRenderer.showToast('⏳ 还没轮到你，请等待对方走子');
+                    return;
+                }
+                engine.resign(myColor);
+                this.stopXiangqiTurnTimer();
+                const winner = myColor === 'R' ? 'B' : 'R';
+                this.handleXiangqiEnd(winner, 'RESIGN');
+                if (!engine.isAiMode && NetworkManager.sendXiangqiEnd) {
+                    NetworkManager.sendXiangqiEnd('RESIGN', winner);
+                }
+            });
+        }
+
+        // 象棋重来一局
+        const btnXqRematch = document.getElementById('btnXqRematch');
+        if (btnXqRematch) {
+            btnXqRematch.addEventListener('click', () => {
+                const engine = window.xiangqiEngine;
+                if (!engine) return;
+                if (engine.isAiMode) {
+                    engine.reset(true, 1, 0);
+                    // AI 模式重开: 重新随机先后手
+                    window.xiangqiEngine.reset(true, Math.random() < 0.5 ? 'R' : 'B');
+                    this.initXiangqiUI();
+                    this.renderXiangqiBoard();
+                    const myColor = window.xiangqiEngine.playerColor;
+                    this.updateXiangqiStatusUI(myColor === 'R' ? '🔴 轮到你落子 (红方先手)' : '🤖 AI 棋圣 (红方) 思考中...');
+                    UIRenderer.showToast(myColor === 'R' ? '🟢 重新开始！你是红方先手' : '🟢 重新开始！你是黑方后手');
+                    if (myColor === 'R') this.startXiangqiTurnTimer();
+                    else this.triggerXiangqiAiMove();
+                    return;
+                }
+                this.xqMyRematchReady = true;
+                btnXqRematch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 已准备 (等待对方...)';
+                btnXqRematch.disabled = true;
+                btnXqRematch.classList.add('disabled');
+                NetworkManager.sendXiangqiRematchVote(true);
+                UIRenderer.showToast('⌛ 已提交【重来一局】，等待对方回应...');
+            });
+        }
+
         // 代理列表项中的"一键加入/替换AI"按钮点击
         const listContainer = document.getElementById('publicRoomsListContainer');
         if (listContainer) {
@@ -7561,8 +8512,18 @@ class GameEngineController {
                 const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
                 const isGo = (NetworkManager.gameType === 'GO') || (this.activeGameType === 'GO');
+                const isXiangqi = (NetworkManager.gameType === 'XIANGQI') || (this.activeGameType === 'XIANGQI');
                 if (isMahjong) {
                     this.startMahjongOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
+                } else if (isXiangqi) {
+                    const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
+                    if (hasSecondPlayer) {
+                        NetworkManager.sendXiangqiStart(NetworkManager.roomId);
+                        this.startXiangqiOnlineGame(NetworkManager.roomId, NetworkManager.isHost);
+                    } else {
+                        // 如果没有其他真人，自动补齐 AI 棋圣开局
+                        this.startXiangqiAiMode();
+                    }
                 } else if (isGo) {
                     const hasSecondPlayer = this.gameState.players[1] && !this.gameState.players[1].isAi && this.gameState.players[1].name;
                     if (hasSecondPlayer) {
@@ -7594,9 +8555,12 @@ class GameEngineController {
                 const isMahjong = (NetworkManager.gameType === 'MAHJONG') || (this.activeGameType === 'MAHJONG');
                 const isGomoku = (NetworkManager.gameType === 'GOMOKU') || (this.activeGameType === 'GOMOKU');
                 const isGo = (NetworkManager.gameType === 'GO') || (this.activeGameType === 'GO');
+                const isXiangqi = (NetworkManager.gameType === 'XIANGQI') || (this.activeGameType === 'XIANGQI');
 
                 if (isMahjong) {
                     this.startMahjongAiMode();
+                } else if (isXiangqi) {
+                    this.startXiangqiAiMode();
                 } else if (isGo) {
                     this.startGoAiMode();
                 } else if (isGomoku) {
@@ -10104,6 +11068,640 @@ class GameEngineController {
     }
 
     /* ============================================================
+       ♞ 游鲸中国象棋 UI 控制与交互逻辑 (Xiangqi UI Methods)
+       ============================================================ */
+
+    /** 象棋炮位/兵位标记坐标 */
+    XIANGQI_POINT_MARKS() {
+        const marks = [];
+        [[2, 1], [2, 7], [7, 1], [7, 7]].forEach(([r, c]) => marks.push(r + ',' + c));
+        for (let c = 0; c <= 8; c += 2) {
+            marks.push('3,' + c);
+            marks.push('6,' + c);
+        }
+        return marks;
+    }
+
+    /**
+     * 初始化象棋棋盘 UI (9x10 网格 + 炮兵位标记 + 河界)
+     */
+    initXiangqiUI() {
+        const boardContainer = document.getElementById('xqBoardContainer');
+        if (!boardContainer) return;
+
+        const engine = window.xiangqiEngine;
+        if (!engine) return;
+
+        this.xqUndoLeft = 3;
+        this.xqSelected = null;      // { r, c }
+        this.xqMoveDots = [];        // 合法走法提示 [{r, c}]
+        this.xqMyRematchReady = false;
+
+        const countEl = document.getElementById('xqUndoCount');
+        if (countEl) countEl.textContent = '3';
+
+        const btnUndo = document.getElementById('btnXqUndo');
+        if (btnUndo) { btnUndo.style.display = 'flex'; btnUndo.disabled = false; btnUndo.classList.remove('disabled'); }
+        const btnRematch = document.getElementById('btnXqRematch');
+        if (btnRematch) {
+            btnRematch.style.display = 'none';
+            btnRematch.disabled = false;
+            btnRematch.classList.remove('disabled');
+            btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
+        }
+        const btnResign = document.getElementById('btnXqResign');
+        if (btnResign) { btnResign.style.display = 'flex'; btnResign.disabled = false; btnResign.classList.remove('disabled'); }
+
+        boardContainer.innerHTML = '';
+        const marks = new Set(this.XIANGQI_POINT_MARKS());
+
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'xq-cell';
+
+                if (r === 0) cell.classList.add('row-top');
+                if (r === 9) cell.classList.add('row-bottom');
+                if (c === 0) cell.classList.add('col-left');
+                if (c === 8) cell.classList.add('col-right');
+
+                // 河界: 行4 底部半格 + 行5 顶部半格 (横线在河界断开)
+                if (r === 4) cell.classList.add('row-top');
+                if (r === 5) cell.classList.add('row-bottom');
+
+                if (marks.has(r + ',' + c)) {
+                    const mark = document.createElement('div');
+                    mark.className = 'xq-point-mark';
+                    cell.appendChild(mark);
+                }
+
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.addEventListener('click', () => this.handleXiangqiCellClick(r, c));
+                boardContainer.appendChild(cell);
+            }
+        }
+
+        // 楚河汉界文字
+        const river = document.createElement('div');
+        river.className = 'xq-river';
+        river.innerHTML = '<span>楚&nbsp;河</span><span>汉&nbsp;界</span>';
+        boardContainer.appendChild(river);
+
+        // 玩家头像棋子
+        const avatarLeft = document.getElementById('xqAvatarLeft');
+        const avatarRight = document.getElementById('xqAvatarRight');
+        if (avatarLeft) avatarLeft.textContent = engine.playerColor === 'R' ? '帅' : '将';
+        if (avatarRight) avatarRight.textContent = engine.playerColor === 'R' ? '将' : '帅';
+    }
+
+    /**
+     * 渲染棋盘棋子 (含选中/合法走法提示/将军闪烁/最近走子)
+     */
+    renderXiangqiBoard() {
+        const engine = window.xiangqiEngine;
+        if (!engine) return;
+
+        const cells = document.querySelectorAll('.xq-cell');
+        cells.forEach(cell => {
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+            const p = engine.board[r][c];
+
+            // 清除旧棋子/提示
+            cell.querySelectorAll('.xq-piece, .xq-move-dot').forEach(el => el.remove());
+
+            if (p) {
+                const piece = document.createElement('div');
+                piece.className = 'xq-piece ' + (p.color === 'R' ? 'red' : 'black');
+                piece.textContent = XiangqiEngine.pieceName(p.color, p.type);
+
+                if (this.xqSelected && this.xqSelected.r === r && this.xqSelected.c === c) {
+                    piece.classList.add('selected');
+                }
+                if (engine.lastMove && engine.lastMove.tr === r && engine.lastMove.tc === c) {
+                    piece.classList.add('last-move');
+                }
+                // 被将军的帅/将闪烁
+                if (engine.inCheck && p.type === 'K') {
+                    piece.classList.add('in-check');
+                }
+                cell.appendChild(piece);
+            } else {
+                // 合法走法提示点
+                if (this.xqMoveDots.some(d => d.r === r && d.c === c)) {
+                    const dot = document.createElement('div');
+                    const isCapture = !!engine.board[r][c];
+                    dot.className = 'xq-move-dot' + (isCapture ? ' capture' : '');
+                    cell.appendChild(dot);
+                }
+            }
+        });
+    }
+
+    /**
+     * 处理棋盘格子点击 (选中/走子)
+     */
+    handleXiangqiCellClick(r, c) {
+        const engine = window.xiangqiEngine;
+        if (!engine || engine.isGameOver) return;
+
+        // 回合校验
+        if (engine.currentTurn !== engine.playerColor) {
+            UIRenderer.showToast(engine.isAiMode ? '🤖 AI 思考中，请稍候...' : '⏳ 还没轮到你，请等待对方落子');
+            return;
+        }
+
+        const piece = engine.board[r][c];
+
+        // 点击己方棋子: 选中并显示走法
+        if (piece && piece.color === engine.playerColor) {
+            this.xqSelected = { r, c };
+            this.xqMoveDots = engine.getLegalMoves(r, c);
+            this.renderXiangqiBoard();
+            return;
+        }
+
+        // 点击合法目标: 走子
+        if (this.xqSelected) {
+            const isLegal = this.xqMoveDots.some(d => d.r === r && d.c === c);
+            if (isLegal) {
+                const res = engine.move(this.xqSelected.r, this.xqSelected.c, r, c);
+                if (res) {
+                    const fr = this.xqSelected.r, fc = this.xqSelected.c;
+                    this.xqSelected = null;
+                    this.xqMoveDots = [];
+                    this.renderXiangqiBoard();
+
+                    // 联机广播走子
+                    if (!engine.isAiMode && NetworkManager.sendXiangqiMove) {
+                        NetworkManager.sendXiangqiMove(fr, fc, r, c);
+                    }
+
+                    if (engine.isGameOver) {
+                        this.stopXiangqiTurnTimer();
+                        this.handleXiangqiEnd(engine.winner, engine.winReason);
+                        return;
+                    }
+
+                    // 将军提示
+                    if (res.check) {
+                        this.updateXiangqiStatusUI(res.piece.color === 'R' ? '⚡ 将军！黑方被将' : '⚡ 将军！红方被将');
+                        UIRenderer.showToast('⚡ 将军！');
+                    } else {
+                        this.updateXiangqiStatusUI(engine.currentTurn === 'R' ? '🔴 红方落子' : '⚫ 黑方落子');
+                    }
+
+                    // 单机 AI 模式: 触发 AI 走子
+                    if (engine.isAiMode && !engine.isGameOver) {
+                        this.stopXiangqiTurnTimer();
+                        this.triggerXiangqiAiMove();
+                    }
+                }
+                return;
+            }
+            // 点击非法位置: 取消选中
+            this.xqSelected = null;
+            this.xqMoveDots = [];
+            this.renderXiangqiBoard();
+        }
+    }
+
+    /**
+     * AI 走子 (拟人化延迟)
+     */
+    triggerXiangqiAiMove() {
+        const engine = window.xiangqiEngine;
+        const aiColor = engine.currentTurn;
+        this.updateXiangqiStatusUI(aiColor === 'R' ? '🤖 AI (红方) 思考中...' : '🤖 AI (黑方) 思考中...');
+
+        const thinkDelay = 500 + Math.floor(Math.random() * 700);
+        setTimeout(() => {
+            const scr = document.getElementById('xiangqiGameScreen');
+            if (!scr || scr.style.display === 'none' || engine.isGameOver) return;
+            if (engine.currentTurn !== aiColor) return;
+
+            const mv = engine.getBestAiMove();
+            if (!mv) {
+                // 无走法: 判负/和
+                engine.isGameOver = true;
+                engine.winReason = 'STALEMATE';
+                engine.winner = engine.currentTurn === 'R' ? 'B' : 'R';
+                this.stopXiangqiTurnTimer();
+                this.handleXiangqiEnd(engine.winner, engine.winReason);
+                return;
+            }
+            const res = engine.move(mv.fr, mv.fc, mv.tr, mv.tc);
+            if (!res) return;
+            this.renderXiangqiBoard();
+
+            if (engine.isGameOver) {
+                this.stopXiangqiTurnTimer();
+                this.handleXiangqiEnd(engine.winner, engine.winReason);
+                return;
+            }
+            if (res.check) {
+                this.updateXiangqiStatusUI('⚡ 将军！轮到你应将');
+                UIRenderer.showToast('⚡ 将军！');
+            } else {
+                this.updateXiangqiStatusUI(engine.playerColor === 'R' ? '🔴 轮到你落子 (红方)' : '⚫ 轮到你落子 (黑方)');
+            }
+            this.startXiangqiTurnTimer();
+        }, thinkDelay);
+    }
+
+    /**
+     * 开启单机 AI 象棋对局 (随机红黑)
+     */
+    startXiangqiAiMode() {
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const waitingScr = document.getElementById('waitingScreen');
+        const xqScr = document.getElementById('xiangqiGameScreen');
+
+        this.stopDoudizhuTimers();
+        this.stopMahjongGame();
+
+        NetworkManager.isAiMode = true;
+        NetworkManager.isHost = true;
+        NetworkManager.myPlayerIndex = 0;
+
+        if (lobbyScr) { lobbyScr.style.display = 'none'; lobbyScr.classList.remove('active'); }
+        if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
+        if (xqScr) { xqScr.style.display = 'flex'; xqScr.classList.add('active'); }
+        this.updateHeaderVisibility();
+
+        const nick = NetworkManager.nickname || (AuthEngine.userData && AuthEngine.userData.nickname) || '玩家';
+
+        // 随机先后手
+        const iAmRed = Math.random() < 0.5;
+        const myColor = iAmRed ? 'R' : 'B';
+
+        const nameLeft = document.getElementById('xqNameLeft');
+        const roleLeft = document.getElementById('xqRoleLeft');
+        const avatarLeft = document.getElementById('xqAvatarLeft');
+        if (nameLeft) nameLeft.textContent = nick;
+        if (roleLeft) roleLeft.textContent = iAmRed ? '🔴 先手红方' : '⚫ 后手黑方';
+        if (avatarLeft) avatarLeft.className = 'xq-mini-piece ' + (iAmRed ? 'red-piece' : 'black-piece');
+        if (avatarLeft) avatarLeft.textContent = iAmRed ? '帅' : '将';
+
+        const nameRight = document.getElementById('xqNameRight');
+        const roleRight = document.getElementById('xqRoleRight');
+        const avatarRight = document.getElementById('xqAvatarRight');
+        if (nameRight) nameRight.textContent = 'AI 棋圣';
+        if (roleRight) roleRight.textContent = iAmRed ? '⚫ 后手黑方' : '🔴 先手红方';
+        if (avatarRight) avatarRight.className = 'xq-mini-piece ' + (iAmRed ? 'black-piece' : 'red-piece');
+        if (avatarRight) avatarRight.textContent = iAmRed ? '将' : '帅';
+
+        window.xiangqiEngine.reset(true, myColor);
+        this.initXiangqiUI();
+        this.renderXiangqiBoard();
+
+        const banner = document.getElementById('xqCenterBanner');
+        const bannerText = document.getElementById('xqCenterBannerText');
+        if (banner && bannerText) {
+            bannerText.textContent = iAmRed ? '你先手 · 红方' : '你后手 · 黑方';
+            banner.style.display = 'flex';
+            banner.style.animation = 'none';
+            void banner.offsetWidth;
+            banner.style.animation = '';
+            setTimeout(() => { banner.style.display = 'none'; }, 1400);
+        }
+
+        if (iAmRed) {
+            this.updateXiangqiStatusUI('🔴 轮到你落子 (红方先手)');
+            this.startXiangqiTurnTimer();
+        } else {
+            this.updateXiangqiStatusUI('🤖 AI 棋圣 (红方) 思考中...');
+            this.triggerXiangqiAiMove();
+        }
+    }
+
+    /**
+     * 开启联机象棋对局 (随机红黑, 固定 9x10)
+     */
+    startXiangqiOnlineGame(roomId, isHost = false, hostIsRedSynced = null) {
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            AuthEngine.checkAndDeductEntryFee('XIANGQI', isPve);
+        }
+
+        this.stopDoudizhuTimers();
+        this.stopMahjongGame();
+
+        const lobbyScr = document.getElementById('lobbyScreen');
+        const waitingScr = document.getElementById('waitingScreen');
+        const xqScr = document.getElementById('xiangqiGameScreen');
+
+        if (lobbyScr) { lobbyScr.style.display = 'none'; lobbyScr.classList.remove('active'); }
+        if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
+        if (xqScr) { xqScr.style.display = 'flex'; xqScr.classList.add('active'); }
+        this.updateHeaderVisibility();
+
+        let hostIsRed;
+        if (isHost) {
+            hostIsRed = (hostIsRedSynced !== null && hostIsRedSynced !== undefined) ? hostIsRedSynced : (Math.random() < 0.5);
+            NetworkManager.sendXiangqiStart(roomId, hostIsRed);
+        } else {
+            hostIsRed = (hostIsRedSynced !== null && hostIsRedSynced !== undefined) ? hostIsRedSynced : true;
+        }
+
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : (isHost ? 0 : 1);
+        const iAmRed = (mySlot === 0 && hostIsRed) || (mySlot === 1 && !hostIsRed);
+        const myColor = iAmRed ? 'R' : 'B';
+
+        const myNick = NetworkManager.nickname || '玩家';
+        const oppNick = isHost ? '对手' : '房主';
+
+        const nameLeft = document.getElementById('xqNameLeft');
+        const roleLeft = document.getElementById('xqRoleLeft');
+        const avatarLeft = document.getElementById('xqAvatarLeft');
+        if (nameLeft) nameLeft.textContent = myNick;
+        if (roleLeft) roleLeft.textContent = iAmRed ? '🔴 先手红方' : '⚫ 后手黑方';
+        if (avatarLeft) avatarLeft.className = 'xq-mini-piece ' + (iAmRed ? 'red-piece' : 'black-piece');
+        if (avatarLeft) avatarLeft.textContent = iAmRed ? '帅' : '将';
+
+        const nameRight = document.getElementById('xqNameRight');
+        const roleRight = document.getElementById('xqRoleRight');
+        const avatarRight = document.getElementById('xqAvatarRight');
+        if (nameRight) nameRight.textContent = oppNick;
+        if (roleRight) roleRight.textContent = iAmRed ? '⚫ 后手黑方' : '🔴 先手红方';
+        if (avatarRight) avatarRight.className = 'xq-mini-piece ' + (iAmRed ? 'black-piece' : 'red-piece');
+        if (avatarRight) avatarRight.textContent = iAmRed ? '将' : '帅';
+
+        window.xiangqiEngine.reset(false, myColor);
+        this.initXiangqiUI();
+        this.renderXiangqiBoard();
+
+        const isMyTurn = window.xiangqiEngine.currentTurn === myColor;
+        this.updateXiangqiStatusUI(isMyTurn ? '🔴 轮到你落子 (红方)' : '⚫ 对方思考中 (黑方)...');
+        UIRenderer.showToast(isMyTurn ? '🎲 随机先后手：你执红方先手！' : '🎲 随机先后手：你执黑方后手！');
+
+        const banner = document.getElementById('xqCenterBanner');
+        const bannerText = document.getElementById('xqCenterBannerText');
+        if (banner && bannerText) {
+            bannerText.textContent = iAmRed ? '你先手 · 红方' : '你后手 · 黑方';
+            banner.style.display = 'flex';
+            banner.style.animation = 'none';
+            void banner.offsetWidth;
+            banner.style.animation = '';
+            setTimeout(() => { banner.style.display = 'none'; }, 1400);
+        }
+
+        if (isHost && isMyTurn) this.startXiangqiTurnTimer();
+        else this.stopXiangqiTurnTimer();
+
+        // 监听对方走子广播
+        NetworkManager.onXiangqiMove((move) => {
+            if (!move || move.senderSlot === NetworkManager.myPlayerIndex) return;
+            const engine = window.xiangqiEngine;
+            const res = engine.move(move.fr, move.fc, move.tr, move.tc);
+            if (!res) return;
+            this.renderXiangqiBoard();
+            if (engine.isGameOver) {
+                this.stopXiangqiTurnTimer();
+                this.handleXiangqiEnd(engine.winner, engine.winReason);
+            } else {
+                const nowMyTurn = engine.currentTurn === myColor;
+                this.updateXiangqiStatusUI(nowMyTurn ? (myColor === 'R' ? '🔴 轮到你落子' : '⚫ 轮到你落子') : '⏳ 对方思考中...');
+                if (res.check) UIRenderer.showToast('⚡ 将军！');
+                if (nowMyTurn && NetworkManager.isHost) this.startXiangqiTurnTimer();
+                else this.stopXiangqiTurnTimer();
+            }
+        });
+
+        // 联机超时/认输广播
+        NetworkManager.onXiangqiEnd((data) => {
+            if (!data || !data.winnerColor) return;
+            const engine = window.xiangqiEngine;
+            if (!engine || engine.isGameOver) return;
+            engine.isGameOver = true;
+            engine.winner = data.winnerColor;
+            engine.winReason = data.reason || 'RESIGN';
+            this.stopXiangqiTurnTimer();
+            this.handleXiangqiEnd(engine.winner, engine.winReason);
+        });
+
+        // 联机悔棋申请
+        NetworkManager.onXiangqiUndoRequest((req) => {
+            if (!req || req.senderSlot === NetworkManager.myPlayerIndex) return;
+            const undoModal = document.getElementById('goUndoModal');
+            const modalText = document.getElementById('goUndoModalText');
+            if (undoModal && modalText) {
+                modalText.textContent = `玩家 ${req.applicantNick || '对方'} 申请悔棋一步，是否同意？`;
+                undoModal.style.display = 'flex';
+            }
+        });
+
+        NetworkManager.onXiangqiUndoResponse((resp) => {
+            if (!resp || resp.senderSlot === NetworkManager.myPlayerIndex) return;
+            if (resp.approved) {
+                if (window.xiangqiEngine) {
+                    window.xiangqiEngine.undo();
+                    this.renderXiangqiBoard();
+                }
+                if (this.xqUndoLeft > 0) {
+                    this.xqUndoLeft--;
+                    const countEl = document.getElementById('xqUndoCount');
+                    if (countEl) countEl.textContent = this.xqUndoLeft;
+                    const btnUndo = document.getElementById('btnXqUndo');
+                    if (this.xqUndoLeft <= 0 && btnUndo) {
+                        btnUndo.disabled = true;
+                        btnUndo.classList.add('disabled');
+                    }
+                }
+                UIRenderer.showToast(`🎉 对方同意悔棋！本局还剩 ${this.xqUndoLeft} 次`);
+            } else {
+                UIRenderer.showToast('❌ 对方拒绝了悔棋申请');
+            }
+        });
+
+        // 联机重来投票
+        NetworkManager.onXiangqiRematchVote((votes) => {
+            if (!votes) return;
+            const mySlot = NetworkManager.myPlayerIndex;
+            const oppSlot = mySlot === 0 ? 1 : 0;
+            const myVote = votes[mySlot] && votes[mySlot].ready;
+            const oppVote = votes[oppSlot] && votes[oppSlot].ready;
+            if (oppVote && !myVote) {
+                this.updateXiangqiStatusUI('🤝 对方已点击【重来一局】，等你准备...');
+                UIRenderer.showToast('🤝 对方已申请【重来一局】，请点击确认！');
+            }
+            if (votes[0] && votes[0].ready && votes[1] && votes[1].ready) {
+                NetworkManager.clearXiangqiRematchVotes();
+                this.startXiangqiOnlineGame(roomId, isHost);
+            }
+        });
+    }
+
+    /**
+     * 更新顶部状态与回合高亮
+     */
+    updateXiangqiStatusUI(msg) {
+        const textEl = document.getElementById('xqTurnText');
+        if (textEl) textEl.textContent = msg;
+
+        const pillLeft = document.getElementById('xqPlayerLeft');
+        const pillRight = document.getElementById('xqPlayerRight');
+        const engine = window.xiangqiEngine;
+        if (pillLeft && pillRight && engine) {
+            const isMyTurn = (engine.currentTurn === engine.playerColor);
+            if (isMyTurn) {
+                pillLeft.classList.add('turn-active');
+                pillRight.classList.remove('turn-active');
+            } else {
+                pillRight.classList.add('turn-active');
+                pillLeft.classList.remove('turn-active');
+            }
+        }
+    }
+
+    /**
+     * 象棋 60 秒回合倒计时 (超时自动走子)
+     */
+    startXiangqiTurnTimer() {
+        this.stopXiangqiTurnTimer();
+        const engine = window.xiangqiEngine;
+        const badge = document.getElementById('xqTimerBadge');
+        const secsEl = document.getElementById('xqTimerSecs');
+        if (!engine || engine.isGameOver) {
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+        if (!NetworkManager.isAiMode && !NetworkManager.isHost) {
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+
+        this._xqTimerSeconds = 60;
+        if (badge) badge.style.display = 'inline-flex';
+        if (secsEl) secsEl.textContent = '60';
+
+        this._xqTimerInterval = setInterval(() => {
+            const scr = document.getElementById('xiangqiGameScreen');
+            if (!scr || scr.style.display === 'none' || !window.xiangqiEngine || window.xiangqiEngine.isGameOver) {
+                this.stopXiangqiTurnTimer();
+                return;
+            }
+            this._xqTimerSeconds--;
+            if (secsEl) secsEl.textContent = Math.max(0, this._xqTimerSeconds);
+            if (badge) {
+                if (this._xqTimerSeconds <= 10) badge.classList.add('urgent');
+                else badge.classList.remove('urgent');
+            }
+            if (this._xqTimerSeconds <= 0) {
+                this.stopXiangqiTurnTimer();
+                this.handleXiangqiTimeout();
+            }
+        }, 1000);
+    }
+
+    stopXiangqiTurnTimer() {
+        if (this._xqTimerInterval) {
+            clearInterval(this._xqTimerInterval);
+            this._xqTimerInterval = null;
+        }
+        const badge = document.getElementById('xqTimerBadge');
+        if (badge) badge.style.display = 'none';
+    }
+
+    /**
+     * 回合超时: 自动走一步合法走法 (单机); 联机由房主判负
+     */
+    handleXiangqiTimeout() {
+        const engine = window.xiangqiEngine;
+        if (!engine || engine.isGameOver) return;
+
+        if (engine.isAiMode) {
+            if (engine.currentTurn === engine.playerColor) {
+                // 玩家超时: 自动走一步
+                const mv = engine.getBestAiMove();
+                if (mv) {
+                    const res = engine.move(mv.fr, mv.fc, mv.tr, mv.tc);
+                    this.renderXiangqiBoard();
+                    UIRenderer.showToast('⏱ 思考超时，已自动走子！');
+                    if (res && res.check) UIRenderer.showToast('⚡ 将军！');
+                    if (engine.isGameOver) {
+                        this.handleXiangqiEnd(engine.winner, engine.winReason);
+                        return;
+                    }
+                    this.triggerXiangqiAiMove();
+                }
+            }
+            return;
+        }
+
+        if (!NetworkManager.isHost) return;
+        const timeoutColor = engine.currentTurn;
+        const winnerColor = timeoutColor === 'R' ? 'B' : 'R';
+        UIRenderer.showToast(`⏱ 玩家超时，${winnerColor === 'R' ? '红方' : '黑方'}获胜！`);
+        engine.isGameOver = true;
+        engine.winner = winnerColor;
+        engine.winReason = 'TIMEOUT';
+        this.handleXiangqiEnd(winnerColor, 'TIMEOUT');
+        if (NetworkManager.sendXiangqiEnd) {
+            NetworkManager.sendXiangqiEnd('TIMEOUT', winnerColor);
+        }
+    }
+
+    /**
+     * 胜负结算
+     */
+    handleXiangqiEnd(winner, reason) {
+        this.stopXiangqiTurnTimer();
+
+        let msg = '';
+        if (reason === 'CHECKMATE') {
+            msg = winner === 'R' ? '🏆 红方将死黑方，红胜！' : '🏆 黑方将死红方，黑胜！';
+        } else if (reason === 'STALEMATE') {
+            msg = '🤝 困毙，对方无子可走！';
+        } else if (reason === 'RESIGN') {
+            msg = winner === 'R' ? '🏳️ 黑方认输，红方获胜！' : '🏳️ 红方认输，黑方获胜！';
+        } else if (reason === 'TIMEOUT') {
+            msg = winner === 'R' ? '⏱ 红方获胜！' : '⏱ 黑方获胜！';
+        } else {
+            msg = winner === 'R' ? '🎉 红方获胜！' : '🎉 黑方获胜！';
+        }
+
+        UIRenderer.showToast(msg);
+        this.updateXiangqiStatusUI(winner === 'R' ? '🏆 红方胜 · 请点击【重来一局】' : '🏆 黑方胜 · 请点击【重来一局】');
+
+        const myColor = window.xiangqiEngine ? window.xiangqiEngine.playerColor : 'R';
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.recordXiangqiMatchResult) {
+            if (winner === myColor) AuthEngine.recordXiangqiMatchResult(true, false);
+            else AuthEngine.recordXiangqiMatchResult(false, false);
+
+            if (AuthEngine.updateCoins) {
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const ratio = isPve ? 0.25 : 1.0;
+                if (winner === myColor) {
+                    const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
+                    const quickBonus = (totalMoves <= 20) ? 10 : 0;
+                    AuthEngine.updateCoins(Math.ceil((30 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
+                } else if (winner) {
+                    AuthEngine.updateCoins(-Math.ceil(20 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
+                }
+                if (AuthEngine.addExp) {
+                    const isWin = (winner === myColor);
+                    AuthEngine.addExp(isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50), isPve ? '象棋切磋 (PVE)' : '象棋对局 (PVP)');
+                }
+            }
+        }
+
+        ['btnXqUndo', 'btnXqResign'].forEach(id => {
+            const b = document.getElementById(id);
+            if (b) b.style.display = 'none';
+        });
+
+        const btnRematch = document.getElementById('btnXqRematch');
+        if (btnRematch) {
+            btnRematch.style.display = 'flex';
+            btnRematch.disabled = false;
+            btnRematch.classList.remove('disabled');
+            btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
+        }
+    }
+
+    /* ============================================================
        🀄 游鲸麻将 UI 控制与交互逻辑 (Mahjong UI Methods)
        ============================================================ */
 
@@ -12192,8 +13790,9 @@ class GameEngineController {
         const isMahjong = gameType === 'MAHJONG';
         const isGomoku  = gameType === 'GOMOKU';
         const isGo      = gameType === 'GO';
-        const totalSeats = isMahjong ? 4 : ((isGomoku || isGo) ? 2 : 3);
-        const gameName   = isMahjong ? '游鲸麻将' : (isGomoku ? '五子棋' : (isGo ? '围棋' : '斗地主'));
+        const isXiangqi = gameType === 'XIANGQI';
+        const totalSeats = isMahjong ? 4 : ((isGomoku || isGo || isXiangqi) ? 2 : 3);
+        const gameName   = isMahjong ? '游鲸麻将' : (isGomoku ? '五子棋' : (isGo ? '围棋' : (isXiangqi ? '象棋' : '斗地主')));
 
         const modalTitle = document.querySelector('#publicRoomsModal .ct-title');
         if (modalTitle) {
@@ -12203,10 +13802,12 @@ class GameEngineController {
                 '<i class="fa-solid fa-chess-board" style="color:#34d399;"></i> 在线五子棋对局大厅' :
                 (isGo ?
                 '<i class="fa-solid fa-circle" style="color:#e2e8f0;"></i> 在线围棋对局大厅' :
-                '<i class="fa-solid fa-list-check" style="color:#e2a820;"></i> 在线房间大厅'));
+                (isXiangqi ?
+                '<i class="fa-solid fa-chess-knight" style="color:#fecaca;"></i> 在线象棋对局大厅' :
+                '<i class="fa-solid fa-list-check" style="color:#e2a820;"></i> 在线房间大厅')));
         }
 
-        container.innerHTML = `<div style="text-align:center;color:${isMahjong || isGomoku || isGo ? '#34d399' : '#94a3b8'};padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取${gameName}在线房间...</div>`;
+        container.innerHTML = `<div style="text-align:center;color:${isMahjong || isGomoku || isGo || isXiangqi ? '#34d399' : '#94a3b8'};padding:25px;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> 正在拉取${gameName}在线房间...</div>`;
 
         NetworkManager.fetchPublicRooms((rooms) => {
             container.innerHTML = '';
@@ -12232,7 +13833,7 @@ class GameEngineController {
                 let phaseText = '🟢 等待开局';
                 let phaseClass = 'waiting';
                 if (phase === 'BIDDING') { phaseText = isMahjong ? '🟡 摸牌起手' : '🟡 抢地主中'; phaseClass = 'bidding'; }
-                if (phase === 'PLAYING') { phaseText = isMahjong ? '🀄 雀局进行中' : (isGomoku ? '♟️ 棋局进行中' : (isGo ? '⚫⚪ 棋局进行中' : '🔴 打牌进行中')); phaseClass = 'playing'; }
+                if (phase === 'PLAYING') { phaseText = isMahjong ? '🀄 雀局进行中' : (isGomoku ? '♟️ 棋局进行中' : (isGo ? '⚫⚪ 棋局进行中' : (isXiangqi ? '♞ 棋局进行中' : '🔴 打牌进行中'))); phaseClass = 'playing'; }
                 if (phase === 'GAMEOVER') { phaseText = '🎉 对局刚结束'; phaseClass = 'waiting'; }
 
                 // 计算真人数量与 AI 数量
@@ -12582,6 +14183,26 @@ class GameEngineController {
                 btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启 4 人麻将对局';
             }
             if (btnAi) btnAi.style.display = 'none';
+        } else if (isXiangqi) {
+            NetworkManager.gameType = 'XIANGQI';
+            this.activeGameType = 'XIANGQI';
+            if (connectedCount) {
+                connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+            }
+            if (slot2) slot2.style.display = 'none'; // 象棋仅需 1 名对手
+            if (slot3) slot3.style.display = 'none';
+
+            this._fillSlotWithAi(1);
+            const slotName1 = document.getElementById('slotName1');
+            if (slotName1) slotName1.textContent = 'AI 棋圣';
+
+            if (btnStart) {
+                btnStart.style.display = 'block';
+                btnStart.innerHTML = '<i class="fa-solid fa-play"></i> 开启象棋对局';
+            }
+            if (btnAi) {
+                btnAi.style.display = 'none'; // 保持界面简洁，无需额外 AI 按键
+            }
         } else if (isGo) {
             NetworkManager.gameType = 'GO';
             this.activeGameType = 'GO';
@@ -12764,6 +14385,7 @@ class GameEngineController {
         const isMahjong = (gameType === 'MAHJONG');
         const isGomoku  = (gameType === 'GOMOKU');
         const isGo      = (gameType === 'GO');
+        const isXiangqi = (gameType === 'XIANGQI');
         const connectedCount = document.getElementById('connectedCount');
         const slot2 = document.getElementById('slot2');
         const slot3 = document.getElementById('slot3');
@@ -12772,6 +14394,10 @@ class GameEngineController {
             if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/4</span>';
             if (slot2) slot2.style.display = 'flex';
             if (slot3) slot3.style.display = 'flex';
+        } else if (isXiangqi) {
+            if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
+            if (slot2) slot2.style.display = 'none';
+            if (slot3) slot3.style.display = 'none';
         } else if (isGo) {
             if (connectedCount) connectedCount.parentElement.innerHTML = '<span>成员就位: <b id="connectedCount" style="color:#ffd700;">1</b>/2</span>';
             if (slot2) slot2.style.display = 'none';
@@ -12785,6 +14411,14 @@ class GameEngineController {
             if (slot2) slot2.style.display = 'flex';
             if (slot3) slot3.style.display = 'none';
         }
+
+        // 客户端监听房主开启象棋对局信号
+        NetworkManager.onXiangqiStart((data) => {
+            if (!NetworkManager.isHost) {
+                const hostIsRed = (data && data.hostIsRed !== undefined) ? data.hostIsRed : true;
+                this.startXiangqiOnlineGame(roomId, false, hostIsRed);
+            }
+        });
 
         // 客户端监听房主开启围棋 / 五子棋 / 麻将对局信号，全员同步进入游戏！
         NetworkManager.onGoStart((data) => {

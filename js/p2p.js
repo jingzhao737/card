@@ -450,7 +450,8 @@ class P2PManager {
 
             const isGomoku = gameType === 'GOMOKU';
             const isGo = gameType === 'GO';
-            const isTwoPlayer = isGomoku || isGo;
+            const isXiangqi = gameType === 'XIANGQI';
+            const isTwoPlayer = isGomoku || isGo || isXiangqi;
             const initialLobby = {
                 players: isTwoPlayer ? [
                     { name: finalNick, avatar: currentAvatar, isAi: false, isHost: true, sid: this.sessionId },
@@ -567,7 +568,7 @@ class P2PManager {
 
                 const lobby = roomData.lobbyData || { players: [] };
                 const players = lobby.players || [];
-                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : ((gameType === 'GOMOKU' || gameType === 'GO') ? 1 : 2);
+                const maxSlotIndex = gameType === 'MAHJONG' ? 3 : ((gameType === 'GOMOKU' || gameType === 'GO' || gameType === 'XIANGQI') ? 1 : 2);
 
                 // 查找属于当前玩家的槽位 (0=房主, 1=玩家2, 2=玩家3, 3=玩家4)
                 let assignedSlot = -1;
@@ -1111,6 +1112,120 @@ class P2PManager {
     clearGoRematchVotes() {
         if (!this.roomRef) return;
         this.roomRef.child('goRematchVotes').remove();
+    }
+
+    /* ============================================================
+       ♞ 中国象棋 (XIANGQI) 云端通信方法
+       ============================================================ */
+    sendXiangqiMove(fr, fc, tr, tc) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqMove').set({
+            fr, fc, tr, tc,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiMove(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqMove').off();
+        this.roomRef.child('xqMove').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiStart(roomId, hostIsRed = true) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqStart').set({
+            ts: Date.now(),
+            hostNick: this.nickname,
+            hostIsRed
+        });
+    }
+
+    onXiangqiStart(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqStart').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiEnd(reason, winnerColor) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqEnd').set({
+            reason,
+            winnerColor,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiEnd(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqEnd').off();
+        this.roomRef.child('xqEnd').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiUndoRequest(applicantNick) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoReq').set({
+            applicantNick,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiUndoRequest(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoReq').off();
+        this.roomRef.child('xqUndoReq').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiUndoResponse(approved) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoResp').set({
+            approved,
+            senderSlot: this.myPlayerIndex,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiUndoResponse(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqUndoResp').off();
+        this.roomRef.child('xqUndoResp').on('value', snap => {
+            const val = snap.val();
+            if (val && callback) callback(val);
+        });
+    }
+
+    sendXiangqiRematchVote(ready) {
+        if (!this.roomRef || this.myPlayerIndex === null) return;
+        this.roomRef.child(`xqRematchVotes/${this.myPlayerIndex}`).set({
+            ready,
+            ts: Date.now()
+        });
+    }
+
+    onXiangqiRematchVote(callback) {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqRematchVotes').off();
+        this.roomRef.child('xqRematchVotes').on('value', snap => {
+            const val = snap.val();
+            if (callback) callback(val || {});
+        });
+    }
+
+    clearXiangqiRematchVotes() {
+        if (!this.roomRef) return;
+        this.roomRef.child('xqRematchVotes').remove();
     }
 
     sendMahjongStart(roomId) {
