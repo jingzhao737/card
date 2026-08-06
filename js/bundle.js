@@ -11744,8 +11744,13 @@ class GameEngineController {
 
         const myColor = window.xiangqiEngine ? window.xiangqiEngine.playerColor : 'R';
         if (typeof AuthEngine !== 'undefined' && AuthEngine.recordXiangqiMatchResult) {
-            if (winner === myColor) AuthEngine.recordXiangqiMatchResult(true, false);
-            else AuthEngine.recordXiangqiMatchResult(false, false);
+            if (winner === 'D') {
+                AuthEngine.recordXiangqiMatchResult(false, true); // 和棋记平局
+            } else if (winner === myColor) {
+                AuthEngine.recordXiangqiMatchResult(true, false);
+            } else {
+                AuthEngine.recordXiangqiMatchResult(false, false);
+            }
 
             if (AuthEngine.updateCoins) {
                 const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
@@ -11754,10 +11759,10 @@ class GameEngineController {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
                     AuthEngine.updateCoins(Math.ceil((30 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
-                } else if (winner) {
+                } else if (winner && winner !== 'D') {
                     AuthEngine.updateCoins(-Math.ceil(20 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
                 }
-                if (AuthEngine.addExp) {
+                if (AuthEngine.addExp && winner !== 'D') {
                     const isWin = (winner === myColor);
                     AuthEngine.addExp(isWin ? (isPve ? 40 : 150) : (isPve ? 15 : 50), isPve ? '象棋切磋 (PVE)' : '象棋对局 (PVP)');
                 }
