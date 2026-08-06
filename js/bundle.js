@@ -14109,6 +14109,7 @@ class GameEngineController {
         const mahjongScr = document.getElementById('mahjongGameScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
         const goScr = document.getElementById('goGameScreen');
+        const xiangqiScr = document.getElementById('xiangqiGameScreen');
 
         const menuBtnHelp = document.getElementById('menuBtnCardHelp');
         const menuBtnLeave = document.getElementById('menuBtnLeaveRoom');
@@ -14117,6 +14118,7 @@ class GameEngineController {
         const isMahjongScreen = mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none');
         const isGomokuScreen  = gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none');
         const isGoScreen      = goScr && (goScr.classList.contains('active') || goScr.style.display !== 'none');
+        const isXiangqiScreen = xiangqiScr && (xiangqiScr.classList.contains('active') || xiangqiScr.style.display !== 'none');
         const isLobbyScreen   = lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none');
 
         // 动态更换 Header 左上角游戏品牌标题 (游鲸围棋 <-> 游鲸五子棋 <-> 游鲸斗地主 <-> 游鲸麻将 <-> 游鲸象棋)
@@ -14127,7 +14129,7 @@ class GameEngineController {
                 brandTitle.textContent = '游鲸麻将';
             } else if (isGomokuScreen || (isLobbyScreen && this.activeGameType === 'GOMOKU')) {
                 brandTitle.textContent = '游鲸五子棋';
-            } else if (isLobbyScreen && this.activeGameType === 'XIANGQI') {
+            } else if (isXiangqiScreen || (isLobbyScreen && this.activeGameType === 'XIANGQI')) {
                 brandTitle.textContent = '游鲸象棋';
             } else {
                 brandTitle.textContent = '游鲸斗地主';
@@ -14136,7 +14138,7 @@ class GameEngineController {
 
         // 围棋/五子棋界面或大厅时隐藏“牌型说明”
         if (menuBtnHelp) {
-            menuBtnHelp.style.display = (isGomokuScreen || isGoScreen || (isLobbyScreen && (this.activeGameType === 'GOMOKU' || this.activeGameType === 'GO' || this.activeGameType === 'XIANGQI'))) ? 'none' : 'flex';
+            menuBtnHelp.style.display = (isGomokuScreen || isGoScreen || isXiangqiScreen || (isLobbyScreen && (this.activeGameType === 'GOMOKU' || this.activeGameType === 'GO' || this.activeGameType === 'XIANGQI'))) ? 'none' : 'flex';
         }
 
         // 非主界面时在右上角下拉菜单中显示“退出/离开房间”按钮
@@ -14803,8 +14805,6 @@ class GameEngineController {
         if (aiBtn)     aiBtn.style.display = 'flex';
         if (divider)   divider.style.display = 'flex';
         if (banner)    banner.style.display = 'none';
-
-        UIRenderer.showToast('已成功退出并安全返回主页大厅');
     }
 
     /**
