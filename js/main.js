@@ -3851,9 +3851,11 @@ class GameEngineController {
             return;
         }
 
-        this._goTimerSeconds = 60;
+        // 分阶段倒计时: 前30手(60半手)布局期给180秒, 之后90秒
+        const goHalfMoves = (window.goEngine && window.goEngine.moveHistory) ? window.goEngine.moveHistory.length : 0;
+        this._goTimerSeconds = goHalfMoves < 60 ? 180 : 90;
         if (badge) badge.style.display = 'inline-flex';
-        if (secsEl) secsEl.textContent = '60';
+        if (secsEl) secsEl.textContent = String(this._goTimerSeconds);
 
         this._goTimerInterval = setInterval(() => {
             const gScr = document.getElementById('goGameScreen');
@@ -4642,9 +4644,11 @@ class GameEngineController {
             return;
         }
 
-        this._xqTimerSeconds = 60;
+        // 分阶段倒计时: 前30回合(60半手)给120秒, 之后60秒
+        const halfMoves = (window.xiangqiEngine && window.xiangqiEngine.moveHistory) ? window.xiangqiEngine.moveHistory.length : 0;
+        this._xqTimerSeconds = halfMoves < 60 ? 120 : 60;
         if (badge) badge.style.display = 'inline-flex';
-        if (secsEl) secsEl.textContent = '60';
+        if (secsEl) secsEl.textContent = String(this._xqTimerSeconds);
 
         this._xqTimerInterval = setInterval(() => {
             const scr = document.getElementById('xiangqiGameScreen');
