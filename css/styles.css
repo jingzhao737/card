@@ -7903,4 +7903,13 @@ body.theme-go {
         flex-shrink: 0 !important;
         height: auto !important;
     }
+
+    /* 隐藏滚动条 (保留滑动功能, 移动端滚动条碍眼) */
+    #lobbyScreen {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    #lobbyScreen::-webkit-scrollbar {
+        display: none;
+    }
 }
