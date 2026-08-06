@@ -949,7 +949,7 @@ Object.assign(GameEngineController.prototype, {
                         const ratio = isPve ? 0.25 : 1.0;
                         const baseScore = 50 * (this.gameState.multiplier || 1);
                         if (isWin) {
-                            const winAmount = Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);
+                            const winAmount = Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                             AuthEngine.updateCoins(winAmount, isPve ? '斗地主切磋胜 (PVE)' : '斗地主胜 (PVP)');
                         } else {
                             const loseAmount = -Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);

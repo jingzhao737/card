@@ -903,7 +903,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.goEngine ? window.goEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    const winCoins = Math.ceil((100 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((100 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                     AuthEngine.updateCoins(winCoins, isPve ? '围棋切磋胜 (PVE)' : '围棋胜 (PVP)');
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(50 * ratio);

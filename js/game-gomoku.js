@@ -809,7 +809,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.gomokuEngine ? window.gomokuEngine.moveHistory.length : 20;
                     const quickBonus = (totalMoves <= 15) ? 10 : 0;
-                    const winCoins = Math.ceil((40 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((40 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                     AuthEngine.updateCoins(winCoins, isPve ? '五子棋切磋胜 (PVE)' : '五子棋胜 (PVP)');
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(20 * ratio);

@@ -1947,7 +1947,7 @@ Object.assign(GameEngineController.prototype, {
         // 计算 4 家精准损益
         const coinDiffs = [0, 0, 0, 0];
         if (winnerIdx !== -1) {
-            coinDiffs[winnerIdx] = winAmount;
+            coinDiffs[winnerIdx] = Math.ceil(winAmount * AuthEngine.getWeekdayWinBonus()); // 工作日胡牌 +15% (输家分摊仍按原值)
             if (isSelfDraw || discarderIdx === -1) {
                 // 自摸：其余 3 家平摊, 保证三家扣除合计 == winAmount (零和, 消除 ceil 取整误差)
                 const base = Math.floor(winAmount / 3);

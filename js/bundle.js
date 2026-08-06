@@ -3470,6 +3470,14 @@ class AuthManager {
     }
 
     /* ====================================================================
+       工作日赢金币加成: 周一~周五 +15%, 周六周日 100% (只加赢, 输不加)
+       ==================================================================== */
+    getWeekdayWinBonus() {
+        const d = new Date().getDay();
+        return (d >= 1 && d <= 5) ? 1.15 : 1.0;
+    }
+
+    /* ====================================================================
        游戏 NEW 角标已读机制 (仅登录账号生效: 点击过就不再显示, 下次上号也看不到)
        游客不记录 -> 角标一直显示
        ==================================================================== */
@@ -11039,7 +11047,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    AuthEngine.updateCoins(Math.ceil((100 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
+                    AuthEngine.updateCoins(Math.ceil((100 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)'); // 工作日赢 +15%
                 } else if (winner && winner !== 'D') {
                     AuthEngine.updateCoins(-Math.ceil(50 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
                 }
@@ -11890,7 +11898,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.gomokuEngine ? window.gomokuEngine.moveHistory.length : 20;
                     const quickBonus = (totalMoves <= 15) ? 10 : 0;
-                    const winCoins = Math.ceil((40 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((40 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                     AuthEngine.updateCoins(winCoins, isPve ? '五子棋切磋胜 (PVE)' : '五子棋胜 (PVP)');
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(20 * ratio);
@@ -12832,7 +12840,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.goEngine ? window.goEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    const winCoins = Math.ceil((100 + quickBonus) * ratio);
+                    const winCoins = Math.ceil((100 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                     AuthEngine.updateCoins(winCoins, isPve ? '围棋切磋胜 (PVE)' : '围棋胜 (PVP)');
                 } else if (winner !== 0) {
                     const loseCoins = -Math.ceil(50 * ratio);
@@ -14821,7 +14829,7 @@ Object.assign(GameEngineController.prototype, {
         // 计算 4 家精准损益
         const coinDiffs = [0, 0, 0, 0];
         if (winnerIdx !== -1) {
-            coinDiffs[winnerIdx] = winAmount;
+            coinDiffs[winnerIdx] = Math.ceil(winAmount * AuthEngine.getWeekdayWinBonus()); // 工作日胡牌 +15% (输家分摊仍按原值)
             if (isSelfDraw || discarderIdx === -1) {
                 // 自摸：其余 3 家平摊, 保证三家扣除合计 == winAmount (零和, 消除 ceil 取整误差)
                 const base = Math.floor(winAmount / 3);
@@ -15874,7 +15882,7 @@ Object.assign(GameEngineController.prototype, {
                         const ratio = isPve ? 0.25 : 1.0;
                         const baseScore = 50 * (this.gameState.multiplier || 1);
                         if (isWin) {
-                            const winAmount = Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);
+                            const winAmount = Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio * AuthEngine.getWeekdayWinBonus()); // 工作日赢 +15%
                             AuthEngine.updateCoins(winAmount, isPve ? '斗地主切磋胜 (PVE)' : '斗地主胜 (PVP)');
                         } else {
                             const loseAmount = -Math.ceil((myRole === 'LANDLORD' ? baseScore * 2 : baseScore) * ratio);

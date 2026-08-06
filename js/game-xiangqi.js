@@ -742,7 +742,7 @@ Object.assign(GameEngineController.prototype, {
                 if (winner === myColor) {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
                     const quickBonus = (totalMoves <= 20) ? 10 : 0;
-                    AuthEngine.updateCoins(Math.ceil((100 + quickBonus) * ratio), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)');
+                    AuthEngine.updateCoins(Math.ceil((100 + quickBonus) * ratio * AuthEngine.getWeekdayWinBonus()), isPve ? '象棋切磋胜 (PVE)' : '象棋胜 (PVP)'); // 工作日赢 +15%
                 } else if (winner && winner !== 'D') {
                     AuthEngine.updateCoins(-Math.ceil(50 * ratio), isPve ? '象棋切磋负 (PVE)' : '象棋负 (PVP)');
                 }
