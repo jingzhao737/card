@@ -1768,8 +1768,9 @@ class GameEngineController {
             AuthEngine.checkAndDeductEntryFee('GOMOKU', isPve);
         }
 
-        // 切换游戏前清理斗地主残留定时器
+        // 切换游戏前清理斗地主残留定时器与麻将所有后台定时器
         this.stopDoudizhuTimers();
+        this.stopMahjongGame();
 
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
@@ -1945,8 +1946,10 @@ class GameEngineController {
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
 
-        // 切换游戏前清理斗地主残留定时器
+        // 切换游戏前清理斗地主残留定时器与麻将所有后台定时器
+        // (防止麻将 AI 思考 setTimeout / 5s 自动过牌定时器在五子棋局中残留播放麻将音效)
         this.stopDoudizhuTimers();
+        this.stopMahjongGame();
 
         // 单机 AI 模式标记：斗地主/麻将 AI 模式均有设置，此处必须同步设置，
         // 否则 startGomokuTurnTimer 会因「非 AI 模式且非房主」直接跳过倒计时
@@ -4777,6 +4780,9 @@ class GameEngineController {
         NetworkManager.isAiMode = true;
         NetworkManager.isHost = true;
         NetworkManager.myPlayerIndex = 0;
+
+        // 进入斗地主前同样清理麻将后台定时器，防止麻将音效残留
+        this.stopMahjongGame();
 
         this.gameState.players[0] = { id: 0, name: nickname, hand: [], isAi: false, isHost: true, role: 'FARMER', passedBid: false };
         this.gameState.players[1] = { id: 1, name: 'AI-1', hand: [], isAi: true, isHost: false, role: 'FARMER', passedBid: false };
