@@ -6654,7 +6654,7 @@ class GameEngineController {
         const cardGomoku     = document.getElementById('gomokuLobbyCard');
         const cardMahjong    = document.getElementById('mahjongLobbyCard');
 
-        const switchGameLobby = (gameType) => {
+        const switchGameLobby = (gameType, direction) => {
             document.body.classList.remove('theme-go', 'theme-gomoku', 'theme-mahjong');
             this.activeGameType = gameType;
             NetworkManager.gameType = gameType;
@@ -6668,7 +6668,7 @@ class GameEngineController {
             const navBtns = { GO: btnNavGo, DOUDIZHU: btnNavDoudizhu, GOMOKU: btnNavGomoku, MAHJONG: btnNavMahjong };
             Object.keys(navBtns).forEach(k => { if (navBtns[k]) navBtns[k].classList.toggle('active', k === gameType); });
 
-            // 卡片滑动切换动画: 旧卡向左滑出淡出, 新卡从右滑入淡入
+            // 卡片滑动切换动画: 方向跟随手势 (direction=1 下一个/左滑, direction=-1 上一个/右滑)
             const cardMap = { GO: cardGo, DOUDIZHU: cardDoudizhu, GOMOKU: cardGomoku, MAHJONG: cardMahjong };
             const newCard = cardMap[gameType];
             if (!newCard) return;
@@ -6681,27 +6681,40 @@ class GameEngineController {
             });
 
             // 清理可能残留的滑出动画类
-            cardsAll.forEach(c => { if (c) c.classList.remove('lobby-card-out'); });
+            cardsAll.forEach(c => { if (c) c.classList.remove('lobby-card-out', 'lobby-card-out-right'); });
+
+            // direction 缺省时按导航顺序推断 (向前)
+            const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG'];
+            if (direction === undefined) {
+                const fromIdx = gameOrder.indexOf(this._lastLobbyGame || 'DOUDIZHU');
+                const toIdx = gameOrder.indexOf(gameType);
+                direction = (toIdx >= fromIdx) ? 1 : -1;
+            }
+            this._lastLobbyGame = gameType;
+
+            // 前向: 旧卡向左滑出, 新卡从右滑入; 后向: 旧卡向右滑出, 新卡从左滑入
+            const outCls = direction > 0 ? 'lobby-card-out' : 'lobby-card-out-right';
+            const inCls = direction > 0 ? 'lobby-card-in' : 'lobby-card-in-left';
 
             if (oldCard && oldCard !== newCard && !this._lobbySwitchBusy) {
                 // 滑动过渡: 旧卡滑出 + 新卡滑入
                 this._lobbySwitchBusy = true;
-                oldCard.classList.add('lobby-card-out');
+                oldCard.classList.add(outCls);
                 newCard.style.display = 'block';
-                newCard.classList.remove('lobby-card-in');
+                newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
                 void newCard.offsetWidth; // 强制 reflow 触发动画
-                newCard.classList.add('lobby-card-in');
+                newCard.classList.add(inCls);
                 setTimeout(() => {
                     oldCard.style.display = 'none';
-                    oldCard.classList.remove('lobby-card-out');
+                    oldCard.classList.remove(outCls);
                     this._lobbySwitchBusy = false;
-                    setTimeout(() => newCard.classList.remove('lobby-card-in'), 350);
+                    setTimeout(() => newCard.classList.remove(inCls), 350);
                 }, 270);
             } else {
                 // 首次加载 / 动画忙时: 直接切换 (新卡带滑入动画)
                 cardsAll.forEach(c => { if (c) c.style.display = 'none'; });
                 newCard.style.display = 'block';
-                newCard.classList.remove('lobby-card-in');
+                newCard.classList.remove('lobby-card-in', 'lobby-card-in-left');
                 void newCard.offsetWidth;
                 newCard.classList.add('lobby-card-in');
                 setTimeout(() => newCard.classList.remove('lobby-card-in'), 350);
@@ -6797,11 +6810,11 @@ class GameEngineController {
                     const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG'];
                     const curIdx = gameOrder.indexOf(this.activeGameType || 'DOUDIZHU');
                     if (diffX < 0) {
-                        // 左滑切换下一个游戏
-                        switchGameLobby(gameOrder[(curIdx + 1) % gameOrder.length]);
+                        // 左滑切换下一个游戏 (动画向左滑出/从右滑入)
+                        switchGameLobby(gameOrder[(curIdx + 1) % gameOrder.length], 1);
                     } else {
-                        // 右滑切换上一个游戏
-                        switchGameLobby(gameOrder[(curIdx + 3) % gameOrder.length]);
+                        // 右滑切换上一个游戏 (动画向右滑出/从左滑入)
+                        switchGameLobby(gameOrder[(curIdx + 3) % gameOrder.length], -1);
                     }
                 }
             }, { passive: true });

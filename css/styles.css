@@ -7933,3 +7933,21 @@ body.theme-go {
     from { transform: translateX(70px); opacity: 0; }
     to   { transform: translateX(0); opacity: 1; }
 }
+/* 反向 (右滑/上一个): 旧卡向右滑出, 新卡从左滑入 */
+.lobby-card-out-right {
+    animation: lobbyCardOutRight 0.26s ease forwards;
+}
+
+.lobby-card-in-left {
+    animation: lobbyCardInLeft 0.32s ease;
+}
+
+@keyframes lobbyCardOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(70px); opacity: 0; }
+}
+
+@keyframes lobbyCardInLeft {
+    from { transform: translateX(-70px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
