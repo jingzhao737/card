@@ -8633,12 +8633,13 @@ body.theme-go .overlay-screen {
     padding: 0 10px;
 }
 
-/* 分数: 金色大粗字 -> 低调灰 */
+/* 分数: 金色大粗字 -> 低调灰斜体 */
 .lb-score {
     font-weight: 600;
     color: #94a3b8;
     font-family: inherit;
     font-size: 0.82rem;
+    font-style: italic;
 }
 
 /* 主页顶部迷你榜单: 悬浮态低调化 */
