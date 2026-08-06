@@ -11191,11 +11191,16 @@ class GameEngineController {
         river.innerHTML = '<span>楚&nbsp;河</span><span>汉&nbsp;界</span>';
         boardContainer.appendChild(river);
 
-        // 玩家头像棋子
+        // 玩家头像棋子 + 角色信息统一设置 (任何模式进入都保证正确)
         const avatarLeft = document.getElementById('xqAvatarLeft');
         const avatarRight = document.getElementById('xqAvatarRight');
-        if (avatarLeft) avatarLeft.textContent = engine.playerColor === 'R' ? '帅' : '将';
-        if (avatarRight) avatarRight.textContent = engine.playerColor === 'R' ? '将' : '帅';
+        const roleLeft = document.getElementById('xqRoleLeft');
+        const roleRight = document.getElementById('xqRoleRight');
+        const iAmRed2 = engine.playerColor === 'R';
+        if (avatarLeft) avatarLeft.textContent = iAmRed2 ? '帅' : '将';
+        if (avatarRight) avatarRight.textContent = iAmRed2 ? '将' : '帅';
+        if (roleLeft) roleLeft.textContent = iAmRed2 ? '🔴 先手红方' : '⚫ 后手黑方';
+        if (roleRight) roleRight.textContent = iAmRed2 ? '⚫ 后手黑方' : '🔴 先手红方';
     }
 
     /**
@@ -11455,11 +11460,11 @@ class GameEngineController {
     }
 
     /**
-     * 播放落子音效 (sound/placing-a-piece.mp3)
+     * 播放落子音效 (sound/mahjangclack-1.wav)
      */
     playXiangqiMoveSound() {
         try {
-            const audio = new Audio('sound/placing-a-piece.mp3');
+            const audio = new Audio('sound/mahjangclack-1.wav');
             audio.volume = 0.9;
             const p = audio.play();
             if (p && p.catch) p.catch(() => {});
@@ -11467,11 +11472,11 @@ class GameEngineController {
     }
 
     /**
-     * 播放选子音效 (sound/mahjangclack-1.wav 清脆咔嗒)
+     * 播放选子音效 (sound/placing-a-piece.mp3)
      */
     playXiangqiSelectSound() {
         try {
-            const audio = new Audio('sound/mahjangclack-1.wav');
+            const audio = new Audio('sound/placing-a-piece.mp3');
             audio.volume = 0.55;
             const p = audio.play();
             if (p && p.catch) p.catch(() => {});
