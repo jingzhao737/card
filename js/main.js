@@ -1163,6 +1163,26 @@ class GameEngineController {
     }
 
     /**
+     * 彻底终止斗地主的回合倒计时与 AI 叫牌定时器
+     * (切换麻将/五子棋/返回大厅时必须调用，否则残留 timer 会在其他游戏中触发 handleTurnTimeout)
+     */
+    stopDoudizhuTimers() {
+        if (this.turnTimerInterval) {
+            clearInterval(this.turnTimerInterval);
+            this.turnTimerInterval = null;
+        }
+        if (this.turnTimerId) {
+            clearInterval(this.turnTimerId);
+            this.turnTimerId = null;
+        }
+        if (this._aiBidTimer) {
+            clearTimeout(this._aiBidTimer);
+            this._aiBidTimer = null;
+        }
+        this.gameState.phase = 'LOBBY';
+    }
+
+    /**
      * 彻底终止麻将对局中的所有定时器、看门狗与 AI 轮转 loop
      */
     stopMahjongGame() {
@@ -1734,6 +1754,9 @@ class GameEngineController {
             AuthEngine.checkAndDeductEntryFee('GOMOKU', isPve);
         }
 
+        // 切换游戏前清理斗地主残留定时器
+        this.stopDoudizhuTimers();
+
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
@@ -1881,6 +1904,9 @@ class GameEngineController {
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
+
+        // 切换游戏前清理斗地主残留定时器
+        this.stopDoudizhuTimers();
         if (lobbyScr) {
             lobbyScr.style.display = 'none';
             lobbyScr.classList.remove('active');
@@ -2193,6 +2219,9 @@ class GameEngineController {
             AuthEngine.checkAndDeductEntryFee('MAHJONG', isPve);
         }
 
+        // 切换游戏前清理斗地主残留定时器
+        this.stopDoudizhuTimers();
+
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const mahjongScr = document.getElementById('mahjongGameScreen');
@@ -2401,6 +2430,9 @@ class GameEngineController {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee && !AuthEngine.checkAndDeductEntryFee('MAHJONG', true)) {
             return;
         }
+
+        // 切换游戏前清理斗地主残留定时器，防止其 handleTurnTimeout 干扰麻将对局
+        this.stopDoudizhuTimers();
 
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
