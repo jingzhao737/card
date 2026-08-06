@@ -8444,3 +8444,11 @@ body.theme-xiangqi {
     cursor: not-allowed !important;
     pointer-events: none !important;
 }
+/* 象棋大厅卡兜底样式 (不依赖主题类, 确保任何浏览器可见) */
+#xiangqiLobbyCard {
+    background: linear-gradient(180deg, #14181d 0%, #07090c 100%) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(148, 163, 184, 0.08) !important;
+    display: block;
+    min-height: 300px;
+}
