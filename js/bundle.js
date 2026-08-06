@@ -8847,11 +8847,17 @@ class GameEngineController {
             const doudizhuScr = document.getElementById('gameScreen');
             const gomokuScr = document.getElementById('gomokuGameScreen');
             const mahjongScr = document.getElementById('mahjongGameScreen');
+            const goScr = document.getElementById('goGameScreen');
+            const xiangqiScr = document.getElementById('xiangqiGameScreen');
 
-            if (waitingScr) { waitingScr.style.display = 'none'; waitingScr.classList.remove('active'); }
-            if (doudizhuScr) { doudizhuScr.style.display = 'none'; doudizhuScr.classList.remove('active'); }
-            if (gomokuScr) { gomokuScr.style.display = 'none'; gomokuScr.classList.remove('active'); }
-            if (mahjongScr) { mahjongScr.style.display = 'none'; mahjongScr.classList.remove('active'); }
+            // 统一隐藏所有游戏对局屏 (含围棋/象棋)
+            [waitingScr, doudizhuScr, gomokuScr, mahjongScr, goScr, xiangqiScr].forEach(s => {
+                if (s) { s.style.display = 'none'; s.classList.remove('active'); }
+            });
+
+            // 清理围棋/象棋回合计时器
+            if (this.stopGoTurnTimer) this.stopGoTurnTimer();
+            if (this.stopXiangqiTurnTimer) this.stopXiangqiTurnTimer();
 
             if (lobbyScr) { lobbyScr.style.display = 'flex'; lobbyScr.classList.add('active'); }
 
