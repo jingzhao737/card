@@ -6695,6 +6695,11 @@ class GameEngineController {
             }
             this._lastLobbyGame = gameType;
 
+            // 切换后刷新头部品牌标题 (游鲸围棋/五子棋/斗地主/麻将/象棋)
+            if (typeof this.updateHeaderVisibility === 'function') {
+                this.updateHeaderVisibility();
+            }
+
             // 前向: 旧卡向左滑出, 新卡从右滑入; 后向: 旧卡向右滑出, 新卡从左滑入
             const outCls = direction > 0 ? 'lobby-card-out' : 'lobby-card-out-right';
             const inCls = direction > 0 ? 'lobby-card-in' : 'lobby-card-in-left';
