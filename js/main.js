@@ -3938,11 +3938,24 @@ class GameEngineController {
 
                 // 远程玩家胡牌 / 流局：全员同步弹出结算面板
                 if (window.mahjongEngine.isGameOver) {
+                    // 远程胡牌：播放胜利音效提示
+                    if (move.actionType === 'HU' && typeof SoundEngine !== 'undefined' && SoundEngine.playWin) {
+                        try { SoundEngine.playWin(); } catch (e) {}
+                    }
                     this.showMahjongSettlement(window.mahjongEngine.winner, null);
                     return;
                 }
 
                 const relativeSender = (move.senderSlot - mySlot + 4) % 4;
+                const seatLabels = ['你', '右家', '对家', '左家'];
+
+                // 远程玩家 吃/碰/杠：播放对应语音音效 + 国风大字报提示 (跳过摸牌音与响应检查)
+                if (move.actionType === 'CHOW' || move.actionType === 'PONG' || move.actionType === 'KONG') {
+                    const actText = move.actionType === 'CHOW' ? '吃！' : (move.actionType === 'PONG' ? '碰！' : '杠！');
+                    this.showMahjongActionToast(`${seatLabels[relativeSender] || '对方'}${actText}`);
+                    return;
+                }
+
                 if (move.discardedTile) {
                     this.animateTileThrow(move.discardedTile, relativeSender);
                 }
@@ -3954,7 +3967,7 @@ class GameEngineController {
                 const isMyTurnNow = (currTurn === mySlot);
 
                 // 检查我方 (mySlot) 对远程打出的牌是否有 吃/碰/杠/胡 响应
-                if (move.discardedTile && move.actionType !== 'CHOW' && move.actionType !== 'PONG' && move.actionType !== 'HU') {
+                if (move.discardedTile && move.actionType !== 'CHOW' && move.actionType !== 'PONG' && move.actionType !== 'KONG' && move.actionType !== 'HU') {
                     const engine = window.mahjongEngine;
                     const isUpperHouse = (move.senderSlot + 1) % 4 === mySlot;
                     const chowOptions = isUpperHouse ? engine.getChowOptions(mySlot, move.discardedTile) : [];
@@ -4936,10 +4949,22 @@ class GameEngineController {
             return;
         }
 
-        this._mahjongTimerSeconds = this.pendingDiscardRes ? 8 : 25;
+        this._mahjongTimerSeconds = this.pendingDiscardRes ? 10 : 25;
         if (timerEl) {
             timerEl.textContent = String(this._mahjongTimerSeconds);
             timerEl.classList.remove('urgent');
+        }
+
+        // 响应浮条倒计时徽标同步
+        const actTimerEl = document.getElementById('mahjongActionTimer');
+        if (actTimerEl) {
+            if (this.pendingDiscardRes) {
+                actTimerEl.style.display = 'inline-block';
+                actTimerEl.textContent = `⏱ ${this._mahjongTimerSeconds}s`;
+                actTimerEl.classList.remove('urgent');
+            } else {
+                actTimerEl.style.display = 'none';
+            }
         }
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
@@ -4958,6 +4983,15 @@ class GameEngineController {
                 if (this._mahjongTimerSeconds <= 5) timerEl.classList.add('urgent');
                 else timerEl.classList.remove('urgent');
             }
+            if (actTimerEl) {
+                if (this.pendingDiscardRes) {
+                    actTimerEl.textContent = `⏱ ${Math.max(0, this._mahjongTimerSeconds)}s`;
+                    if (this._mahjongTimerSeconds <= 3) actTimerEl.classList.add('urgent');
+                    else actTimerEl.classList.remove('urgent');
+                } else {
+                    actTimerEl.style.display = 'none';
+                }
+            }
 
             if (this._mahjongTimerSeconds <= 0) {
                 clearInterval(this._mahjongTimerInterval);
@@ -4966,6 +5000,7 @@ class GameEngineController {
                 // 超时托管判定
                 if (this.pendingDiscardRes) {
                     // 吃碰杠胡响应超时 -> 自动过牌
+                    UIRenderer.showToast('⏳ 响应超时，已自动过牌');
                     this.handleMahjongPassClick();
                 } else if (engine.currentTurn === mySlot) {
                     // 我方回合打牌超时 -> 自动打出刚摸到的牌
@@ -5510,6 +5545,8 @@ class GameEngineController {
         if (this._mahjongResponseTimer) { clearTimeout(this._mahjongResponseTimer); this._mahjongResponseTimer = null; }
         const actionBar = document.getElementById('mahjongActionBar');
         if (actionBar) actionBar.style.display = 'none';
+        const actTimerEl = document.getElementById('mahjongActionTimer');
+        if (actTimerEl) actTimerEl.style.display = 'none';
         const chowModal = document.getElementById('mahjongChowModal');
         if (chowModal) chowModal.style.display = 'none';
         this.clearMahjongActionHighlight();

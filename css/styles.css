@@ -7862,3 +7862,26 @@ body.theme-go {
         font-size: 0.66rem;
     }
 }
+/* 吃碰杠胡响应倒计时徽标 */
+.mahjong-act-timer {
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #fcd34d;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(252, 211, 77, 0.45);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-left: 4px;
+    white-space: nowrap;
+    animation: actTimerPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes actTimerPulse {
+    from { opacity: 0.75; transform: scale(1); }
+    to   { opacity: 1; transform: scale(1.06); }
+}
+
+.mahjong-act-timer.urgent {
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.6);
+}
