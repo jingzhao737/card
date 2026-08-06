@@ -68,9 +68,9 @@ class GameEngineController {
         this.bindLobbyEvents();
         this.renderMiniLeaderboard();
 
-        // 游鲸围棋为主力游戏：默认落在围棋大厅
+        // 默认落在第一个导航游戏 (斗地主) 大厅
         if (this.switchGameLobby) {
-            this.switchGameLobby('GO');
+            this.switchGameLobby('DOUDIZHU');
             this.updateHeaderVisibility();
         }
 
@@ -534,9 +534,9 @@ class GameEngineController {
                 const diffX = e.changedTouches[0].clientX - touchStartX;
                 const diffY = e.changedTouches[0].clientY - touchStartY;
                 if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-                    // 按导航顺序循环: 围棋 -> 五子棋 -> 斗地主 -> 麻将
-                    const gameOrder = ['GO', 'GOMOKU', 'DOUDIZHU', 'MAHJONG'];
-                    const curIdx = gameOrder.indexOf(this.activeGameType || 'GO');
+                    // 按导航顺序循环: 斗地主 -> 围棋 -> 五子棋 -> 麻将
+                    const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG'];
+                    const curIdx = gameOrder.indexOf(this.activeGameType || 'DOUDIZHU');
                     if (diffX < 0) {
                         // 左滑切换下一个游戏
                         switchGameLobby(gameOrder[(curIdx + 1) % gameOrder.length]);
