@@ -582,12 +582,12 @@ class GameEngineController {
                 }
                 navAnimId = requestAnimationFrame(navInertiaTick);
             };
-            // 鼠标滚轮: 累积速度带动画惯性 (限幅防夸张)
+            // 鼠标滚轮: 累积速度带动画惯性 (每格距离缩放0.4更细腻, 限幅防夸张)
             navEl.addEventListener('wheel', (e) => {
                 if (navEl.scrollWidth <= navEl.clientWidth) return;
                 if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
                 e.preventDefault();
-                navVel = Math.max(-140, Math.min(140, navVel + e.deltaY));
+                navVel = Math.max(-140, Math.min(140, navVel + e.deltaY * 0.4));
                 if (!navAnimId) navAnimId = requestAnimationFrame(navInertiaTick);
             }, { passive: false });
             // 拖拽开始时停止惯性动画, 避免冲突
