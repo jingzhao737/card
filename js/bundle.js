@@ -7611,6 +7611,14 @@ class GameEngineController {
             setTimeout(updateNavScrollMask, 100);
             updateNavScrollMask();
 
+            // 鼠标滚轮横向滚动导航栏 (仅导航可滚动时拦截, 不干扰页面纵向滚动)
+            navEl.addEventListener('wheel', (e) => {
+                if (navEl.scrollWidth <= navEl.clientWidth) return;
+                if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return; // 横向滚轮优先原生
+                e.preventDefault();
+                navEl.scrollLeft += e.deltaY;
+            }, { passive: false });
+
             let navDragging = false;
             let navStartX = 0;
             let navStartScroll = 0;
