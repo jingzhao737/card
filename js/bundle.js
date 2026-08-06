@@ -11083,6 +11083,43 @@ class GameEngineController {
     }
 
     /**
+     * 生成标准中国象棋棋盘 SVG (完整边框/河界断开两侧贯通/九宫斜线/炮兵位记号)
+     * 坐标: viewBox 0-8 (9列) x 0-9 (10行), 交叉点在整数坐标
+     */
+    _buildXiangqiBoardSvg() {
+        const L = [];
+        // 横线: 每行一条, 从左边框到右边框 (y=0..9)
+        for (let y = 0; y <= 9; y++) {
+            L.push(`<line x1="0" y1="${y}" x2="8" y2="${y}"/>`);
+        }
+        // 竖线: 两侧边线整段贯通; 内部列在河界 (y=4~5) 断开为两段
+        for (let x = 0; x <= 8; x++) {
+            if (x === 0 || x === 8) {
+                L.push(`<line x1="${x}" y1="0" x2="${x}" y2="9"/>`);
+            } else {
+                L.push(`<line x1="${x}" y1="0" x2="${x}" y2="4"/>`);
+                L.push(`<line x1="${x}" y1="5" x2="${x}" y2="9"/>`);
+            }
+        }
+        // 九宫斜线: 黑九宫 (3,0)-(5,2) 与 (5,0)-(3,2); 红九宫 (3,7)-(5,9) 与 (5,7)-(3,9)
+        L.push('<line x1="3" y1="0" x2="5" y2="2"/>');
+        L.push('<line x1="5" y1="0" x2="3" y2="2"/>');
+        L.push('<line x1="3" y1="7" x2="5" y2="9"/>');
+        L.push('<line x1="5" y1="7" x2="3" y2="9"/>');
+        // 炮位交叉记号
+        [[1, 2], [7, 2], [1, 7], [7, 7]].forEach(([x, y]) => {
+            L.push(`<path d="M${x - 0.2} ${y - 0.2} L${x + 0.2} ${y + 0.2} M${x - 0.2} ${y + 0.2} L${x + 0.2} ${y - 0.2}"/>`);
+        });
+        // 兵位交叉记号
+        for (let x = 0; x <= 8; x += 2) {
+            [3, 6].forEach(y => {
+                L.push(`<path d="M${x - 0.2} ${y - 0.2} L${x + 0.2} ${y + 0.2} M${x - 0.2} ${y + 0.2} L${x + 0.2} ${y - 0.2}"/>`);
+            });
+        }
+        return `<svg class="xq-board-svg" viewBox="-0.6 -0.6 9.2 10.2" preserveAspectRatio="none">${L.join('')}</svg>`;
+    }
+
+    /**
      * 初始化象棋棋盘 UI (9x10 网格 + 炮兵位标记 + 河界)
      */
     initXiangqiUI() {
@@ -11113,40 +11150,14 @@ class GameEngineController {
         if (btnResign) { btnResign.style.display = 'flex'; btnResign.disabled = false; btnResign.classList.remove('disabled'); }
 
         boardContainer.innerHTML = '';
-        const marks = new Set(this.XIANGQI_POINT_MARKS());
+
+        // 用 SVG 精确绘制标准棋盘 (完整边框 + 河界断开两侧竖线贯通 + 九宫斜线 + 炮兵位记号)
+        boardContainer.insertAdjacentHTML('beforeend', this._buildXiangqiBoardSvg());
 
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 9; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'xq-cell';
-
-                if (r === 0) cell.classList.add('row-top');
-                if (r === 9) cell.classList.add('row-bottom');
-                if (c === 0) cell.classList.add('col-left');
-                if (c === 8) cell.classList.add('col-right');
-
-                // 河界: 行4 底部半格 + 行5 顶部半格 (横线在河界断开)
-                if (r === 4) cell.classList.add('row-top');
-                if (r === 5) cell.classList.add('row-bottom');
-
-                if (marks.has(r + ',' + c)) {
-                    const mark = document.createElement('div');
-                    mark.className = 'xq-point-mark';
-                    cell.appendChild(mark);
-                }
-
-                // 九宫斜线 (黑: 行0-2列3-5, 红: 行7-9列3-5)
-                const diagMap = {
-                    '7,3': 'se', '8,4': 'se', '9,5': 'se',
-                    '7,5': 'sw', '8,4': 'sw', '9,3': 'sw',
-                    '0,3': 'se', '1,4': 'se', '2,5': 'se',
-                    '0,5': 'sw', '1,4': 'sw', '2,3': 'sw'
-                };
-                if (diagMap[r + ',' + c]) {
-                    const diag = document.createElement('div');
-                    diag.className = 'xq-diag ' + diagMap[r + ',' + c];
-                    cell.appendChild(diag);
-                }
 
                 cell.dataset.r = r;
                 cell.dataset.c = c;

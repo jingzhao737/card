@@ -8227,59 +8227,35 @@ body.theme-xiangqi {
     justify-content: center;
 }
 
-.xq-cell::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: rgba(55, 28, 5, 0.95);
-    box-shadow: 0 0.5px 0 rgba(255, 235, 200, 0.25);
-    z-index: 1;
+.xq-cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.xq-cell::after {
-    content: '';
+/* 棋盘线条由 .xq-board-svg 统一精确绘制 */
+.xq-board-svg {
     position: absolute;
-    left: 50%;
-    top: 0;
-    width: 1px;
-    height: 100%;
-    background: rgba(55, 28, 5, 0.95);
-    box-shadow: 0.5px 0 0 rgba(255, 235, 200, 0.25);
-    z-index: 1;
-}
-
-.xq-cell.col-left::before { left: 50% !important; width: 50% !important; }
-.xq-cell.col-right::before { left: 0 !important; width: 50% !important; }
-.xq-cell.row-top::after { top: 50% !important; height: 50% !important; }
-.xq-cell.row-bottom::after { top: 0 !important; height: 50% !important; }
-
-/* 九宫斜线 */
-.xq-diag {
-    position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 2;
+    z-index: 1;
     pointer-events: none;
 }
 
-.xq-diag::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 145%;
-    height: 1.5px;
-    background: rgba(55, 28, 5, 0.95);
-    box-shadow: 0 0.5px 0 rgba(255, 235, 200, 0.2);
+.xq-board-svg line {
+    stroke: rgba(55, 28, 5, 0.95);
+    stroke-width: 0.07;
+    stroke-linecap: round;
 }
 
-.xq-diag.se::after { transform: translate(-50%, -50%) rotate(45deg); }
-.xq-diag.sw::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.xq-board-svg path {
+    stroke: rgba(55, 28, 5, 0.7);
+    stroke-width: 0.06;
+    stroke-linecap: round;
+}
 
 /* 楚河汉界 */
 .xq-river {
@@ -8302,31 +8278,7 @@ body.theme-xiangqi {
 }
 
 /* 炮位/兵位标记 */
-.xq-point-mark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 55%;
-    height: 55%;
-    z-index: 2;
-    pointer-events: none;
-}
 
-.xq-point-mark::before,
-.xq-point-mark::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 42%;
-    height: 1.5px;
-    background: rgba(55, 28, 5, 0.7);
-    box-shadow: 0 0.5px 0 rgba(255, 235, 200, 0.25);
-}
-
-.xq-point-mark::before { transform: translate(-50%, -50%) rotate(45deg); }
-.xq-point-mark::after { transform: translate(-50%, -50%) rotate(-45deg); }
 
 /* ========== 3D 立体棋子 ========== */
 .xq-piece {
