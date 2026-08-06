@@ -440,7 +440,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startXiangqiOnlineGame(roomId, isHost = false, hostIsRedSynced = null) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('XIANGQI', isPve);
         }
 
@@ -737,7 +737,7 @@ Object.assign(GameEngineController.prototype, {
             }
 
             if (AuthEngine.updateCoins) {
-                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                 const ratio = isPve ? 0.25 : 1.0;
                 if (winner === myColor) {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;

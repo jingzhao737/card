@@ -1636,6 +1636,7 @@ class P2PManager {
         this.roomId        = null;
         this.nickname      = '一键三连';
         this.isAiMode      = false;
+        this.humanCount    = 1; // 房间内真人玩家数 (金币按真人数量判定 PVE/PVP)
         this.sessionId     = this._getOrCreateSessionId();
 
         // 渲染与网络事件回调
@@ -2023,6 +2024,7 @@ class P2PManager {
                     const players = snapshot.val();
                     if (!players) return;
 
+                    this.humanCount = (players || []).filter(p => p && !p.isAi && p.sid).length || 1;
                     players.forEach((p, idx) => {
                         if (idx > 0 && !p.isAi && p.name) {
                             if (this.onPlayerJoined) {
@@ -2174,6 +2176,7 @@ class P2PManager {
                 };
 
                 this.roomRef.child('lastHumanActivity').set(Date.now());
+                this.humanCount = (players || []).filter(p => p && !p.isAi && p.sid).length || 1;
 
                 return this.roomRef.child('lobbyData/players').set(players).then(() => {
                     // 如果是房主重连，挂载房主监听
@@ -2208,6 +2211,10 @@ class P2PManager {
                     // 监听大厅玩家列表同步
                     this.roomRef.child('lobbyData').on('value', snap => {
                         const lData = snap.val();
+                        if (lData) {
+                            const ps = (lData.players || []);
+                            this.humanCount = ps.filter(p => p && !p.isAi && p.sid).length || (ps.some(p => p && !p.isAi) ? 1 : 1);
+                        }
                         if (lData && this.onLobbySync) {
                             this.onLobbySync(lData);
                         }
@@ -2315,6 +2322,7 @@ class P2PManager {
             this.clearSession();
             this._removeAllListeners();
             this.roomId = null;
+        this.humanCount = 1;
             if (callback) callback();
         };
 
@@ -10729,7 +10737,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startXiangqiOnlineGame(roomId, isHost = false, hostIsRedSynced = null) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('XIANGQI', isPve);
         }
 
@@ -11026,7 +11034,7 @@ Object.assign(GameEngineController.prototype, {
             }
 
             if (AuthEngine.updateCoins) {
-                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                 const ratio = isPve ? 0.25 : 1.0;
                 if (winner === myColor) {
                     const totalMoves = window.xiangqiEngine ? window.xiangqiEngine.moveHistory.length : 40;
@@ -11201,7 +11209,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startGomokuOnlineGame(roomId, isHost = false, hostIsBlackSynced = null) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('GOMOKU', isPve);
         }
 
@@ -11876,7 +11884,7 @@ Object.assign(GameEngineController.prototype, {
 
             // 💰 结算五子棋【知因币】 (零分保底，PVE 25% 比例)
             if (AuthEngine.updateCoins) {
-                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                 const ratio = isPve ? 0.25 : 1.0;
 
                 if (winner === myColor) {
@@ -12075,7 +12083,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startGoOnlineGame(roomId, isHost = false, hostIsBlackSynced = null) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('GO', isPve);
         }
 
@@ -12818,7 +12826,7 @@ Object.assign(GameEngineController.prototype, {
 
             // 💰 结算围棋【知因币】 (零分保底，PVE 25% 比例)
             if (AuthEngine.updateCoins) {
-                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                 const ratio = isPve ? 0.25 : 1.0;
 
                 if (winner === myColor) {
@@ -12876,7 +12884,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startMahjongOnlineGame(roomId, isHost = false) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('MAHJONG', isPve);
         }
 
@@ -14796,7 +14804,7 @@ Object.assign(GameEngineController.prototype, {
         }
 
         // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报 (方案一: 线性番数乘率 + 放炮包赔)
-        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
         const ratio = isPve ? 0.25 : 1.0;
         const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
         const baseAmount = 80 * fanCount;
@@ -14960,7 +14968,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startNewRound() {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('DOUDIZHU', isPve);
         }
 
@@ -15862,7 +15870,7 @@ Object.assign(GameEngineController.prototype, {
 
                     // 💰 结算斗地主【知因币】 (带 PVE 25% 比例和零分保底)
                     if (AuthEngine.updateCoins) {
-                        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                         const ratio = isPve ? 0.25 : 1.0;
                         const baseScore = 50 * (this.gameState.multiplier || 1);
                         if (isWin) {

@@ -10,7 +10,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startMahjongOnlineGame(roomId, isHost = false) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('MAHJONG', isPve);
         }
 
@@ -1930,7 +1930,7 @@ Object.assign(GameEngineController.prototype, {
         }
 
         // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报 (方案一: 线性番数乘率 + 放炮包赔)
-        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
         const ratio = isPve ? 0.25 : 1.0;
         const fanCount = (huDetails && huDetails.fanCount) ? huDetails.fanCount : 1;
         const baseAmount = 80 * fanCount;

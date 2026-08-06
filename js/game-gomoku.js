@@ -128,7 +128,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startGomokuOnlineGame(roomId, isHost = false, hostIsBlackSynced = null) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('GOMOKU', isPve);
         }
 
@@ -803,7 +803,7 @@ Object.assign(GameEngineController.prototype, {
 
             // 💰 结算五子棋【知因币】 (零分保底，PVE 25% 比例)
             if (AuthEngine.updateCoins) {
-                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                 const ratio = isPve ? 0.25 : 1.0;
 
                 if (winner === myColor) {

@@ -43,7 +43,7 @@ Object.assign(GameEngineController.prototype, {
      */
     startNewRound() {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
-            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+            const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
             AuthEngine.checkAndDeductEntryFee('DOUDIZHU', isPve);
         }
 
@@ -945,7 +945,7 @@ Object.assign(GameEngineController.prototype, {
 
                     // 💰 结算斗地主【知因币】 (带 PVE 25% 比例和零分保底)
                     if (AuthEngine.updateCoins) {
-                        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
+                        const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
                         const ratio = isPve ? 0.25 : 1.0;
                         const baseScore = 50 * (this.gameState.multiplier || 1);
                         if (isWin) {
