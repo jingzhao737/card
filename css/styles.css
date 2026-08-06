@@ -5794,9 +5794,9 @@ body.theme-mahjong #lobbyScreen {
 /* 🀄 回合强调：轮到我方时手牌区金色脉冲光晕 */
 .mahjong-tiles-bottom.my-turn-glow {
     animation: myTurnGlow 1.3s ease-in-out infinite alternate;
-    border-radius: 6px;
-    padding: 2px 6px;
-    margin: -2px -6px;
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: -1px -2px;
 }
 @keyframes myTurnGlow {
     from { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
@@ -6187,7 +6187,7 @@ body.theme-mahjong #lobbyScreen {
     }
     .mahjong-tiles-bottom {
         gap: 1.2px !important;
-        padding: 0 10px !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
         width: fit-content !important;
         max-width: 100% !important;
