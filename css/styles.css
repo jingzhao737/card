@@ -6676,9 +6676,30 @@ body.theme-mahjong #lobbyScreen {
     margin-left: 2px;
 }
 
-/* 📱 手机移动端：两侧纵向 ID 栏中的庄标旋转 90 度，保持纵向规整防撑宽 */
+/* 2.5 风向徽章 (东南西北，青玉色小圆标) */
+.wind-tag {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(4, 120, 87, 0.55));
+    border: 1px solid rgba(52, 211, 153, 0.55);
+    color: #a7f3d0;
+    font-size: 0.62rem;
+    font-weight: 900;
+    width: 17px;
+    height: 17px;
+    line-height: 15px;
+    text-align: center;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    margin-left: 2px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 📱 手机移动端：两侧纵向 ID 栏中的庄标/风向徽章旋转 90 度，保持纵向规整防撑宽 */
 @media (max-width: 768px) {
-    .seat-user-pill.vertical .dealer-tag {
+    .seat-user-pill.vertical .dealer-tag,
+    .seat-user-pill.vertical .wind-tag {
         writing-mode: horizontal-tb;
         transform: rotate(90deg);
         display: inline-flex;

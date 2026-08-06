@@ -528,10 +528,10 @@
                     <!-- 1. 北家 (Top / 对家 / AI-2) -->
                     <div class="table-player-seat seat-top" id="mahjongSeatTop">
                         <div class="seat-user-pill">
-                            <div class="player-avatar-badge">🤖</div>
+                            <div class="player-avatar-badge" id="mAvatarTop">🤖</div>
                             <span class="p-name" id="mNameTop">AI 北家</span>
+                            <span class="wind-tag" id="mWindTop">北</span>
                             <span class="dealer-tag" id="mDealerTop" style="display:none;">庄</span>
-                            <span class="p-score" id="mScoreTop">1000分</span>
                         </div>
                         <!-- 北家吃碰杠牌堆 -->
                         <div class="melds-row top-melds" id="meldsTop"></div>
@@ -542,8 +542,9 @@
                     <!-- 2. 西家 (Left / 左家 / AI-3) -->
                     <div class="table-player-seat seat-left" id="mahjongSeatLeft">
                         <div class="seat-user-pill vertical">
-                            <div class="player-avatar-badge">🤖</div>
+                            <div class="player-avatar-badge" id="mAvatarLeft">🤖</div>
                             <span class="p-name" id="mNameLeft">AI 西家</span>
+                            <span class="wind-tag" id="mWindLeft">西</span>
                             <span class="dealer-tag" id="mDealerLeft" style="display:none;">庄</span>
                         </div>
                         <!-- 西家吃碰杠牌堆 -->
@@ -555,8 +556,9 @@
                     <!-- 3. 东家 (Right / 右家 / AI-1) -->
                     <div class="table-player-seat seat-right" id="mahjongSeatRight">
                         <div class="seat-user-pill vertical">
-                            <div class="player-avatar-badge">🤖</div>
+                            <div class="player-avatar-badge" id="mAvatarRight">🤖</div>
                             <span class="p-name" id="mNameRight">AI 东家</span>
+                            <span class="wind-tag" id="mWindRight">东</span>
                             <span class="dealer-tag" id="mDealerRight" style="display:none;">庄</span>
                         </div>
                         <!-- 东家吃碰杠牌堆 -->
@@ -587,12 +589,12 @@
 
                     <!-- 5. 南家 (Bottom / 我方) - 极其沉底避让视线 -->
                     <div class="table-player-seat seat-bottom" id="mahjongSeatBottom">
-                        <!-- 我方头像与分值 -->
+                        <!-- 我方头像与信息 -->
                         <div class="seat-user-pill bottom-pill">
                             <div class="player-avatar-badge" id="mAvatarBottom">🤠</div>
                             <span class="p-name" id="mNameBottom">我方玩家</span>
+                            <span class="wind-tag" id="mWindBottom">南</span>
                             <span class="dealer-tag" id="mDealerBottom" style="display:none;">庄</span>
-                            <span class="p-score" id="mScoreBottom">1000分</span>
                         </div>
 
                         <!-- 吃/碰/杠/胡 动态吃碰动作浮条 (置于手牌上方) -->

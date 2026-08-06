@@ -2605,18 +2605,41 @@ class GameEngineController {
         const mNameRight  = document.getElementById('mNameRight');
         const mNameTop    = document.getElementById('mNameTop');
         const mNameLeft   = document.getElementById('mNameLeft');
+        const mAvatarBottom = document.getElementById('mAvatarBottom');
+        const mAvatarRight  = document.getElementById('mAvatarRight');
+        const mAvatarTop    = document.getElementById('mAvatarTop');
+        const mAvatarLeft   = document.getElementById('mAvatarLeft');
+        const mWindBottom = document.getElementById('mWindBottom');
+        const mWindRight  = document.getElementById('mWindRight');
+        const mWindTop    = document.getElementById('mWindTop');
+        const mWindLeft   = document.getElementById('mWindLeft');
 
+        // 座位名称渲染：纯名字（AI 前缀与风向独立展示，避免重复冗余）
         const getPlayerNameAtRelativePos = (offset) => {
             const absIdx = (mySlot + offset) % 4;
             const p = players[absIdx];
-            const name = p ? (p.isAi ? `🤖 ${p.name}` : p.name) : `AI-${absIdx + 1}`;
-            return `${name} (${windNames[absIdx]}风)`;
+            return p ? p.name : `AI-${absIdx + 1}`;
+        };
+        const seatAvatar = (absIdx) => {
+            const p = players[absIdx];
+            if (p && !p.isAi && p.avatar) return p.avatar;
+            return p && !p.isAi ? '🤠' : '🤖';
         };
 
         if (mNameBottom) mNameBottom.textContent = getPlayerNameAtRelativePos(0);
         if (mNameRight)  mNameRight.textContent  = getPlayerNameAtRelativePos(1);
         if (mNameTop)    mNameTop.textContent    = getPlayerNameAtRelativePos(2);
         if (mNameLeft)   mNameLeft.textContent   = getPlayerNameAtRelativePos(3);
+        if (mAvatarBottom) mAvatarBottom.textContent = seatAvatar(mySlot);
+        if (mAvatarRight)  mAvatarRight.textContent  = seatAvatar((mySlot + 1) % 4);
+        if (mAvatarTop)    mAvatarTop.textContent    = seatAvatar((mySlot + 2) % 4);
+        if (mAvatarLeft)   mAvatarLeft.textContent   = seatAvatar((mySlot + 3) % 4);
+
+        // 风向独立徽章 (0=南/我方、1=东/右、2=北/对、3=西/左)
+        if (mWindBottom) mWindBottom.textContent = windNames[mySlot];
+        if (mWindRight)  mWindRight.textContent  = windNames[(mySlot + 1) % 4];
+        if (mWindTop)    mWindTop.textContent    = windNames[(mySlot + 2) % 4];
+        if (mWindLeft)   mWindLeft.textContent   = windNames[(mySlot + 3) % 4];
 
         // 设置 3D 局风罗盘风向标签 (映射到玩家视角：底部为我方风向，右/顶/左依序顺时针排列)
         const windSouth = document.getElementById('windSouth');
