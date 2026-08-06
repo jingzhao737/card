@@ -10892,9 +10892,10 @@ class GameEngineController {
             return;
         }
 
-        // 分阶段倒计时: 前30手(60半手)布局期给180秒, 之后90秒
+        // 分阶段递增倒计时: 越到后期时间越多 (中盘战斗+收官更复杂)
+        // 前30手90秒 -> 30-60手150秒 -> 60手后180秒
         const goHalfMoves = (window.goEngine && window.goEngine.moveHistory) ? window.goEngine.moveHistory.length : 0;
-        this._goTimerSeconds = goHalfMoves < 60 ? 180 : 90;
+        this._goTimerSeconds = goHalfMoves < 60 ? (goHalfMoves < 30 ? 90 : 150) : 180;
         if (badge) badge.style.display = 'inline-flex';
         if (secsEl) secsEl.textContent = String(this._goTimerSeconds);
 
@@ -11685,9 +11686,10 @@ class GameEngineController {
             return;
         }
 
-        // 分阶段倒计时: 前30回合(60半手)给120秒, 之后60秒
+        // 分阶段递增倒计时: 越到后期时间越多 (中残局更复杂)
+        // 前30手60秒 -> 30-60手90秒 -> 60手后120秒
         const halfMoves = (window.xiangqiEngine && window.xiangqiEngine.moveHistory) ? window.xiangqiEngine.moveHistory.length : 0;
-        this._xqTimerSeconds = halfMoves < 60 ? 120 : 60;
+        this._xqTimerSeconds = halfMoves < 60 ? (halfMoves < 30 ? 60 : 90) : 120;
         if (badge) badge.style.display = 'inline-flex';
         if (secsEl) secsEl.textContent = String(this._xqTimerSeconds);
 
