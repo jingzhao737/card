@@ -7618,19 +7618,19 @@ class GameEngineController {
             const navInertiaTick = () => {
                 const maxS = navEl.scrollWidth - navEl.clientWidth;
                 if (maxS <= 0) { navAnimId = null; navEl.style.transform = ''; return; }
-                // 边界弹性: 到最左/最右时速度反向衰减 + 视觉超出回弹
+                // 边界: 到最左/最右时速度归零 + 小幅弹性回弹一次 (不再反向加速, 避免往复鬼畜)
                 if (navEl.scrollLeft <= 0 && navVel < 0) {
-                    navOvershoot = Math.min(18, navOvershoot + (-navVel) * 0.25);
-                    navVel = -navVel * 0.4;
+                    navOvershoot = Math.min(8, navOvershoot + (-navVel) * 0.15);
+                    navVel = 0;
                     navEl.style.transform = 'translateX(' + navOvershoot + 'px)';
                 } else if (navEl.scrollLeft >= maxS && navVel > 0) {
-                    navOvershoot = Math.min(18, navOvershoot + navVel * 0.25);
-                    navVel = -navVel * 0.4;
+                    navOvershoot = Math.min(8, navOvershoot + navVel * 0.15);
+                    navVel = 0;
                     navEl.style.transform = 'translateX(' + (-navOvershoot) + 'px)';
                 } else {
                     navEl.scrollLeft += navVel;
                     if (navOvershoot > 0.5) {
-                        navOvershoot *= 0.78;
+                        navOvershoot *= 0.7;
                         const dir = navVel < 0 ? 1 : -1;
                         navEl.style.transform = 'translateX(' + (navOvershoot * dir) + 'px)';
                     } else if (navOvershoot !== 0) {
@@ -7638,20 +7638,20 @@ class GameEngineController {
                         navEl.style.transform = '';
                     }
                 }
-                navVel *= 0.9; // 阻尼衰减
-                if (Math.abs(navVel) < 0.4 && navOvershoot === 0) {
+                navVel *= 0.82; // 阻尼: 更快停止
+                if (Math.abs(navVel) < 0.5 && navOvershoot === 0) {
                     navAnimId = null;
                     navEl.style.transform = '';
                     return;
                 }
                 navAnimId = requestAnimationFrame(navInertiaTick);
             };
-            // 鼠标滚轮: 累积速度带动画惯性
+            // 鼠标滚轮: 累积速度带动画惯性 (限幅防夸张)
             navEl.addEventListener('wheel', (e) => {
                 if (navEl.scrollWidth <= navEl.clientWidth) return;
                 if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
                 e.preventDefault();
-                navVel += e.deltaY;
+                navVel = Math.max(-140, Math.min(140, navVel + e.deltaY));
                 if (!navAnimId) navAnimId = requestAnimationFrame(navInertiaTick);
             }, { passive: false });
             // 拖拽开始时停止惯性动画, 避免冲突
