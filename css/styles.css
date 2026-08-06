@@ -8370,6 +8370,13 @@ body.theme-xiangqi {
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
+@media (max-width: 768px) {
+    /* 手机端象棋棋子字单独调大 (电脑端保持基础 clamp) */
+    .xq-piece {
+        font-size: clamp(0.95rem, 4.6vw, 1.4rem);
+    }
+}
+
 .xq-piece.black {
     color: #1c1917;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
