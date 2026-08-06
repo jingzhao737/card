@@ -443,6 +443,10 @@ class GameEngineController {
             }
             this._lastLobbyGame = gameType;
 
+            // 动画类: 前向(下一个)旧卡左出/新卡右进; 后向(上一个)旧卡右出/新卡左进
+            const outCls = direction > 0 ? 'lobby-card-out' : 'lobby-card-out-right';
+            const inCls = direction > 0 ? 'lobby-card-in' : 'lobby-card-in-left';
+
             // 切换后刷新头部品牌标题 (游鲸围棋/五子棋/斗地主/麻将/象棋)
             if (typeof this.updateHeaderVisibility === 'function') {
                 this.updateHeaderVisibility();
