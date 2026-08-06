@@ -3945,9 +3945,7 @@ body.theme-gomoku .overlay-screen {
     user-select: none;
 }
 
-.game-nav-btn.active {
-    transform: scale(1.04);
-}
+
 
 .game-nav-btn:hover {
     color: #f1f5f9;
