@@ -3157,11 +3157,27 @@ class GameEngineController {
             // 📱 手机端：滑动选择 + 点击出牌（滑动经过即高亮，点出牌按钮打出）
             const isMobileTouch = ('ontouchstart' in window) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
             if (isMobileTouch) {
-                // 触摸滑动选择：手指滑到哪张牌就高亮哪张
+                // 触摸滑动选择：手指滑到哪张牌就高亮哪张（位移超阈值才拦截，避免干扰轻点选择）
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let swiping = false;
+                card.addEventListener('touchstart', (e) => {
+                    const t = e.touches[0];
+                    if (t) { touchStartX = t.clientX; touchStartY = t.clientY; }
+                    swiping = false;
+                }, { passive: true });
+
                 card.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
                     const touch = e.touches[0];
                     if (!touch) return;
+                    // 位移超过 8px 才算滑动（轻点抖动不拦截 click）
+                    if (!swiping) {
+                        const dx = touch.clientX - touchStartX;
+                        const dy = touch.clientY - touchStartY;
+                        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+                        swiping = true;
+                    }
+                    e.preventDefault();
                     // 找到手指正下方的牌
                     const el = document.elementFromPoint(touch.clientX, touch.clientY);
                     const target = el ? el.closest('.mahjong-tile-card') : null;
@@ -3180,6 +3196,13 @@ class GameEngineController {
 
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (swiping) return; // 刚滑动过，忽略本次点击
+                    const engine = window.mahjongEngine;
+                    const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+                    if (!engine || engine.isGameOver || engine.currentTurn !== mySlot) {
+                        UIRenderer.showToast('⏳ 正在等待其他玩家出牌...');
+                        return;
+                    }
                     if (this.selectedMahjongTileIndex === index) {
                         // 再点已选中的牌：取消选中
                         this.selectedMahjongTileIndex = -1;
@@ -3191,7 +3214,10 @@ class GameEngineController {
                         if (typeof SoundEngine !== 'undefined' && typeof SoundEngine.playCardFlipSound === 'function') {
                             SoundEngine.playCardFlipSound();
                         }
-                        this.renderMahjongHandTiles();
+                        // 轻量高亮：不重建整个手牌，直接切换 selected class
+                        containerBottom.querySelectorAll('.mahjong-tile-card').forEach(c => {
+                            c.classList.toggle('selected', parseInt(c.dataset.index, 10) === index);
+                        });
                         this.showMahjongDiscardBar(index);
                     }
                 });
