@@ -3462,6 +3462,40 @@ class AuthManager {
     }
 
     /* ====================================================================
+       游戏 NEW 角标已读机制 (账号级: 点击过就不再显示, 下次上号也看不到)
+       存 Firebase users/<key>/seenNewGames, 未登录用 localStorage 兜底
+       ==================================================================== */
+    getSeenNewGames() {
+        const local = (() => {
+            try {
+                const s = localStorage.getItem('yj_seen_new_games');
+                return s ? JSON.parse(s) : [];
+            } catch (e) { return []; }
+        })();
+        const acct = (this.userData && Array.isArray(this.userData.seenNewGames)) ? this.userData.seenNewGames : [];
+        return Array.from(new Set([...acct, ...local]));
+    }
+
+    markGameSeen(gameType) {
+        // 本地兜底 (未登录也生效)
+        try {
+            const cur = this.getSeenNewGames();
+            if (cur.includes(gameType)) return;
+            const next = [...cur, gameType];
+            localStorage.setItem('yj_seen_new_games', JSON.stringify(next));
+        } catch (e) {}
+        // 登录账号: 同步 Firebase
+        if (this.userData && this.db && this.userData.accountKey) {
+            const acctSeen = Array.isArray(this.userData.seenNewGames) ? this.userData.seenNewGames : [];
+            if (!acctSeen.includes(gameType)) {
+                const next = [...acctSeen, gameType];
+                this.userData.seenNewGames = next;
+                this.db.ref('users/' + this.userData.accountKey + '/seenNewGames').set(next).catch(() => {});
+            }
+        }
+    }
+
+    /* ====================================================================
        获取全网因币资产排行榜 Top 10
        ==================================================================== */
     fetchLeaderboard(callback) {
@@ -7109,6 +7143,9 @@ class GameEngineController {
         this.bindLobbyEvents();
         this.renderMiniLeaderboard();
 
+        // 按账号已读记录隐藏游戏 NEW 角标 (点击过一次后不再显示)
+        this.applySeenNewBadges();
+
         // 默认落在第一个导航游戏 (斗地主) 大厅
         if (this.switchGameLobby) {
             this.switchGameLobby('DOUDIZHU');
@@ -7127,6 +7164,20 @@ class GameEngineController {
         if (!restored) {
             this.checkUrlRoomParam();
         }
+    }
+
+    /**
+     * 按账号已读记录隐藏游戏 NEW 角标 (点击过一次后不再显示)
+     */
+    applySeenNewBadges() {
+        try {
+            if (typeof AuthEngine === 'undefined' || !AuthEngine.getSeenNewGames) return;
+            const seen = AuthEngine.getSeenNewGames();
+            document.querySelectorAll('.badge-corner-new').forEach(b => {
+                const g = b.getAttribute('data-game');
+                if (g && seen.includes(g)) b.style.display = 'none';
+            });
+        } catch (e) {}
     }
 
     /* ====================================================================
@@ -7449,6 +7500,13 @@ class GameEngineController {
             document.body.classList.remove('theme-go', 'theme-gomoku', 'theme-mahjong', 'theme-xiangqi');
             this.activeGameType = gameType;
             NetworkManager.gameType = gameType;
+
+            // NEW 角标已读: 点击该游戏即标记, 之后不再显示 (账号级)
+            if (typeof AuthEngine !== 'undefined' && AuthEngine.markGameSeen) {
+                AuthEngine.markGameSeen(gameType);
+            }
+            const seenBadge = document.querySelector(`.badge-corner-new[data-game="${gameType}"]`);
+            if (seenBadge) seenBadge.style.display = 'none';
 
             // 主题切换
             if (gameType === 'GO') document.body.classList.add('theme-go');
@@ -9546,6 +9604,8 @@ class GameEngineController {
      * 开启单机 AI 五子棋切磋模式 (随机先后手，我方固定在左侧)
      */
     startGomokuAiMode() {
+        // NEW 角标已读标记
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.markGameSeen) AuthEngine.markGameSeen('GOMOKU');
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const gomokuScr = document.getElementById('gomokuGameScreen');
@@ -10415,6 +10475,8 @@ class GameEngineController {
      * 开启单机 AI 围棋切磋模式 (随机先后手，棋盘路数可选 9/13/19)
      */
     startGoAiMode() {
+        // NEW 角标已读标记
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.markGameSeen) AuthEngine.markGameSeen('GO');
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const goScr = document.getElementById('goGameScreen');
@@ -11342,6 +11404,8 @@ class GameEngineController {
      * 开启单机 AI 象棋对局 (随机红黑)
      */
     startXiangqiAiMode() {
+        // NEW 角标已读标记
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.markGameSeen) AuthEngine.markGameSeen('XIANGQI');
         const lobbyScr = document.getElementById('lobbyScreen');
         const waitingScr = document.getElementById('waitingScreen');
         const xqScr = document.getElementById('xiangqiGameScreen');
@@ -12080,6 +12144,8 @@ class GameEngineController {
      * 开启正宗 4 人围桌游鲸麻将模式 (单机 AI / 线上)
      */
     startMahjongAiMode() {
+        // NEW 角标已读标记
+        if (typeof AuthEngine !== 'undefined' && AuthEngine.markGameSeen) AuthEngine.markGameSeen('MAHJONG');
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee && !AuthEngine.checkAndDeductEntryFee('MAHJONG', true)) {
             return;
         }
