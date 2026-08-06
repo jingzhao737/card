@@ -4094,6 +4094,19 @@ class GameEngineController {
                     cell.appendChild(mark);
                 }
 
+                // 九宫斜线 (黑: 行0-2列3-5, 红: 行7-9列3-5)
+                const diagMap = {
+                    '7,3': 'se', '8,4': 'se', '9,5': 'se',
+                    '7,5': 'sw', '8,4': 'sw', '9,3': 'sw',
+                    '0,3': 'se', '1,4': 'se', '2,5': 'se',
+                    '0,5': 'sw', '1,4': 'sw', '2,3': 'sw'
+                };
+                if (diagMap[r + ',' + c]) {
+                    const diag = document.createElement('div');
+                    diag.className = 'xq-diag ' + diagMap[r + ',' + c];
+                    cell.appendChild(diag);
+                }
+
                 cell.dataset.r = r;
                 cell.dataset.c = c;
                 cell.addEventListener('click', () => this.handleXiangqiCellClick(r, c));
