@@ -6719,6 +6719,17 @@ class GameEngineController {
                 newCard.classList.remove(inCls);
                 this._lobbySwitchTimer2 = null;
             }, 350);
+
+            // 4. 导航自动滚动到当前游戏按钮 (横向居中, 保持顺序一目了然)
+            const navFollowEl = document.querySelector('.game-switch-nav');
+            const activeNavBtn = navBtns[gameType];
+            if (navFollowEl && activeNavBtn) {
+                try {
+                    activeNavBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } catch (err) {
+                    activeNavBtn.scrollIntoView(true);
+                }
+            }
         };
         this.switchGameLobby = switchGameLobby;
 
@@ -6840,11 +6851,14 @@ class GameEngineController {
         // 手势左滑 / 右滑切换游戏大厅
         let touchStartX = 0;
         let touchStartY = 0;
+        let touchStartInNav = false;
         const lobbyScr = document.getElementById('lobbyScreen');
         if (lobbyScr) {
             lobbyScr.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
+                // 记录滑动起点是否在导航区 (导航区滑动只滚动导航, 不触发大厅切换)
+                touchStartInNav = !!(e.target && e.target.closest && e.target.closest('.game-switch-nav'));
             }, { passive: true });
 
             // 横向滑动意图明显时阻止纵向滚动 (避免左右滑时页面上下跳动); 导航区自身滚动不受影响
@@ -6859,6 +6873,9 @@ class GameEngineController {
             }, { passive: false });
 
             lobbyScr.addEventListener('touchend', (e) => {
+                // 从导航区开始的手势: 只滚动导航, 不触发大厅切换
+                if (touchStartInNav) return;
+
                 const diffX = e.changedTouches[0].clientX - touchStartX;
                 const diffY = e.changedTouches[0].clientY - touchStartY;
                 if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
