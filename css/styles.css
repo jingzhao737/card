@@ -8579,3 +8579,11 @@ body.theme-go .overlay-screen {
     border: 1px solid rgba(226, 232, 240, 0.4);
     color: #e2e8f0;
 }
+
+/* 围棋卡: 棋盘路数选中按钮 绿色 -> 灰白 (仅围棋卡) */
+#goLobbyCard .btn-size-pick.active {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1) !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+    box-shadow: 0 3px 10px rgba(148, 163, 184, 0.35) !important;
+}
