@@ -3673,9 +3673,9 @@ class GameEngineController {
             return;
         }
 
-        this._mahjongTimerSeconds = 25;
+        this._mahjongTimerSeconds = this.pendingDiscardRes ? 8 : 25;
         if (timerEl) {
-            timerEl.textContent = '25';
+            timerEl.textContent = String(this._mahjongTimerSeconds);
             timerEl.classList.remove('urgent');
         }
 
@@ -3955,15 +3955,13 @@ class GameEngineController {
                     this.pendingDiscardRes = aiRes;
                     this.showHumanResponseActionBar(aiRes);
                     this.updateMahjongStatusUI('⚠️ 可响应出牌：请选择【吃 / 碰 / 杠 / 胡 / 过】');
-                    // 联机多人局：房主 5 秒内未响应则自动过牌，防止 AI 回合被永久卡住
-                    if (!NetworkManager.isAiMode) {
-                        if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
-                        this._mahjongResponseTimer = setTimeout(() => {
-                            if (this.pendingDiscardRes) {
-                                this.handleMahjongPassClick();
-                            }
-                        }, 5000);
-                    }
+                    // 联机/单机统一：8 秒内未响应则自动过牌，避免响应按钮长时间悬挂（倒计时结束即轮到下家）
+                    if (this._mahjongResponseTimer) clearTimeout(this._mahjongResponseTimer);
+                    this._mahjongResponseTimer = setTimeout(() => {
+                        if (this.pendingDiscardRes) {
+                            this.handleMahjongPassClick();
+                        }
+                    }, 8000);
                     return;
                 }
 

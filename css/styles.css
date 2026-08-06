@@ -6709,6 +6709,50 @@ body.theme-mahjong #lobbyScreen {
     }
 }
 
+/* 3. 吃/碰/杠/胡/过 动作浮条基础样式 (位于手牌上方，上移避免误触) */
+.mahjong-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 auto 10px auto;
+    width: fit-content;
+    max-width: 96%;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    border-radius: 3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 45;
+}
+.btn-mahjong-act {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    border: 1px solid #34d399;
+    color: #ecfdf5;
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 3px 8px rgba(5, 150, 105, 0.35);
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+.btn-mahjong-act:active {
+    transform: scale(0.95);
+}
+.btn-mahjong-act.act-pass {
+    background: rgba(100, 116, 139, 0.35);
+    border-color: rgba(148, 163, 184, 0.5);
+    color: #cbd5e1;
+    box-shadow: none;
+}
+
 /* 3. 吃牌动作按钮 */
 .btn-mahjong-act.act-chow {
     background: linear-gradient(135deg, #059669, #047857) !important;
