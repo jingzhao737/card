@@ -640,37 +640,21 @@ class AuthManager {
     }
 
     /* ====================================================================
-       游戏 NEW 角标已读机制 (账号级: 点击过就不再显示, 下次上号也看不到)
-       存 Firebase users/<key>/seenNewGames, 未登录用 localStorage 兜底
+       游戏 NEW 角标已读机制 (仅登录账号生效: 点击过就不再显示, 下次上号也看不到)
+       游客不记录 -> 角标一直显示
        ==================================================================== */
     getSeenNewGames() {
-        const local = (() => {
-            try {
-                const s = localStorage.getItem('yj_seen_new_games');
-                return s ? JSON.parse(s) : [];
-            } catch (e) { return []; }
-        })();
-        const acct = (this.userData && Array.isArray(this.userData.seenNewGames)) ? this.userData.seenNewGames : [];
-        return Array.from(new Set([...acct, ...local]));
+        return (this.userData && Array.isArray(this.userData.seenNewGames)) ? this.userData.seenNewGames : [];
     }
 
     markGameSeen(gameType) {
-        // 本地兜底 (未登录也生效)
-        try {
-            const cur = this.getSeenNewGames();
-            if (cur.includes(gameType)) return;
-            const next = [...cur, gameType];
-            localStorage.setItem('yj_seen_new_games', JSON.stringify(next));
-        } catch (e) {}
-        // 登录账号: 同步 Firebase
-        if (this.userData && this.db && this.userData.accountKey) {
-            const acctSeen = Array.isArray(this.userData.seenNewGames) ? this.userData.seenNewGames : [];
-            if (!acctSeen.includes(gameType)) {
-                const next = [...acctSeen, gameType];
-                this.userData.seenNewGames = next;
-                this.db.ref('users/' + this.userData.accountKey + '/seenNewGames').set(next).catch(() => {});
-            }
-        }
+        // 仅登录账号记录 (游客不记录, 角标一直显示)
+        if (!this.userData || !this.db || !this.userData.accountKey) return;
+        const acctSeen = Array.isArray(this.userData.seenNewGames) ? this.userData.seenNewGames : [];
+        if (acctSeen.includes(gameType)) return;
+        const next = [...acctSeen, gameType];
+        this.userData.seenNewGames = next;
+        this.db.ref('users/' + this.userData.accountKey + '/seenNewGames').set(next).catch(() => {});
     }
 
     /* ====================================================================
@@ -1068,6 +1052,11 @@ class AuthManager {
 
             // 游客模式显示随机昵称区块
             if (nickSec) nickSec.style.display   = 'block';
+        }
+
+        // 登录状态变化后重新应用游戏 NEW 角标已读状态 (登录用户隐藏已读角标, 游客角标常驻)
+        if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.applySeenNewBadges) {
+            window.GameEngine.applySeenNewBadges();
         }
     }
 }
