@@ -4022,6 +4022,9 @@ class GameEngineController {
        ============================================================ */
 
     /** 象棋炮位/兵位标记坐标 */
+    /**
+     * 开启在线多人/补齐 AI 游鲸麻将模式 (真正多人云端同步局)
+     */
     startMahjongOnlineGame(roomId, isHost = false) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
             const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;

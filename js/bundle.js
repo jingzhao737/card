@@ -11086,6 +11086,9 @@ class GameEngineController {
        ============================================================ */
 
     /** 象棋炮位/兵位标记坐标 */
+    /**
+     * 开启在线多人/补齐 AI 游鲸麻将模式 (真正多人云端同步局)
+     */
     startMahjongOnlineGame(roomId, isHost = false) {
         if (typeof AuthEngine !== 'undefined' && AuthEngine.checkAndDeductEntryFee) {
             const isPve = NetworkManager.isAiMode || !NetworkManager.roomId;
@@ -15621,12 +15624,7 @@ Object.assign(GameEngineController.prototype, {
             marks.push('6,' + c);
         }
         return marks;
-    }
-
-    /**
-     * 生成标准中国象棋棋盘 SVG (完整边框/河界断开两侧贯通/九宫斜线/炮兵位记号)
-     * 坐标: viewBox 0-8 (9列) x 0-9 (10行), 交叉点在整数坐标
-     */,
+    },
     /**
      * 生成标准中国象棋棋盘 SVG (完整边框/河界断开两侧贯通/九宫斜线/炮兵位记号)
      * 坐标: viewBox 0-8 (9列) x 0-9 (10行), 交叉点在整数坐标
@@ -15668,11 +15666,7 @@ Object.assign(GameEngineController.prototype, {
             });
         }
         return `<svg class="xq-board-svg" viewBox="-0.3 -0.3 8.6 9.6" preserveAspectRatio="none">${L.join('')}</svg>`;
-    }
-
-    /**
-     * 初始化象棋棋盘 UI (9x10 网格 + 炮兵位标记 + 河界)
-     */,
+    },
     /**
      * 初始化象棋棋盘 UI (9x10 网格 + 炮兵位标记 + 河界)
      */
@@ -15749,11 +15743,7 @@ Object.assign(GameEngineController.prototype, {
         if (avatarRight) avatarRight.textContent = iAmRed2 ? '将' : '帅';
         if (roleLeft) roleLeft.textContent = iAmRed2 ? '🔴 先手红方' : '⚫ 后手黑方';
         if (roleRight) roleRight.textContent = iAmRed2 ? '⚫ 后手黑方' : '🔴 先手红方';
-    }
-
-    /**
-     * 渲染棋盘棋子 (含选中/合法走法提示/将军闪烁/最近走子)
-     */,
+    },
     /**
      * 渲染棋盘棋子 (含选中/合法走法提示/将军闪烁/最近走子)
      */
@@ -15795,11 +15785,7 @@ Object.assign(GameEngineController.prototype, {
                 board.appendChild(piece);
             }
         }
-    }
-
-    /**
-     * 处理棋盘格子点击 (选中/走子)
-     */,
+    },
     /**
      * 处理棋盘格子点击 (选中/走子)
      */
@@ -15868,11 +15854,7 @@ Object.assign(GameEngineController.prototype, {
             this.xqMoveDots = [];
             this.renderXiangqiBoard();
         }
-    }
-
-    /**
-     * AI 走子 (拟人化延迟; 开局可传 initialDelay 让玩家先意识到对局开始)
-     */,
+    },
     /**
      * AI 走子 (拟人化延迟; 开局可传 initialDelay 让玩家先意识到对局开始)
      */
@@ -15930,11 +15912,7 @@ Object.assign(GameEngineController.prototype, {
                 this.handleXiangqiEnd(engine.winner, engine.winReason);
             }
         }, thinkDelay);
-    }
-
-    /**
-     * 开启单机 AI 象棋对局 (随机红黑)
-     */,
+    },
     /**
      * 开启单机 AI 象棋对局 (随机红黑)
      */
@@ -16005,11 +15983,7 @@ Object.assign(GameEngineController.prototype, {
             // AI 先手: 等 2 秒再开始下, 让玩家意识到对局已开始
             this.triggerXiangqiAiMove(2000);
         }
-    }
-
-    /**
-     * 播放象棋开局战鼓音效 (sound/zhangu.mp3)
-     */,
+    },
     /**
      * 播放象棋开局战鼓音效 (sound/zhangu.mp3)
      */
@@ -16022,11 +15996,7 @@ Object.assign(GameEngineController.prototype, {
         } catch (e) {
             // 音频加载/播放失败不阻塞对局
         }
-    }
-
-    /**
-     * 播放落子音效 (sound/mahjangclack-1.wav)
-     */,
+    },
     /**
      * 播放落子音效 (sound/mahjangclack-1.wav)
      */
@@ -16037,11 +16007,7 @@ Object.assign(GameEngineController.prototype, {
             const p = audio.play();
             if (p && p.catch) p.catch(() => {});
         } catch (e) {}
-    }
-
-    /**
-     * 播放选子音效 (sound/placing-a-piece.mp3)
-     */,
+    },
     /**
      * 播放选子音效 (sound/placing-a-piece.mp3)
      */
@@ -16052,11 +16018,7 @@ Object.assign(GameEngineController.prototype, {
             const p = audio.play();
             if (p && p.catch) p.catch(() => {});
         } catch (e) {}
-    }
-
-    /**
-     * 开启联机象棋对局 (随机红黑, 固定 9x10)
-     */,
+    },
     /**
      * 开启联机象棋对局 (随机红黑, 固定 9x10)
      */
@@ -16216,11 +16178,7 @@ Object.assign(GameEngineController.prototype, {
                 this.startXiangqiOnlineGame(roomId, isHost);
             }
         });
-    }
-
-    /**
-     * 更新顶部状态与回合高亮
-     */,
+    },
     /**
      * 更新顶部状态与回合高亮
      */
@@ -16241,11 +16199,7 @@ Object.assign(GameEngineController.prototype, {
                 pillLeft.classList.remove('turn-active');
             }
         }
-    }
-
-    /**
-     * 象棋 60 秒回合倒计时 (超时自动走子)
-     */,
+    },
     /**
      * 象棋 60 秒回合倒计时 (超时自动走子)
      */
@@ -16287,8 +16241,7 @@ Object.assign(GameEngineController.prototype, {
                 this.handleXiangqiTimeout();
             }
         }, 1000);
-    }
-,
+    },
     stopXiangqiTurnTimer() {
         if (this._xqTimerInterval) {
             clearInterval(this._xqTimerInterval);
@@ -16296,11 +16249,7 @@ Object.assign(GameEngineController.prototype, {
         }
         const badge = document.getElementById('xqTimerBadge');
         if (badge) badge.style.display = 'none';
-    }
-
-    /**
-     * 回合超时: 自动走一步合法走法 (单机); 联机由房主判负
-     */,
+    },
     /**
      * 回合超时: 自动走一步合法走法 (单机); 联机由房主判负
      */
@@ -16338,11 +16287,7 @@ Object.assign(GameEngineController.prototype, {
         if (NetworkManager.sendXiangqiEnd) {
             NetworkManager.sendXiangqiEnd('TIMEOUT', winnerColor);
         }
-    }
-
-    /**
-     * 胜负结算
-     */,
+    },
     /**
      * 胜负结算
      */
@@ -16417,9 +16362,6 @@ Object.assign(GameEngineController.prototype, {
        🀄 游鲸麻将 4人围桌 UI 控制与交互逻辑 (4-Player Table Mahjong UI)
        ============================================================ */
 
-    /**
-     * 开启在线多人/补齐 AI 游鲸麻将模式 (真正多人云端同步局)
-     */
 
 });
 
