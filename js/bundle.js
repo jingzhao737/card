@@ -6649,13 +6649,15 @@ class GameEngineController {
         const btnNavDoudizhu = document.getElementById('btnNavDoudizhu');
         const btnNavGomoku   = document.getElementById('btnNavGomoku');
         const btnNavMahjong  = document.getElementById('btnNavMahjong');
+        const btnNavXiangqi  = document.getElementById('btnNavXiangqi');
         const cardGo         = document.getElementById('goLobbyCard');
         const cardDoudizhu   = document.getElementById('doudizhuLobbyCard');
         const cardGomoku     = document.getElementById('gomokuLobbyCard');
         const cardMahjong    = document.getElementById('mahjongLobbyCard');
+        const cardXiangqi    = document.getElementById('xiangqiLobbyCard');
 
         const switchGameLobby = (gameType, direction) => {
-            document.body.classList.remove('theme-go', 'theme-gomoku', 'theme-mahjong');
+            document.body.classList.remove('theme-go', 'theme-gomoku', 'theme-mahjong', 'theme-xiangqi');
             this.activeGameType = gameType;
             NetworkManager.gameType = gameType;
 
@@ -6663,17 +6665,18 @@ class GameEngineController {
             if (gameType === 'GO') document.body.classList.add('theme-go');
             else if (gameType === 'MAHJONG') document.body.classList.add('theme-mahjong');
             else if (gameType === 'GOMOKU') document.body.classList.add('theme-gomoku');
+            else if (gameType === 'XIANGQI') document.body.classList.add('theme-xiangqi');
 
             // 导航激活状态
-            const navBtns = { GO: btnNavGo, DOUDIZHU: btnNavDoudizhu, GOMOKU: btnNavGomoku, MAHJONG: btnNavMahjong };
+            const navBtns = { GO: btnNavGo, DOUDIZHU: btnNavDoudizhu, GOMOKU: btnNavGomoku, MAHJONG: btnNavMahjong, XIANGQI: btnNavXiangqi };
             Object.keys(navBtns).forEach(k => { if (navBtns[k]) navBtns[k].classList.toggle('active', k === gameType); });
 
             // 卡片滑动切换动画: 方向跟随手势 (direction=1 下一个/左滑, direction=-1 上一个/右滑)
-            const cardMap = { GO: cardGo, DOUDIZHU: cardDoudizhu, GOMOKU: cardGomoku, MAHJONG: cardMahjong };
+            const cardMap = { GO: cardGo, DOUDIZHU: cardDoudizhu, GOMOKU: cardGomoku, MAHJONG: cardMahjong, XIANGQI: cardXiangqi };
             const newCard = cardMap[gameType];
             if (!newCard) return;
 
-            const cardsAll = [cardGo, cardDoudizhu, cardGomoku, cardMahjong];
+            const cardsAll = [cardGo, cardDoudizhu, cardGomoku, cardMahjong, cardXiangqi];
             let oldCard = null;
             Object.keys(cardMap).forEach(k => {
                 const c = cardMap[k];
@@ -6684,7 +6687,7 @@ class GameEngineController {
             cardsAll.forEach(c => { if (c) c.classList.remove('lobby-card-out', 'lobby-card-out-right'); });
 
             // direction 缺省时按导航顺序推断 (向前)
-            const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG'];
+            const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG', 'XIANGQI'];
             if (direction === undefined) {
                 const fromIdx = gameOrder.indexOf(this._lastLobbyGame || 'DOUDIZHU');
                 const toIdx = gameOrder.indexOf(gameType);
@@ -6730,6 +6733,7 @@ class GameEngineController {
         if (btnNavDoudizhu) btnNavDoudizhu.addEventListener('click', () => switchGameLobby('DOUDIZHU'));
         if (btnNavGomoku)   btnNavGomoku.addEventListener('click', () => switchGameLobby('GOMOKU'));
         if (btnNavMahjong)  btnNavMahjong.addEventListener('click', () => switchGameLobby('MAHJONG'));
+        if (btnNavXiangqi)  btnNavXiangqi.addEventListener('click', () => switchGameLobby('XIANGQI'));
 
         // 绑定麻将模式按键
         const btnMahjongAuth = document.getElementById('btnMahjongAuth');
@@ -6819,8 +6823,8 @@ class GameEngineController {
                 const diffX = e.changedTouches[0].clientX - touchStartX;
                 const diffY = e.changedTouches[0].clientY - touchStartY;
                 if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-                    // 按导航顺序循环: 斗地主 -> 围棋 -> 五子棋 -> 麻将
-                    const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG'];
+                    // 按导航顺序循环: 斗地主 -> 围棋 -> 五子棋 -> 麻将 -> 象棋
+                    const gameOrder = ['DOUDIZHU', 'GO', 'GOMOKU', 'MAHJONG', 'XIANGQI'];
                     const curIdx = gameOrder.indexOf(this.activeGameType || 'DOUDIZHU');
                     if (diffX < 0) {
                         // 左滑切换下一个游戏 (动画向左滑出/从右滑入)
@@ -12372,7 +12376,7 @@ class GameEngineController {
         const isGoScreen      = goScr && (goScr.classList.contains('active') || goScr.style.display !== 'none');
         const isLobbyScreen   = lobbyScr && (lobbyScr.classList.contains('active') || lobbyScr.style.display !== 'none');
 
-        // 动态更换 Header 左上角游戏品牌标题 (游鲸围棋 <-> 游鲸五子棋 <-> 游鲸斗地主 <-> 游鲸麻将)
+        // 动态更换 Header 左上角游戏品牌标题 (游鲸围棋 <-> 游鲸五子棋 <-> 游鲸斗地主 <-> 游鲸麻将 <-> 游鲸象棋)
         if (brandTitle) {
             if (isGoScreen || (isLobbyScreen && this.activeGameType === 'GO')) {
                 brandTitle.textContent = '游鲸围棋';
@@ -12380,6 +12384,8 @@ class GameEngineController {
                 brandTitle.textContent = '游鲸麻将';
             } else if (isGomokuScreen || (isLobbyScreen && this.activeGameType === 'GOMOKU')) {
                 brandTitle.textContent = '游鲸五子棋';
+            } else if (isLobbyScreen && this.activeGameType === 'XIANGQI') {
+                brandTitle.textContent = '游鲸象棋';
             } else {
                 brandTitle.textContent = '游鲸斗地主';
             }
@@ -12387,7 +12393,7 @@ class GameEngineController {
 
         // 围棋/五子棋界面或大厅时隐藏“牌型说明”
         if (menuBtnHelp) {
-            menuBtnHelp.style.display = (isGomokuScreen || isGoScreen || (isLobbyScreen && (this.activeGameType === 'GOMOKU' || this.activeGameType === 'GO'))) ? 'none' : 'flex';
+            menuBtnHelp.style.display = (isGomokuScreen || isGoScreen || (isLobbyScreen && (this.activeGameType === 'GOMOKU' || this.activeGameType === 'GO' || this.activeGameType === 'XIANGQI'))) ? 'none' : 'flex';
         }
 
         // 非主界面时在右上角下拉菜单中显示“退出/离开房间”按钮
@@ -12930,6 +12936,7 @@ class GameEngineController {
         const isMahjongExit = (this.activeGameType === 'MAHJONG') || (mahjongScr && (mahjongScr.classList.contains('active') || mahjongScr.style.display !== 'none'));
         const isGomokuExit  = (this.activeGameType === 'GOMOKU') || (gomokuScr && (gomokuScr.classList.contains('active') || gomokuScr.style.display !== 'none'));
         const isGoExit      = (this.activeGameType === 'GO') || (goScr && (goScr.classList.contains('active') || goScr.style.display !== 'none'));
+        const isXiangqiExit = (this.activeGameType === 'XIANGQI');
 
         this._stopKeepAlive();
         if (this._mahjongWatchdogId) { clearInterval(this._mahjongWatchdogId); this._mahjongWatchdogId = null; }
@@ -13000,6 +13007,8 @@ class GameEngineController {
             this.switchGameLobby('GO');
         } else if (isGomokuExit && typeof this.switchGameLobby === 'function') {
             this.switchGameLobby('GOMOKU');
+        } else if (isXiangqiExit && typeof this.switchGameLobby === 'function') {
+            this.switchGameLobby('XIANGQI');
         }
 
         this.updateHeaderVisibility();

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸围棋 - 在线围棋对战</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页围棋游戏，可选五子棋、斗地主、麻将">
-    <link rel="stylesheet" href="css/styles.min.css?v=6">
+    <link rel="stylesheet" href="css/styles.min.css?v=7">
     <!-- 所有第三方资源已本地化 (FontAwesome/Firebase SDK), 不依赖任何外部 CDN, 国内/微信访问更快 -->
     <link rel="stylesheet" href="css/vendor/all.min.css?v=4">
 
@@ -111,6 +111,9 @@
                 <button class="game-nav-btn btn-mahjong-nav" id="btnNavMahjong">
                     <i class="fa-solid fa-square-full"></i> 游鲸麻将
                     <span class="badge-corner-new">NEW</span>
+                </button>
+                <button class="game-nav-btn" id="btnNavXiangqi">
+                    <i class="fa-solid fa-chess-knight"></i> 游鲸象棋
                 </button>
             </div>
 
@@ -587,7 +590,7 @@
 
             <!-- 网页主页最下方不起眼的版本号与最后修改时间 -->
             <div class="app-version-footer" style="text-align: center; padding: 12px 0 18px 0; font-size: 0.68rem; color: rgba(255, 255, 255, 0.35); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0.3px; user-select: none;">
-                v38.21 · 最后修改时间：2026-08-07 01:00
+                v38.22 · 最后修改时间：2026-08-07 01:10
             </div>
         </div>
 
@@ -981,6 +984,42 @@
             </div>
         </div>
 
+        <!-- 游鲸中国象棋 大厅卡 (占位区域, 游戏本体开发中) -->
+        <div class="lobby-card hero-lobby-card theme-ink" id="xiangqiLobbyCard" style="display:none;">
+            <div class="lobby-header xiangqi-header">
+                <div class="brand-hero-left">
+                    <div class="brand-text">
+                        <h1 class="brand-title">游鲸象棋</h1>
+                        <p class="brand-subtitle">CHINESE CHESS · 楚河汉界</p>
+                    </div>
+                    <div class="hero-tags">
+                        <span class="badge-tag ink"><i class="fa-solid fa-chess-knight"></i> 红先黑后</span>
+                    </div>
+                </div>
+                <div class="gomoku-stones-decoration" title="红方先行 / 黑方后手">
+                    <div class="mini-stone xq-red-stone"></div>
+                    <div class="mini-stone black-stone"></div>
+                </div>
+            </div>
+
+            <div class="lobby-form">
+                <div class="mode-selection">
+                    <!-- 象棋开发中占位区域 -->
+                    <div class="mode-card join-card" style="text-align:center; padding: 20px 14px;">
+                        <div class="card-title-sm"><i class="fa-solid fa-chess-knight"></i> 中国象棋 · 开发中</div>
+                        <div style="margin-top:12px; font-size:0.85rem; color:#94a3b8; line-height:1.7;">
+                            楚河汉界 · 兵卒士象车马炮<br>
+                            即将上线，敬请期待
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <span><i class="fa-solid fa-chess-knight"></i> 红先黑后 · 步步为营</span>
+            </div>
+        </div>
+
         <!-- 房间等待大厅 (Waiting Room Redesign) -->
         <div id="waitingScreen" class="overlay-screen" style="display: none;">
             <div class="lobby-card waiting-card-hero">
@@ -1264,7 +1303,7 @@
     </div>
     </div>
 
-    <script src="js/bundle.min.js?v=4"></script>
+    <script src="js/bundle.min.js?v=5"></script>
     <!-- 游戏脚本载入 (顺序关键: p2p.js 初始化 Firebase, auth.js 必须在其后) -->
     <!-- 牌型说明弹窗 -->
     <div id="cardTypeModal" class="card-type-modal" style="display:none;">
