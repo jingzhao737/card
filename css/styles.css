@@ -7818,3 +7818,47 @@ body.theme-go {
     border: 1px solid rgba(255, 255, 255, 0.6);
     color: #1e293b;
 }
+
+/* ============================================================
+   📱 手机端 4 游戏导航适配 (避免按钮溢出屏幕)
+   ============================================================ */
+@media (max-width: 768px) {
+    .game-switch-nav {
+        width: 97%;
+        gap: 5px;
+        margin: 8px auto 4px;
+        max-width: none;
+    }
+
+    .game-nav-btn {
+        padding: 6px 3px;
+        font-size: 0.68rem;
+        gap: 3px;
+        border-radius: 6px;
+        white-space: nowrap;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .game-nav-btn i {
+        font-size: 0.72rem;
+        flex-shrink: 0;
+    }
+}
+
+/* 超小屏 (≤360px) 进一步收紧 */
+@media (max-width: 360px) {
+    .game-switch-nav {
+        gap: 4px;
+    }
+
+    .game-nav-btn {
+        font-size: 0.62rem;
+        padding: 6px 2px;
+    }
+
+    .game-nav-btn i {
+        font-size: 0.66rem;
+    }
+}
