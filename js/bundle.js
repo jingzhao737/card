@@ -6723,12 +6723,12 @@ class GameEngineController {
             // 4. 导航自动滚动到当前游戏按钮 (横向居中, 保持顺序一目了然)
             const navFollowEl = document.querySelector('.game-switch-nav');
             const activeNavBtn = navBtns[gameType];
-            if (navFollowEl && activeNavBtn) {
-                try {
-                    activeNavBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                } catch (err) {
-                    activeNavBtn.scrollIntoView(true);
-                }
+            if (navFollowEl && activeNavBtn && navFollowEl.scrollWidth > navFollowEl.clientWidth) {
+                const navRect = navFollowEl.getBoundingClientRect();
+                const btnRect = activeNavBtn.getBoundingClientRect();
+                const btnLeftInNav = btnRect.left - navRect.left + navFollowEl.scrollLeft;
+                const targetScroll = btnLeftInNav - (navFollowEl.clientWidth - btnRect.width) / 2;
+                navFollowEl.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
             }
         };
         this.switchGameLobby = switchGameLobby;
