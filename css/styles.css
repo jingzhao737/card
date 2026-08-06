@@ -7857,14 +7857,11 @@ body.theme-go {
     }
 
     .game-nav-btn {
-        padding: 6px 3px;
-        font-size: 0.68rem;
-        gap: 3px;
+        padding: 8px 14px;
+        font-size: 0.72rem;
+        gap: 6px;
         border-radius: 6px;
         white-space: nowrap;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .game-nav-btn i {
@@ -7880,8 +7877,8 @@ body.theme-go {
     }
 
     .game-nav-btn {
-        font-size: 0.62rem;
-        padding: 6px 2px;
+        font-size: 0.66rem;
+        padding: 7px 10px;
     }
 
     .game-nav-btn i {
