@@ -8702,3 +8702,84 @@ body.theme-go .overlay-screen {
     letter-spacing: 0.3px;
     user-select: none;
 }
+
+/* ===== ���߷����б�: ���Ƽ���� (ȥ��߸�) ===== */
+#publicRoomsListContainer .public-room-item {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 0 !important;
+    padding: 12px 4px !important;
+    margin-bottom: 0 !important;
+    gap: 16px !important;
+    transition: background 0.18s ease !important;
+}
+#publicRoomsListContainer .public-room-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+#publicRoomsListContainer .pr-room-id {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.82) !important;
+    letter-spacing: 0.8px !important;
+    font-family: var(--font-num) !important;
+}
+#publicRoomsListContainer .pr-phase-tag {
+    font-size: 0.66rem !important;
+    padding: 1px 8px !important;
+    border-radius: 999px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+#publicRoomsListContainer .pr-phase-tag.waiting { border-color: rgba(52, 211, 153, 0.35) !important; color: rgba(52, 211, 153, 0.75) !important; }
+#publicRoomsListContainer .pr-phase-tag.bidding { border-color: rgba(251, 191, 36, 0.35) !important; color: rgba(251, 191, 36, 0.7) !important; }
+#publicRoomsListContainer .pr-phase-tag.playing { border-color: rgba(248, 113, 113, 0.35) !important; color: rgba(248, 113, 113, 0.7) !important; }
+#publicRoomsListContainer .pr-players {
+    font-size: 0.76rem !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    gap: 8px !important;
+}
+#publicRoomsListContainer .pr-player-pill {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 0.72rem !important;
+    font-weight: 400 !important;
+    gap: 5px !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+#publicRoomsListContainer .pr-player-pill.ai { color: rgba(255, 255, 255, 0.28) !important; }
+#publicRoomsListContainer .pr-player-pill.human {
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-weight: 400 !important;
+    background: transparent !important;
+}
+#publicRoomsListContainer .pr-player-pill.human i { color: rgba(255, 255, 255, 0.35) !important; font-size: 0.65rem !important; }
+#publicRoomsListContainer .btn-join-public-room {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    font-size: 0.76rem !important;
+    padding: 5px 12px !important;
+    letter-spacing: 0.3px !important;
+    box-shadow: none !important;
+    transition: all 0.18s ease !important;
+    white-space: nowrap !important;
+}
+#publicRoomsListContainer .btn-join-public-room:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #fff !important;
+    transform: none !important;
+}
+#publicRoomsListContainer .btn-join-public-room i { font-size: 0.68rem !important; margin-right: 2px !important; }
+#publicRoomsListContainer::-webkit-scrollbar { width: 4px !important; }
+#publicRoomsListContainer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12) !important; border-radius: 2px !important; }
+#publicRoomsListContainer::-webkit-scrollbar-track { background: transparent !important; }
+#publicRoomsListContainer { scrollbar-width: thin !important; scrollbar-color: rgba(255,255,255,0.12) transparent !important; }
