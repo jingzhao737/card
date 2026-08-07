@@ -10636,6 +10636,15 @@ Object.assign(GameEngineController.prototype, {
             this.xqMoveDots = engine.getLegalMoves(r, c);
             this.renderXiangqiBoard();
             this.playXiangqiSelectSound(); // 选子音效
+
+            // 提示: 帅/将被车顶住不能吃(将帅对面)等规则性限制
+            if (piece.type === 'K' && this.xqMoveDots.length === 0) {
+                if (engine.isCheck(piece.color)) {
+                    UIRenderer.showToast('⚡ 你正被将军！帅/将需应将，当前无路可走');
+                } else {
+                    UIRenderer.showToast('♟ 帅/将当前无合法走法 (被围堵或将对脸限制)');
+                }
+            }
             return;
         }
 
@@ -10674,6 +10683,12 @@ Object.assign(GameEngineController.prototype, {
                     if (engine.isAiMode && !engine.isGameOver) {
                         this.stopXiangqiTurnTimer();
                         this.triggerXiangqiAiMove();
+                    }
+                    // 联机房间对方为 AI 槽位 (仅房主1真人): 房主驱动 AI 继续走
+                    else if (!engine.isAiMode && NetworkManager.isHost && !engine.isGameOver
+                        && (NetworkManager.humanCount || 0) < 2) {
+                        this.stopXiangqiTurnTimer();
+                        this.triggerXiangqiAiMove(600);
                     }
                 }
                 return;
@@ -10944,6 +10959,16 @@ Object.assign(GameEngineController.prototype, {
 
         if (isHost && isMyTurn) this.startXiangqiTurnTimer();
         else this.stopXiangqiTurnTimer();
+
+        // 联机模式下对方槽位是 AI (房间内仅1个真人): 房主驱动 AI 走子, 避免对局卡死
+        const isAiOpponent = NetworkManager.isHost && (NetworkManager.humanCount || 0) < 2;
+        if (isAiOpponent && !window.xiangqiEngine.isGameOver) {
+            // 开局若是 AI 先手 (玩家后手), 立即驱动 AI
+            if (window.xiangqiEngine.currentTurn !== myColor) {
+                this.stopXiangqiTurnTimer();
+                this.triggerXiangqiAiMove(1500);
+            }
+        }
 
         // 监听对方走子广播
         NetworkManager.onXiangqiMove((move) => {
