@@ -1497,7 +1497,7 @@ body.theme-mahjong #lobbyScreen {
 
 /* 8. 麻将胡牌奢华结算面板 (Settlement Modal) */
 .settlement-inner {
-    max-width: 440px !important;
+    position: relative !important;
     background: linear-gradient(180deg, #064e3b 0%, #022c22 100%) !important;
     border: 2px solid #34d399 !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(52, 211, 153, 0.3) !important;

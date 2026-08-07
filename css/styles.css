@@ -6950,7 +6950,7 @@ body.theme-mahjong #lobbyScreen {
 
 /* 8. 麻将胡牌奢华结算面板 (Settlement Modal) */
 .settlement-inner {
-    max-width: 440px !important;
+    position: relative !important;
     background: linear-gradient(180deg, #064e3b 0%, #022c22 100%) !important;
     border: 2px solid #34d399 !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(52, 211, 153, 0.3) !important;
@@ -8966,26 +8966,26 @@ body.theme-go .overlay-screen {
 
 /* ���㵯��Բ������: 16px -> 8px */
 .settlement-inner {
-    border-radius: 8px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .settlement-body {
-    border-radius: 8px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .fan-details-card {
-    border-radius: 6px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .fan-badge {
-    border-radius: 4px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .scores-table {
-    border-radius: 6px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .score-row-item {
-    border-radius: 4px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .btn-settle-primary,
 .settlement-inner .btn-settle-secondary {
-    border-radius: 6px !important;
+    border-radius: 3px !important;
 }
 .settlement-inner .settlement-header {
     border-radius: 8px 8px 0 0 !important;
