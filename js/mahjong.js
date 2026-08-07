@@ -208,6 +208,45 @@ class MahjongEngine {
         return { tile: draw, isGameOver: false };
     }
 
+    /**
+     * 检查 AI 家对刚打出弃牌的响应 (胡/碰/杠/吃)
+     * 供主控层驱动 AI 互相响应使用: 出牌后若除玩家外有 AI 可响应, 按 胡 > 碰/杠 > 吃 优先级执行
+     * @param {number} discarderIdx 出牌者座位
+     * @param {object} tile 打出的牌
+     * @param {number} mySlot 人类玩家座位 (默认 0, 该座位由玩家自行决策, 不代打)
+     * @returns {object|null} { action, playerIdx, chowPair } 或 null (无 AI 响应)
+     */
+    getAiResponse(discarderIdx, tile, mySlot = 0) {
+        if (!tile || this.isGameOver) return null;
+
+        // 胡: 按截胡规则 (出牌者下家起顺时针就近优先), 排除人类玩家座位
+        const huInfo = this.evaluateHuPriority(discarderIdx, tile);
+        if (huInfo.huWinner >= 0 && huInfo.huWinner !== mySlot) {
+            return { action: 'HU', playerIdx: huInfo.huWinner };
+        }
+
+        // 碰/杠: 从出牌者下家起顺时针检查每家 (排除人类玩家座位)
+        for (let step = 1; step <= 3; step++) {
+            const idx = (discarderIdx + step) % 4;
+            if (idx === mySlot) continue;
+            const hand = this.hands[idx] || [];
+            if (this.checkCanKong(hand, tile)) {
+                return { action: 'KONG', playerIdx: idx };
+            }
+            if (this.checkCanPong(hand, tile)) {
+                return { action: 'PONG', playerIdx: idx };
+            }
+            // 吃: 仅下家 (出牌者下一家), 且能凑顺子
+            if (step === 1) {
+                const chowPair = this.getChowOptions(hand, tile);
+                if (chowPair.length > 0) {
+                    return { action: 'CHOW', playerIdx: idx, chowPair: chowPair[0] };
+                }
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 消费最新弃牌 (吃/碰/杠时调用): 从弃牌堆移除被用掉的牌并清除 lastDiscard

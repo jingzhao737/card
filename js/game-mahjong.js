@@ -1362,6 +1362,22 @@ Object.assign(GameEngineController.prototype, {
         } else {
             if (actionBar) actionBar.style.display = 'none';
         }
+
+        // 🀄 自摸/暗杠/补杠高亮: 高亮可暗杠/补杠的同名牌 (自摸时高亮全部听牌相关牌意义不大, 只高亮杠牌搭子)
+        const container = document.getElementById('mahjongHandTilesContainer');
+        if (container) {
+            container.querySelectorAll('.mahjong-tile-card').forEach(c => c.classList.remove('action-highlight'));
+            if (canSelfKong) {
+                const highlightNames = new Set(selfKongOptions.map(o => o.tile.name));
+                container.querySelectorAll('.mahjong-tile-card').forEach(card => {
+                    const face = card.querySelector('.m-face');
+                    if (!face) return;
+                    if (highlightNames.has(face.dataset.tileName)) {
+                        card.classList.add('action-highlight');
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -1433,6 +1449,15 @@ Object.assign(GameEngineController.prototype, {
         if (res.isGameOver) {
             this.showMahjongSettlement(-1, null);
             return;
+        }
+
+        // AI 响应判定: 玩家打出的牌, 其他 AI 家可 胡/碰/杠/吃 (含截胡优先)
+        if (typeof engine.getAiResponse === 'function') {
+            const aiResp = engine.getAiResponse(mySlot, res.discarded, mySlot);
+            if (aiResp) {
+                this.executeAiResponseToDiscard(aiResp, res.discarded, mySlot);
+                return;
+            }
         }
 
         const nextTurn = engine.currentTurn;
@@ -1515,6 +1540,12 @@ Object.assign(GameEngineController.prototype, {
                     this.renderMahjongMelds();
                     // AI 杠牌金币结算 (暗杠2倍价/补杠同价)
                     this.settleMahjongKongCoins(curIdx, aiKongType, -1);
+                    // AI 杠牌广播至云端 (非房主端同步金币结算)
+                    if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                        const st = engine.exportState();
+                        st.kongType = aiKongType;
+                        NetworkManager.sendMahjongMove(curIdx, -1, null, st, 'KONG');
+                    }
                     // 杠后补摸的牌继续检查能否再胡/再杠
                     if (engine.checkCanHu(engine.hands[curIdx])) {
                         engine.isGameOver = true;
@@ -1531,8 +1562,13 @@ Object.assign(GameEngineController.prototype, {
                         engine.executeSelfKong(curIdx, skAgain[0]);
                         this.renderMahjongHandTiles(true);
                         this.renderMahjongMelds();
-                        // 二次杠同样结算
+                        // 二次杠同样结算 + 广播
                         this.settleMahjongKongCoins(curIdx, skAgainType, -1);
+                        if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                            const st2 = engine.exportState();
+                            st2.kongType = skAgainType;
+                            NetworkManager.sendMahjongMove(curIdx, -1, null, st2, 'KONG');
+                        }
                     }
                 }
 
@@ -1586,6 +1622,15 @@ Object.assign(GameEngineController.prototype, {
                         }
                     }, 10000);
                     return;
+                }
+
+                // AI 互相响应: 玩家无响应时, 其他 AI 家可 胡/碰/杠/吃 (含截胡优先)
+                if (aiRes && aiRes.discarded && typeof engine.getAiResponse === 'function') {
+                    const aiResp = engine.getAiResponse(curIdx, aiRes.discarded, mySlot);
+                    if (aiResp) {
+                        this.executeAiResponseToDiscard(aiResp, aiRes.discarded, curIdx);
+                        return;
+                    }
                 }
 
                 // 轮到下一家摸牌与打牌 (摸牌由下家行动流程统一处理)
@@ -1791,6 +1836,88 @@ Object.assign(GameEngineController.prototype, {
             if (!NetworkManager.isAiMode && NetworkManager.roomId) {
                 NetworkManager.sendMahjongMove(mySlot, -1, discarded, engine.exportState(), 'PONG');
             }
+        }
+    },
+    /**
+     * 执行 AI 家对弃牌的响应 (胡/碰/杠/吃)
+     * 响应后由响应方直接出牌 (不额外摸牌), 继续驱动 AI 链
+     * @param {object} resp getAiResponse 返回值 { action, playerIdx, chowPair }
+     * @param {object} tile 被响应的弃牌
+     * @param {number} [discarderIdx] 出牌者座位 (明杠结算放杠者用)
+     */
+    executeAiResponseToDiscard(resp, tile, discarderIdx = -1) {
+        const engine = window.mahjongEngine;
+        if (!engine || !resp) return;
+        const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
+        const seatLabels = ['你', '右家', '对家', '左家'];
+        const relIdx = (resp.playerIdx - mySlot + 4) % 4;
+        const who = seatLabels[relIdx] || `AI-${resp.playerIdx}`;
+
+        if (resp.action === 'HU') {
+            // AI 胡牌 (点炮胡)
+            engine.isGameOver = true;
+            engine.winner = resp.playerIdx;
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(resp.playerIdx, -1, tile, engine.exportState(), 'HU');
+            }
+            const huDetails = engine.getHuDetails(resp.playerIdx, tile, false);
+            this.showMahjongSettlement(resp.playerIdx, huDetails, false);
+            return;
+        }
+
+        if (resp.action === 'PONG') {
+            engine.executePong(resp.playerIdx, tile);
+            this.showMahjongActionToast(`${who}碰！`);
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playMahjongPong) {
+                try { SoundEngine.playMahjongPong(); } catch (e) {}
+            }
+            this.renderMahjongHandTiles(true);
+            this.renderMahjongMelds();
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(resp.playerIdx, -1, tile, engine.exportState(), 'PONG');
+            }
+            this._mahjongLastMoveTs = Date.now();
+            this.triggerAiTurnLoop();
+            return;
+        }
+
+        if (resp.action === 'KONG') {
+            engine.executeKong(resp.playerIdx, tile);
+            this.showMahjongActionToast(`${who}杠！`);
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playMahjongKong) {
+                try { SoundEngine.playMahjongKong(); } catch (e) {}
+            }
+            this.renderMahjongHandTiles(true);
+            this.renderMahjongMelds();
+            // AI 明杠金币结算: 放杠者为出牌方 (executeKong 后 lastDiscard 已被消费, 用传入的出牌者座位)
+            const discarderSeat = (discarderIdx >= 0 && discarderIdx !== resp.playerIdx) ? discarderIdx : -1;
+            this.settleMahjongKongCoins(resp.playerIdx, 'KONG', discarderSeat);
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                const st = engine.exportState();
+                st.kongType = 'KONG';
+                if (discarderSeat >= 0) st.kongDiscarder = discarderSeat;
+                NetworkManager.sendMahjongMove(resp.playerIdx, -1, tile, st, 'KONG');
+            }
+            this._mahjongLastMoveTs = Date.now();
+            this.triggerAiTurnLoop();
+            return;
+        }
+
+        if (resp.action === 'CHOW') {
+            const pair = resp.chowPair || [];
+            engine.executeChow(resp.playerIdx, tile, pair);
+            this.showMahjongActionToast(`${who}吃！`);
+            if (typeof SoundEngine !== 'undefined' && SoundEngine.playMahjongChow) {
+                try { SoundEngine.playMahjongChow(); } catch (e) {}
+            }
+            this.renderMahjongHandTiles(true);
+            this.renderMahjongMelds();
+            if (!NetworkManager.isAiMode && NetworkManager.roomId) {
+                NetworkManager.sendMahjongMove(resp.playerIdx, -1, tile, engine.exportState(), 'CHOW');
+            }
+            this._mahjongLastMoveTs = Date.now();
+            this.triggerAiTurnLoop();
+            return;
         }
     },
     /**
