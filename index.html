@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>游鲸围棋 - 在线围棋对战</title>
     <meta name="description" content="无需下载、随时对战、极致流畅的网页围棋游戏，可选五子棋、斗地主、麻将">
-    <link rel="stylesheet" href="css/styles.min.css?v=63">
+    <link rel="stylesheet" href="css/styles.min.css?v=64">
     <!-- 所有第三方资源已本地化 (FontAwesome/Firebase SDK), 不依赖任何外部 CDN, 国内/微信访问更快 -->
     <link rel="stylesheet" href="css/vendor/all.min.css?v=4">
 
@@ -688,7 +688,7 @@
   
         
             <div class="app-version-footer" style="display: flex; justify-content: center; align-items: center; padding: 12px 0 18px 0; font-size: 0.68rem; color: rgba(255, 255, 255, 0.35); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0.3px; user-select: none;">
-                v39.23 · 2026-08-08 00:38
+                v39.24 · 2026-08-08 01:30
             </div>
         </div>
 
@@ -872,6 +872,28 @@
                     <div class="settlement-actions">
                         <button class="btn-settle-primary" id="btnMahjongSettleRematch"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>
                         <button class="btn-settle-secondary" id="btnMahjongSettleLobby"><i class="fa-solid fa-house"></i> 返回大厅</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 棋类统一结算弹窗 (五子棋/围棋/象棋共用, 主题色随游戏切换) -->
+        <div id="boardSettlementModal" class="card-type-modal" style="display:none; z-index: 10010;">
+            <div class="card-type-inner settlement-inner" id="boardSettlementInner">
+                <div class="settlement-header">
+                    <div class="settlement-icon" id="boardSettleIcon">🏆</div>
+                    <div class="settlement-title" id="boardSettleTitle">胜利！</div>
+                    <div class="settlement-subtitle" id="boardSettleSubtitle">恭喜获胜</div>
+                </div>
+                <div class="settlement-body">
+                    <div class="fan-details-card" id="boardSettleReasonCard">
+                        <div class="fan-badge" id="boardSettleReasonBadge">五子连珠</div>
+                        <div class="fan-list" id="boardSettleReasonList"></div>
+                    </div>
+                    <div class="scores-table" id="boardSettleScores"></div>
+                    <div class="settlement-actions">
+                        <button class="btn-settle-primary" id="btnBoardSettleRematch"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>
+                        <button class="btn-settle-secondary" id="btnBoardSettleLobby"><i class="fa-solid fa-house"></i> 返回大厅</button>
                     </div>
                 </div>
             </div>
@@ -1420,7 +1442,7 @@
     </div>
     </div>
 
-    <script src="js/bundle.min.js?v=56"></script>
+    <script src="js/bundle.min.js?v=57"></script>
     <!-- 游戏脚本载入 (顺序关键: p2p.js 初始化 Firebase, auth.js 必须在其后) -->
     <!-- 牌型说明弹窗 -->
     <div id="cardTypeModal" class="card-type-modal" style="display:none;">

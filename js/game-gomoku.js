@@ -836,6 +836,28 @@ Object.assign(GameEngineController.prototype, {
             btnRematch.classList.remove('disabled');
             btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
         }
+
+        // 🏆 统一结算弹窗
+        const myColor2 = window.gomokuEngine ? window.gomokuEngine.playerColor : 1;
+        const isWin2 = (winner !== 0 && winner === myColor2);
+        const isDraw2 = (winner === 0);
+        const winCoins2 = isWin2 ? Math.ceil((40 + ((window.gomokuEngine && window.gomokuEngine.moveHistory.length <= 15) ? 10 : 0)) * (NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2 ? 0.25 : 1.0) * AuthEngine.getWeekdayWinBonus()) : 0;
+        const loseCoins2 = (!isWin2 && !isDraw2) ? -Math.ceil(20 * (NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2 ? 0.25 : 1.0)) : 0;
+        const opName = '游鲸 AI 棋圣';
+        if (typeof this.showBoardSettlement === 'function') {
+            this.showBoardSettlement({
+                icon: isDraw2 ? '🤝' : (isWin2 ? '🏆' : '🤖'),
+                title: isDraw2 ? '平局' : (isWin2 ? '胜利！' : '惜败'),
+                subtitle: isDraw2 ? '盘满平局，势均力敌' : (isWin2 ? '恭喜黑方五子连珠' : '游鲸 AI 棋圣获胜'),
+                reasonBadge: isDraw2 ? '平局' : (isWin2 ? '五子连珠' : 'AI 获胜'),
+                reasonList: isDraw2 ? ['盘面已满，无人连珠'] : [isWin2 ? '你率先达成五子连珠' : 'AI 率先达成五子连珠'],
+                scores: [
+                    { name: `🤠 你`, diff: winCoins2 - Math.abs(loseCoins2) > 0 ? (winCoins2 - Math.abs(loseCoins2)) : (isWin2 ? winCoins2 : (loseCoins2 || 0)), cls: (isWin2 || isDraw2) ? 'positive' : 'negative' },
+                    { name: `🤖 ${opName}`, diff: isWin2 ? -winCoins2 : (isDraw2 ? 0 : Math.abs(loseCoins2)), cls: isWin2 ? 'negative' : (isDraw2 ? 'positive' : 'positive') }
+                ],
+                theme: 'gomoku'
+            });
+        }
     }
 
     /* ============================================================

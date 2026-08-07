@@ -8882,3 +8882,31 @@ body.theme-go .overlay-screen {
     font-size: 0.68rem !important;
     color: rgba(255, 255, 255, 0.25) !important;
 }
+
+/* ===== ͨ��������㵯��: ����ɫ (������ī��/Χ��Ұ�/������) ===== */
+#boardSettlementInner.theme-gomoku {
+    background: linear-gradient(180deg, #064e3b 0%, #022c22 100%) !important;
+    border-color: #34d399 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(52, 211, 153, 0.3) !important;
+}
+#boardSettlementInner.theme-gomoku .settlement-title { color: #fef08a !important; }
+#boardSettlementInner.theme-gomoku .settlement-subtitle { color: #a7f3d0 !important; }
+#boardSettlementInner.theme-gomoku .fan-badge { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+
+#boardSettlementInner.theme-go {
+    background: linear-gradient(180deg, #1c2128 0%, #0a0c0f 100%) !important;
+    border-color: rgba(203, 213, 225, 0.5) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 24px rgba(203, 213, 225, 0.15) !important;
+}
+#boardSettlementInner.theme-go .settlement-title { color: #e2e8f0 !important; }
+#boardSettlementInner.theme-go .settlement-subtitle { color: #94a3b8 !important; }
+#boardSettlementInner.theme-go .fan-badge { background: linear-gradient(135deg, #64748b, #475569) !important; }
+
+#boardSettlementInner.theme-xiangqi {
+    background: linear-gradient(180deg, #2a1412 0%, #120807 100%) !important;
+    border-color: rgba(220, 38, 38, 0.55) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 24px rgba(220, 38, 38, 0.2) !important;
+}
+#boardSettlementInner.theme-xiangqi .settlement-title { color: #fecaca !important; }
+#boardSettlementInner.theme-xiangqi .settlement-subtitle { color: #fca5a5 !important; }
+#boardSettlementInner.theme-xiangqi .fan-badge { background: linear-gradient(135deg, #b91c1c, #7f1d1d) !important; }

@@ -10237,6 +10237,62 @@ class GameEngineController {
     /**
      * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
      */
+    /**
+     * 通用棋类结算弹窗 (五子棋/围棋/象棋共用)
+     * @param {object} opts { icon, title, subtitle, reasonBadge, reasonList, scores, theme }
+     */
+    showBoardSettlement(opts) {
+        const modal = document.getElementById('boardSettlementModal');
+        if (!modal) return;
+        const o = opts || {};
+        const iconEl = document.getElementById('boardSettleIcon');
+        const titleEl = document.getElementById('boardSettleTitle');
+        const subEl = document.getElementById('boardSettleSubtitle');
+        const badgeEl = document.getElementById('boardSettleReasonBadge');
+        const listEl = document.getElementById('boardSettleReasonList');
+        const scoresEl = document.getElementById('boardSettleScores');
+        const inner = document.getElementById('boardSettlementInner');
+
+        if (iconEl) iconEl.textContent = o.icon || '🏆';
+        if (titleEl) titleEl.textContent = o.title || '胜利！';
+        if (subEl) subEl.textContent = o.subtitle || '恭喜获胜';
+        if (badgeEl) badgeEl.textContent = o.reasonBadge || '对局结束';
+        if (listEl) listEl.innerHTML = (o.reasonList || []).map(r => `<span>· ${r}</span>`).join('<br>');
+
+        if (scoresEl) {
+            scoresEl.innerHTML = (o.scores || []).map(pl => {
+                const cls = pl.cls || (pl.diff >= 0 ? 'positive' : 'negative');
+                const sign = (typeof pl.diff === 'number' && pl.diff > 0) ? '+' : '';
+                return `<div class="score-row-item"><span class="p-label">${pl.name}</span><span class="p-diff ${cls}">${sign}${pl.diff || 0} 知因币</span></div>`;
+            }).join('');
+        }
+
+        const theme = o.theme || 'gomoku';
+        if (inner) {
+            inner.classList.remove('theme-gomoku', 'theme-go', 'theme-xiangqi', 'theme-doudizhu');
+            inner.classList.add('theme-' + theme);
+        }
+
+        modal.style.display = 'flex';
+
+        const btnRematch = document.getElementById('btnBoardSettleRematch');
+        const btnLobby = document.getElementById('btnBoardSettleLobby');
+        const gameType = theme === 'xiangqi' ? 'XIANGQI' : (theme === 'go' ? 'GO' : 'GOMOKU');
+        if (btnRematch) {
+            btnRematch.onclick = () => {
+                modal.style.display = 'none';
+                if (typeof this.startGomokuAiMode === 'function' && gameType === 'GOMOKU') this.startGomokuAiMode();
+                else if (typeof this.startGoAiMode === 'function' && gameType === 'GO') this.startGoAiMode();
+                else if (typeof this.startXiangqiAiMode === 'function' && gameType === 'XIANGQI') this.startXiangqiAiMode();
+            };
+        }
+        if (btnLobby) {
+            btnLobby.onclick = () => {
+                modal.style.display = 'none';
+                this.resetToLobby();
+            };
+        }
+    }
     resetToLobby() {
         const mahjongScr = document.getElementById('mahjongGameScreen');
         const gomokuScr  = document.getElementById('gomokuGameScreen');
@@ -11113,6 +11169,29 @@ Object.assign(GameEngineController.prototype, {
             btnRematch.classList.remove('disabled');
             btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
         }
+
+        // 🏆 统一结算弹窗
+        if (typeof this.showBoardSettlement === 'function') {
+            const isDraw2 = (winner === 'D');
+            const isWin2 = (!isDraw2 && winner === myColor);
+            const isPve2 = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
+            const ratio2 = isPve2 ? 0.25 : 1.0;
+            const winCoins2 = isWin2 ? Math.ceil((100 + ((window.xiangqiEngine && window.xiangqiEngine.moveHistory.length <= 20) ? 10 : 0)) * ratio2 * AuthEngine.getWeekdayWinBonus()) : 0;
+            const loseCoins2 = (!isWin2 && !isDraw2) ? -Math.ceil(50 * ratio2) : 0;
+            const winSide = winner === 'R' ? '红方' : '黑方';
+            this.showBoardSettlement({
+                icon: isDraw2 ? '🤝' : (isWin2 ? '🏆' : '♞'),
+                title: isDraw2 ? '和棋' : (isWin2 ? '胜利！' : '惜败'),
+                subtitle: isDraw2 ? '双方无子可走，握手言和' : (isWin2 ? (reason === 'RESIGN' ? '对方认输' : '恭喜获胜') : (reason === 'RESIGN' ? '你认输了' : winSide + '获胜')),
+                reasonBadge: isDraw2 ? '和棋' : (isWin2 ? '象棋胜利' : '象棋落败'),
+                reasonList: isDraw2 ? ['困毙/无子可走'] : [isWin2 ? '将死对方主帅' : '被对方将死'],
+                scores: [
+                    { name: '🤠 你', diff: isWin2 ? winCoins2 : (isDraw2 ? 0 : loseCoins2), cls: (isWin2 || isDraw2) ? 'positive' : 'negative' },
+                    { name: '🤖 游鲸 AI 棋圣', diff: isWin2 ? -winCoins2 : (isDraw2 ? 0 : Math.abs(loseCoins2)), cls: isWin2 ? 'negative' : (isDraw2 ? 'positive' : 'positive') }
+                ],
+                theme: 'xiangqi'
+            });
+        }
     }
 
     /* ============================================================
@@ -11967,6 +12046,28 @@ Object.assign(GameEngineController.prototype, {
             btnRematch.disabled = false;
             btnRematch.classList.remove('disabled');
             btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
+        }
+
+        // 🏆 统一结算弹窗
+        const myColor2 = window.gomokuEngine ? window.gomokuEngine.playerColor : 1;
+        const isWin2 = (winner !== 0 && winner === myColor2);
+        const isDraw2 = (winner === 0);
+        const winCoins2 = isWin2 ? Math.ceil((40 + ((window.gomokuEngine && window.gomokuEngine.moveHistory.length <= 15) ? 10 : 0)) * (NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2 ? 0.25 : 1.0) * AuthEngine.getWeekdayWinBonus()) : 0;
+        const loseCoins2 = (!isWin2 && !isDraw2) ? -Math.ceil(20 * (NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2 ? 0.25 : 1.0)) : 0;
+        const opName = '游鲸 AI 棋圣';
+        if (typeof this.showBoardSettlement === 'function') {
+            this.showBoardSettlement({
+                icon: isDraw2 ? '🤝' : (isWin2 ? '🏆' : '🤖'),
+                title: isDraw2 ? '平局' : (isWin2 ? '胜利！' : '惜败'),
+                subtitle: isDraw2 ? '盘满平局，势均力敌' : (isWin2 ? '恭喜黑方五子连珠' : '游鲸 AI 棋圣获胜'),
+                reasonBadge: isDraw2 ? '平局' : (isWin2 ? '五子连珠' : 'AI 获胜'),
+                reasonList: isDraw2 ? ['盘面已满，无人连珠'] : [isWin2 ? '你率先达成五子连珠' : 'AI 率先达成五子连珠'],
+                scores: [
+                    { name: `🤠 你`, diff: winCoins2 - Math.abs(loseCoins2) > 0 ? (winCoins2 - Math.abs(loseCoins2)) : (isWin2 ? winCoins2 : (loseCoins2 || 0)), cls: (isWin2 || isDraw2) ? 'positive' : 'negative' },
+                    { name: `🤖 ${opName}`, diff: isWin2 ? -winCoins2 : (isDraw2 ? 0 : Math.abs(loseCoins2)), cls: isWin2 ? 'negative' : (isDraw2 ? 'positive' : 'positive') }
+                ],
+                theme: 'gomoku'
+            });
         }
     }
 
@@ -12911,6 +13012,29 @@ Object.assign(GameEngineController.prototype, {
             btnRematch.disabled = false;
             btnRematch.classList.remove('disabled');
             btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
+        }
+
+        // 🏆 统一结算弹窗
+        if (typeof this.showBoardSettlement === 'function') {
+            const myColor2 = window.goEngine ? window.goEngine.playerColor : 1;
+            const isWin2 = (winner !== 0 && winner === myColor2);
+            const isDraw2 = (winner === 0);
+            const isPve2 = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
+            const ratio2 = isPve2 ? 0.25 : 1.0;
+            const winCoins2 = isWin2 ? Math.ceil((100 + ((window.goEngine && window.goEngine.moveHistory.length <= 20) ? 10 : 0)) * ratio2 * AuthEngine.getWeekdayWinBonus()) : 0;
+            const loseCoins2 = (!isWin2 && !isDraw2) ? -Math.ceil(50 * ratio2) : 0;
+            this.showBoardSettlement({
+                icon: isDraw2 ? '🤝' : (isWin2 ? '🏆' : '⚫'),
+                title: isDraw2 ? '平局' : (isWin2 ? '胜利！' : '惜败'),
+                subtitle: isDraw2 ? '双方停一手，终局' : (isWin2 ? (reason === 'RESIGN' ? '对方认输' : '恭喜获胜') : (reason === 'RESIGN' ? '你认输了' : 'AI 获胜')),
+                reasonBadge: isDraw2 ? '平局' : (isWin2 ? '围棋胜利' : '围棋落败'),
+                reasonList: isDraw2 ? ['双方各停一手，无地可争'] : [isWin2 ? '黑方目数领先' : '白方目数领先'],
+                scores: [
+                    { name: '🤠 你', diff: isWin2 ? winCoins2 : (isDraw2 ? 0 : loseCoins2), cls: (isWin2 || isDraw2) ? 'positive' : 'negative' },
+                    { name: '🤖 游鲸 AI 棋圣', diff: isWin2 ? -winCoins2 : (isDraw2 ? 0 : Math.abs(loseCoins2)), cls: isWin2 ? 'negative' : (isDraw2 ? 'positive' : 'positive') }
+                ],
+                theme: 'go'
+            });
         }
     }
 

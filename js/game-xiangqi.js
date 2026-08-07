@@ -765,6 +765,29 @@ Object.assign(GameEngineController.prototype, {
             btnRematch.classList.remove('disabled');
             btnRematch.innerHTML = '<i class="fa-solid fa-rotate-right"></i> 重来一局';
         }
+
+        // 🏆 统一结算弹窗
+        if (typeof this.showBoardSettlement === 'function') {
+            const isDraw2 = (winner === 'D');
+            const isWin2 = (!isDraw2 && winner === myColor);
+            const isPve2 = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
+            const ratio2 = isPve2 ? 0.25 : 1.0;
+            const winCoins2 = isWin2 ? Math.ceil((100 + ((window.xiangqiEngine && window.xiangqiEngine.moveHistory.length <= 20) ? 10 : 0)) * ratio2 * AuthEngine.getWeekdayWinBonus()) : 0;
+            const loseCoins2 = (!isWin2 && !isDraw2) ? -Math.ceil(50 * ratio2) : 0;
+            const winSide = winner === 'R' ? '红方' : '黑方';
+            this.showBoardSettlement({
+                icon: isDraw2 ? '🤝' : (isWin2 ? '🏆' : '♞'),
+                title: isDraw2 ? '和棋' : (isWin2 ? '胜利！' : '惜败'),
+                subtitle: isDraw2 ? '双方无子可走，握手言和' : (isWin2 ? (reason === 'RESIGN' ? '对方认输' : '恭喜获胜') : (reason === 'RESIGN' ? '你认输了' : winSide + '获胜')),
+                reasonBadge: isDraw2 ? '和棋' : (isWin2 ? '象棋胜利' : '象棋落败'),
+                reasonList: isDraw2 ? ['困毙/无子可走'] : [isWin2 ? '将死对方主帅' : '被对方将死'],
+                scores: [
+                    { name: '🤠 你', diff: isWin2 ? winCoins2 : (isDraw2 ? 0 : loseCoins2), cls: (isWin2 || isDraw2) ? 'positive' : 'negative' },
+                    { name: '🤖 游鲸 AI 棋圣', diff: isWin2 ? -winCoins2 : (isDraw2 ? 0 : Math.abs(loseCoins2)), cls: isWin2 ? 'negative' : (isDraw2 ? 'positive' : 'positive') }
+                ],
+                theme: 'xiangqi'
+            });
+        }
     }
 
     /* ============================================================

@@ -3114,6 +3114,62 @@ class GameEngineController {
     /**
      * 重新回到初始大厅 (安全退房、清除URL邀请参数、切回主页屏幕)
      */
+    /**
+     * 通用棋类结算弹窗 (五子棋/围棋/象棋共用)
+     * @param {object} opts { icon, title, subtitle, reasonBadge, reasonList, scores, theme }
+     */
+    showBoardSettlement(opts) {
+        const modal = document.getElementById('boardSettlementModal');
+        if (!modal) return;
+        const o = opts || {};
+        const iconEl = document.getElementById('boardSettleIcon');
+        const titleEl = document.getElementById('boardSettleTitle');
+        const subEl = document.getElementById('boardSettleSubtitle');
+        const badgeEl = document.getElementById('boardSettleReasonBadge');
+        const listEl = document.getElementById('boardSettleReasonList');
+        const scoresEl = document.getElementById('boardSettleScores');
+        const inner = document.getElementById('boardSettlementInner');
+
+        if (iconEl) iconEl.textContent = o.icon || '🏆';
+        if (titleEl) titleEl.textContent = o.title || '胜利！';
+        if (subEl) subEl.textContent = o.subtitle || '恭喜获胜';
+        if (badgeEl) badgeEl.textContent = o.reasonBadge || '对局结束';
+        if (listEl) listEl.innerHTML = (o.reasonList || []).map(r => `<span>· ${r}</span>`).join('<br>');
+
+        if (scoresEl) {
+            scoresEl.innerHTML = (o.scores || []).map(pl => {
+                const cls = pl.cls || (pl.diff >= 0 ? 'positive' : 'negative');
+                const sign = (typeof pl.diff === 'number' && pl.diff > 0) ? '+' : '';
+                return `<div class="score-row-item"><span class="p-label">${pl.name}</span><span class="p-diff ${cls}">${sign}${pl.diff || 0} 知因币</span></div>`;
+            }).join('');
+        }
+
+        const theme = o.theme || 'gomoku';
+        if (inner) {
+            inner.classList.remove('theme-gomoku', 'theme-go', 'theme-xiangqi', 'theme-doudizhu');
+            inner.classList.add('theme-' + theme);
+        }
+
+        modal.style.display = 'flex';
+
+        const btnRematch = document.getElementById('btnBoardSettleRematch');
+        const btnLobby = document.getElementById('btnBoardSettleLobby');
+        const gameType = theme === 'xiangqi' ? 'XIANGQI' : (theme === 'go' ? 'GO' : 'GOMOKU');
+        if (btnRematch) {
+            btnRematch.onclick = () => {
+                modal.style.display = 'none';
+                if (typeof this.startGomokuAiMode === 'function' && gameType === 'GOMOKU') this.startGomokuAiMode();
+                else if (typeof this.startGoAiMode === 'function' && gameType === 'GO') this.startGoAiMode();
+                else if (typeof this.startXiangqiAiMode === 'function' && gameType === 'XIANGQI') this.startXiangqiAiMode();
+            };
+        }
+        if (btnLobby) {
+            btnLobby.onclick = () => {
+                modal.style.display = 'none';
+                this.resetToLobby();
+            };
+        }
+    }
     resetToLobby() {
         const mahjongScr = document.getElementById('mahjongGameScreen');
         const gomokuScr  = document.getElementById('gomokuGameScreen');
