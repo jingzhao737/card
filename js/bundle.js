@@ -1869,7 +1869,8 @@ class P2PManager {
             return;
         }
 
-        this.db.ref('rooms').limitToLast(30).once('value').then(snapshot => {
+        // 拉取全部房间后过滤: 不能用 limitToLast(30) —— 脏房间(无gameType/坏lobby)会挤占尾部配额导致有效房间不显示
+        this.db.ref('rooms').once('value').then(snapshot => {
             const roomsMap = snapshot.val() || {};
             const activeRooms = [];
             const now = Date.now();
@@ -1882,6 +1883,11 @@ class P2PManager {
                     const players = Array.isArray(rawPlayers) ? rawPlayers : (rawPlayers ? Object.values(rawPlayers) : []);
                     room.lobbyData.players = players; // 确保标准化为 Array
 
+                    // 跳过脏房间: 无有效 gameType 或无有效玩家槽位
+                    const roomGameType = room.gameType || '';
+                    const validPlayers = players.filter(p => p && !p.isAi && p.name);
+                    if (!roomGameType || players.length === 0) return;
+
                     const lastHuman = (typeof room.lastHumanActivity === 'number' && room.lastHumanActivity > 0)
                         ? room.lastHumanActivity
                         : ((typeof room.created === 'number' && room.created > 0) ? room.created : now);
@@ -1892,9 +1898,7 @@ class P2PManager {
                         console.log(`[AutoClean] 房间 ${roomId} 超过 3 分钟无真人操作，自动销毁`);
                         this.db.ref('rooms/' + roomId).remove().catch(() => {});
                     } else {
-                        const roomGameType = room.gameType || 'DOUDIZHU';
                         const targetFilter = gameTypeFilter || 'DOUDIZHU';
-
                         if (roomGameType === targetFilter) {
                             activeRooms.push(room);
                         }
