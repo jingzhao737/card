@@ -431,9 +431,9 @@ body.theme-mahjong #lobbyScreen {
 .vertical-mahjong-table {
     width: 100%;
     max-width: 460px;
-    aspect-ratio: 3 / 4;
-    max-height: 75vh;
-    max-height: 75dvh;
+    aspect-ratio: 3 / 4.35;
+    max-height: 82vh;
+    max-height: 82dvh;
     margin: auto;
     flex-shrink: 0;
     background: radial-gradient(ellipse 90% 80% at 50% 45%, #059669 0%, #047857 55%, #022c22 100%);
@@ -749,9 +749,9 @@ body.theme-mahjong #lobbyScreen {
     .vertical-mahjong-table {
         max-width: 100% !important;
         width: 98% !important;
-        aspect-ratio: 1 / 1.36 !important;
-        max-height: 78vh !important;
-        max-height: 78dvh !important;
+        aspect-ratio: 1 / 1.5 !important;
+        max-height: 85vh !important;
+        max-height: 85dvh !important;
         margin-top: 6px !important;
         margin-bottom: auto !important;
         border-width: 4.5px !important;
@@ -1637,12 +1637,12 @@ body.theme-mahjong #lobbyScreen {
         width: 95vw !important;
     }
 
-    /* 4:3 阔气豪华绿绒桌台 (比例全面放大) */
+    /* 4:3 阔气豪华绿绒桌台 (比例全面放大, 上下略微加高) */
     .vertical-mahjong-table {
         max-width: 940px !important;
-        aspect-ratio: 4 / 3 !important;
-        max-height: 82vh !important;
-        max-height: 82dvh !important;
+        aspect-ratio: 4 / 3.2 !important;
+        max-height: 85vh !important;
+        max-height: 85dvh !important;
         border: 12px solid #4a150e !important;
         border-radius: 14px !important;
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.95), inset 0 0 45px rgba(0, 0, 0, 0.75), 0 0 0 3px rgba(245, 158, 11, 0.35) !important;
