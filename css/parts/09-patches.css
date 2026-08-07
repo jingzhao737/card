@@ -278,7 +278,7 @@ body.theme-go .overlay-screen {
     right: 12px;
     width: 26px;
     height: 26px;
-    border-radius: 6px;
+    border-radius: 3px;
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: rgba(255, 255, 255, 0.6);
@@ -348,7 +348,7 @@ body.theme-go .overlay-screen {
     border-radius: 3px !important;
 }
 .settlement-inner .settlement-header {
-    border-radius: 8px 8px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
 }
 
 /* ===== ������������: �Ӿ�ͳһΪ���� settlement ��� (Բ������) ===== */
