@@ -14755,9 +14755,19 @@ Object.assign(GameEngineController.prototype, {
 
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
 
-        // 轮到自己出牌时点过 (无响应场景) 无需额外动作
+        // 轮到自己出牌时点过 (放弃吃/碰/杠/胡): 若仍待摸牌则先摸牌再出牌, 避免手牌不足
         if (engine.currentTurn === mySlot) {
+            if (engine.pendingDraw) {
+                const drawRes = engine.drawTile(mySlot);
+                if (!drawRes) {
+                    this.showMahjongSettlement(-1, null);
+                    return;
+                }
+                this.animateTileDraw(mySlot, engine.lastDrawnTile);
+                this.renderMahjongHandTiles(true);
+            }
             this.updateMahjongStatusUI('🀄 轮到你出牌');
+            this.checkSelfActionsOnTurn();
             return;
         }
 
