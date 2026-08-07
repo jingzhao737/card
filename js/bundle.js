@@ -13064,7 +13064,9 @@ Object.assign(GameEngineController.prototype, {
                     if (move.actionType === 'HU' && typeof SoundEngine !== 'undefined' && SoundEngine.playWin) {
                         try { SoundEngine.playWin(); } catch (e) {}
                     }
-                    this.showMahjongSettlement(window.mahjongEngine.winner, null);
+                    // 自摸判定: 远程 HU 消息中无弃牌 (discardedTile 为 null) 即为自摸
+                    const remoteSelfDraw = (move.actionType === 'HU' && !move.discardedTile);
+                    this.showMahjongSettlement(window.mahjongEngine.winner, null, remoteSelfDraw);
                     return;
                 }
 
@@ -14377,7 +14379,7 @@ Object.assign(GameEngineController.prototype, {
                     if (!NetworkManager.isAiMode && NetworkManager.roomId) {
                         NetworkManager.sendMahjongMove(curIdx, -1, null, engine.exportState(), 'HU');
                     }
-                    this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true));
+                    this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true), true);
                     return;
                 }
                 const aiSelfKong = engine.getSelfKongOptions(curIdx);
@@ -14392,7 +14394,7 @@ Object.assign(GameEngineController.prototype, {
                         if (!NetworkManager.isAiMode && NetworkManager.roomId) {
                             NetworkManager.sendMahjongMove(curIdx, -1, null, engine.exportState(), 'HU');
                         }
-                        this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true));
+                        this.showMahjongSettlement(curIdx, engine.getHuDetails(curIdx, null, true), true);
                         return;
                     }
                     const skAgain = engine.getSelfKongOptions(curIdx);
@@ -14723,7 +14725,7 @@ Object.assign(GameEngineController.prototype, {
             }
             engine.isGameOver = true;
             engine.winner = mySlot;
-            this.showMahjongSettlement(mySlot, huDetails);
+            this.showMahjongSettlement(mySlot, huDetails, isSelfDraw);
 
             if (!NetworkManager.isAiMode && NetworkManager.roomId) {
                 NetworkManager.sendMahjongMove(mySlot, -1, extraTile, engine.exportState(), 'HU');
@@ -14782,8 +14784,11 @@ Object.assign(GameEngineController.prototype, {
     },
     /**
      * 展示麻将奢华结算面板
+     * @param {number} winnerIdx 赢家序号 (-1 流局)
+     * @param {object|null} huDetails 番型详情
+     * @param {boolean} [forceSelfDraw] 显式指定是否自摸 (自摸时 lastDiscard 仍是上家打的牌, 不能靠它判定)
      */
-    showMahjongSettlement(winnerIdx, huDetails) {
+    showMahjongSettlement(winnerIdx, huDetails, forceSelfDraw) {
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const modal = document.getElementById('mahjongSettlementModal');
         const iconEl = document.getElementById('mahjongWinIcon');
@@ -14793,6 +14798,20 @@ Object.assign(GameEngineController.prototype, {
         const fanListEl = document.getElementById('mahjongFanList');
 
         if (!modal) return;
+
+        // huDetails 缺失时 (远程场景): 用引擎重算番型, 确保自摸 +1 番正确显示
+        let finalHuDetails = huDetails;
+        if (!finalHuDetails && winnerIdx !== -1 && window.mahjongEngine) {
+            try {
+                finalHuDetails = window.mahjongEngine.getHuDetails(
+                    winnerIdx,
+                    null,
+                    typeof forceSelfDraw === 'boolean' ? forceSelfDraw : false
+                );
+            } catch (e) { finalHuDetails = null; }
+        }
+        const details = finalHuDetails || { fanName: '平胡 1番', details: ['平胡 (1番)'] };
+        if (winnerIdx !== -1) huDetails = finalHuDetails;
 
         if (winnerIdx === -1) {
             // 流局平局
@@ -14806,7 +14825,6 @@ Object.assign(GameEngineController.prototype, {
             if (iconEl) iconEl.textContent = '🏆';
             if (titleEl) titleEl.textContent = '胡牌大吉';
             if (subTitleEl) subTitleEl.textContent = '我方玩家 喜胡牌局！';
-            const details = huDetails || { fanName: '平胡 1番', details: ['平胡 (1番)'] };
             if (fanBadgeEl) fanBadgeEl.textContent = details.fanName;
             if (fanListEl) fanListEl.innerHTML = details.details.map(d => `<span>· ${d}</span>`).join('<br>');
         } else {
@@ -14817,8 +14835,8 @@ Object.assign(GameEngineController.prototype, {
             if (iconEl) iconEl.textContent = '🀄';
             if (titleEl) titleEl.textContent = '对局结束';
             if (subTitleEl) subTitleEl.textContent = `${winnerName} 抢先胡牌！`;
-            if (fanBadgeEl) fanBadgeEl.textContent = '推倒胡';
-            if (fanListEl) fanListEl.textContent = '· 对方胡牌';
+            if (fanBadgeEl) fanBadgeEl.textContent = details.fanName;
+            if (fanListEl) fanListEl.innerHTML = details.details.map(d => `<span>· ${d}</span>`).join('<br>');
         }
 
         // 💰 结算麻将【知因币】与动态渲染 4 席位知因币战报 (方案一: 线性番数乘率 + 放炮包赔)
@@ -14831,9 +14849,11 @@ Object.assign(GameEngineController.prototype, {
         const seatPlayers = this.latestLobbyPlayers || this.gameState.players || [];
         const windNames = ['东', '南', '西', '北'];
 
-        // 判定放炮者与自摸
+        // 判定放炮者与自摸 (自摸: 显式参数优先; 否则兜底判定)
         const engine = window.mahjongEngine;
-        const isSelfDraw = !engine || !engine.lastDiscard || engine.lastDiscard.playerIdx === winnerIdx;
+        const isSelfDraw = typeof forceSelfDraw === 'boolean'
+            ? forceSelfDraw
+            : (!engine || !engine.lastDiscard || engine.lastDiscard.playerIdx === winnerIdx);
         const discarderIdx = (!isSelfDraw && engine && engine.lastDiscard) ? engine.lastDiscard.playerIdx : -1;
 
         // 计算 4 家精准损益
