@@ -71,7 +71,7 @@ body.theme-mahjong #lobbyScreen {
 .badge-corner-new {
     position: absolute;
     top: -5px;
-    right: -3px;
+    right: -2px;
     font-size: 0.42rem;
     font-weight: 900;
     background: linear-gradient(135deg, #ef4444, #dc2626);

@@ -275,6 +275,7 @@
 .game-nav-btn {
     flex: 0 0 auto;
     white-space: nowrap;
+    position: relative; /* NEW 角标 absolute 定位的参照 */
     background: rgba(15, 10, 8, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 4px;

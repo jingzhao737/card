@@ -127,3 +127,14 @@
     to   { transform: translateX(0); opacity: 1; }
 }
 /* ============================================================
+
+/* ?? 手机端 NEW 角标: 收敛到按钮内右上, 避免溢出被裁切 */
+@media (max-width: 768px) {
+    .game-nav-btn .badge-corner-new {
+        top: -4px !important;
+        right: -2px !important;
+        font-size: 0.38rem !important;
+        padding: 0 3px !important;
+        border-radius: 3px 3px 3px 0 !important;
+    }
+}

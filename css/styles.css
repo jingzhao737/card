@@ -3930,6 +3930,7 @@ body.theme-gomoku .overlay-screen {
 .game-nav-btn {
     flex: 0 0 auto;
     white-space: nowrap;
+    position: relative; /* NEW 角标 absolute 定位的参照 */
     background: rgba(15, 10, 8, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 4px;
@@ -5523,7 +5524,7 @@ body.theme-mahjong #lobbyScreen {
 .badge-corner-new {
     position: absolute;
     top: -5px;
-    right: -3px;
+    right: -2px;
     font-size: 0.42rem;
     font-weight: 900;
     background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -8060,6 +8061,17 @@ body.theme-go {
     to   { transform: translateX(0); opacity: 1; }
 }
 /* ============================================================
+
+/* ?? �ֻ��� NEW �Ǳ�: ��������ť������, ������������� */
+@media (max-width: 768px) {
+    .game-nav-btn .badge-corner-new {
+        top: -4px !important;
+        right: -2px !important;
+        font-size: 0.38rem !important;
+        padding: 0 3px !important;
+        border-radius: 3px 3px 3px 0 !important;
+    }
+}
    ♞ 游鲸中国象棋 主题与大厅卡样式
    ============================================================ */
 body.theme-xiangqi {
