@@ -8910,3 +8910,111 @@ body.theme-go .overlay-screen {
 #boardSettlementInner.theme-xiangqi .settlement-title { color: #fecaca !important; }
 #boardSettlementInner.theme-xiangqi .settlement-subtitle { color: #fca5a5 !important; }
 #boardSettlementInner.theme-xiangqi .fan-badge { background: linear-gradient(135deg, #b91c1c, #7f1d1d) !important; }
+
+/* ===== ���㵯��: �رհ�ť + �ؿ����� + Բ������ ===== */
+.settlement-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.15s ease;
+}
+.settlement-close-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+/* �ؿ�����: �̶����½�, �͵� */
+.settlement-reopen-badge {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 10020;
+    background: rgba(15, 15, 18, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 7px 12px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.3px;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.settlement-reopen-badge:hover {
+    background: rgba(35, 35, 42, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+/* ���㵯��Բ������: 16px -> 8px */
+.settlement-inner {
+    border-radius: 8px !important;
+}
+.settlement-inner .settlement-body {
+    border-radius: 8px !important;
+}
+.settlement-inner .fan-details-card {
+    border-radius: 6px !important;
+}
+.settlement-inner .fan-badge {
+    border-radius: 4px !important;
+}
+.settlement-inner .scores-table {
+    border-radius: 6px !important;
+}
+.settlement-inner .score-row-item {
+    border-radius: 4px !important;
+}
+.settlement-inner .btn-settle-primary,
+.settlement-inner .btn-settle-secondary {
+    border-radius: 6px !important;
+}
+.settlement-inner .settlement-header {
+    border-radius: 8px 8px 0 0 !important;
+}
+
+/* ===== ������������: �Ӿ�ͳһΪ���� settlement ��� (Բ������) ===== */
+.victory-content-wrap {
+    background: linear-gradient(180deg, #17100c 0%, #0c0705 100%) !important;
+    border: 1px solid rgba(255, 215, 0, 0.28) !important;
+    border-radius: 6px !important;
+    padding: 12px 30px 14px 30px !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 18px rgba(255, 215, 0, 0.08) !important;
+}
+.victory-main-title {
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    color: #f0d28a !important;
+    letter-spacing: 1.5px !important;
+    text-shadow: none !important;
+}
+.victory-sub-desc {
+    font-size: 0.74rem !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+.victory-close-btn {
+    border-radius: 4px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+.victory-mini-badge {
+    border-radius: 4px !important;
+}

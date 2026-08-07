@@ -2132,6 +2132,25 @@ Object.assign(GameEngineController.prototype, {
 
         if (!modal) return;
 
+        // 隐藏重开徽章 (弹窗打开时)
+        const badge = document.getElementById('settlementReopenBadge');
+        if (badge) badge.style.display = 'none';
+
+        // 关闭按钮: 隐藏弹窗 + 显示重开徽章
+        const btnClose = document.getElementById('btnMahjongSettleClose');
+        if (btnClose) {
+            btnClose.onclick = () => {
+                modal.style.display = 'none';
+                const badge2 = document.getElementById('settlementReopenBadge');
+                if (badge2) {
+                    badge2.style.display = 'inline-flex';
+                    badge2.onclick = () => {
+                        badge2.style.display = 'none';
+                        modal.style.display = 'flex';
+                    };
+                }
+            };
+        }
         // huDetails 缺失时 (远程场景): 用引擎重算番型, 确保自摸 +1 番正确显示
         let finalHuDetails = huDetails;
         if (!finalHuDetails && winnerIdx !== -1 && window.mahjongEngine) {

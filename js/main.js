@@ -3151,6 +3151,7 @@ class GameEngineController {
         }
 
         modal.style.display = 'flex';
+        this.hideSettlementReopenBadge();
 
         const btnRematch = document.getElementById('btnBoardSettleRematch');
         const btnLobby = document.getElementById('btnBoardSettleLobby');
@@ -3169,6 +3170,34 @@ class GameEngineController {
                 this.resetToLobby();
             };
         }
+
+        // 关闭按钮: 隐藏弹窗 + 显示重开徽章
+        const btnClose = document.getElementById('btnBoardSettleClose');
+        if (btnClose) {
+            btnClose.onclick = () => {
+                modal.style.display = 'none';
+                this._lastBoardSettleReopen = () => this.showBoardSettlement(o);
+                this.showSettlementReopenBadge();
+            };
+        }
+    }
+
+    /**
+     * 显示/隐藏 结算重开徽章
+     */
+    showSettlementReopenBadge() {
+        const badge = document.getElementById('settlementReopenBadge');
+        if (!badge) return;
+        badge.style.display = 'inline-flex';
+        badge.onclick = () => {
+            badge.style.display = 'none';
+            if (typeof this._lastBoardSettleReopen === 'function') this._lastBoardSettleReopen();
+        };
+    }
+
+    hideSettlementReopenBadge() {
+        const badge = document.getElementById('settlementReopenBadge');
+        if (badge) badge.style.display = 'none';
     }
     resetToLobby() {
         const mahjongScr = document.getElementById('mahjongGameScreen');
