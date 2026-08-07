@@ -8904,8 +8904,9 @@ body.theme-go .overlay-screen {
 
 #boardSettlementInner.theme-xiangqi {
     background: linear-gradient(180deg, #2a1412 0%, #120807 100%) !important;
-    border-color: rgba(220, 38, 38, 0.55) !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 24px rgba(220, 38, 38, 0.2) !important;
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9) !important;
 }
 #boardSettlementInner.theme-xiangqi .settlement-title { color: #fecaca !important; }
 #boardSettlementInner.theme-xiangqi .settlement-subtitle { color: #fca5a5 !important; }
