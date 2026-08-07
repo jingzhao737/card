@@ -395,3 +395,50 @@ body.theme-go .overlay-screen {
         bottom: 16px !important;
     }
 }
+
+/* ===== 结算弹窗整体缩小 ===== */
+#boardSettlementInner,
+#mahjongSettlementModal .settlement-inner {
+    max-width: 380px !important;
+    width: 92vw !important;
+}
+
+.settlement-inner .settlement-header {
+    padding: 14px 12px 8px !important;
+}
+.settlement-inner .settlement-icon {
+    font-size: 2.2rem !important;
+}
+.settlement-inner .settlement-title {
+    font-size: 1.3rem !important;
+}
+.settlement-inner .settlement-subtitle {
+    font-size: 0.76rem !important;
+}
+.settlement-inner .settlement-body {
+    padding: 10px 14px 14px !important;
+    gap: 10px !important;
+}
+.settlement-inner .fan-details-card {
+    padding: 8px !important;
+}
+.settlement-inner .fan-badge {
+    font-size: 0.78rem !important;
+    padding: 3px 10px !important;
+}
+.settlement-inner .fan-list {
+    font-size: 0.74rem !important;
+}
+.settlement-inner .scores-table {
+    padding: 6px !important;
+    gap: 2px !important;
+}
+.settlement-inner .score-row-item {
+    font-size: 0.78rem !important;
+    padding: 3px 5px !important;
+}
+.settlement-inner .btn-settle-primary,
+.settlement-inner .btn-settle-secondary {
+    padding: 9px !important;
+    font-size: 0.84rem !important;
+}
