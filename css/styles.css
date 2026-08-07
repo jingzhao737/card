@@ -9018,3 +9018,20 @@ body.theme-go .overlay-screen {
 .victory-mini-badge {
     border-radius: 4px !important;
 }
+
+/* ?? �ֻ���: ����رհ�ť/�ؿ����� ����Ŀ��Ӵ� */
+@media (max-width: 768px) {
+    .settlement-close-btn {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1rem !important;
+        top: 8px !important;
+        right: 8px !important;
+    }
+    .settlement-reopen-badge {
+        font-size: 0.82rem !important;
+        padding: 10px 16px !important;
+        right: 16px !important;
+        bottom: 16px !important;
+    }
+}

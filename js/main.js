@@ -1651,6 +1651,15 @@ class GameEngineController {
                 if (victoryBox) {
                     victoryBox.dataset.minimized = 'true';
                     this.onReceiveStateUpdate(this.gameState);
+                    // 同时显示统一右下角重开徽章
+                    this._lastBoardSettleReopen = () => {
+                        const vBox = document.getElementById('victoryBannerBox');
+                        if (vBox) {
+                            vBox.dataset.minimized = 'false';
+                            this.onReceiveStateUpdate(this.gameState);
+                        }
+                    };
+                    this.showSettlementReopenBadge();
                 }
                 return;
             }
@@ -1661,6 +1670,7 @@ class GameEngineController {
                 if (victoryBox) {
                     victoryBox.dataset.minimized = 'false';
                     this.onReceiveStateUpdate(this.gameState);
+                    this.hideSettlementReopenBadge();
                 }
                 return;
             }
