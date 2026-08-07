@@ -1,0 +1,1007 @@
+   克制奢华 — 组局等待与好友邀请大厅 (Restrained Luxury Waiting Room)
+   ========================================================================== */
+
+.waiting-card-hero {
+    background: linear-gradient(180deg, #180c0e 0%, #0e0608 100%);
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(201, 146, 42, 0.08);
+    border-radius: 4px;
+    width: 94%;
+    max-width: 520px;
+    padding: 20px 22px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+    backdrop-filter: blur(12px);
+}
+
+.waiting-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 146, 42, 0.18);
+    border-radius: 4px;
+    padding: 9px 14px;
+    font-size: 0.86rem;
+}
+
+.room-id-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f1f5f9;
+    font-weight: 700;
+}
+
+.connected-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.status-dot.green {
+    width: 7px;
+    height: 7px;
+    background: #e2a820;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(226, 168, 32, 0.5);
+}
+
+.invite-action-card {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 146, 42, 0.18);
+    border-radius: 4px;
+    padding: 14px 16px;
+    text-align: left;
+}
+
+.invite-card-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #e2a820;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+.share-box-redesign {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.share-box-redesign input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    border-radius: 3px;
+    color: #e2a820;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+/* 闪耀金光主按钮 (COPY & START 带有光束斜切流光) */
+.btn-copy-gold, .btn-start-game-gold {
+    background: linear-gradient(135deg, #ffdb4d 0%, #f59e0b 50%, #d97706 100%);
+    border: 1px solid #ffe57f;
+    color: #2b1100;
+    font-weight: 900;
+    padding: 0 16px;
+    border-radius: 3px;
+    font-size: 0.84rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-copy-gold::after, .btn-start-game-gold::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -120%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg);
+    animation: goldLightSweep 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+}
+
+@keyframes goldLightSweep {
+    0% {
+        left: -120%;
+    }
+    28%, 100% {
+        left: 180%;
+    }
+}
+
+.btn-copy-gold:hover, .btn-start-game-gold:hover {
+    background: linear-gradient(135deg, #ffe066 0%, #fbbf24 50%, #d97706 100%);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-copy-gold:active, .btn-start-game-gold:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.qr-box-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 3px;
+}
+
+.qr-canvas-box {
+    background: #fff;
+    padding: 5px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-canvas-box img, .qr-canvas-box canvas {
+    width: 48px !important;
+    height: 48px !important;
+}
+
+.qr-text {
+    font-size: 0.84rem;
+    color: #f1f5f9;
+    font-weight: 700;
+}
+
+/* 玩家席位卡片 克制极简名片风 */
+.slots-grid-redesign {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 2px 0;
+}
+
+.player-slot-card {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 3px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.player-slot-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201, 146, 42, 0.28);
+}
+
+.player-slot-card.host {
+    background: rgba(201, 146, 42, 0.08);
+    border: 1px solid rgba(201, 146, 42, 0.25);
+    box-shadow: 0 4px 16px rgba(201, 146, 42, 0.12);
+}
+
+.slot-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 146, 42, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.65rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.player-slot-card.host .slot-avatar-circle {
+    border-color: rgba(201, 146, 42, 0.5);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(201, 146, 42, 0.2);
+}
+
+.slot-name-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.slot-status-pill {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.slot-status-pill.ready {
+    color: #e2a820;
+    background: rgba(201, 146, 42, 0.1);
+    border-color: rgba(201, 146, 42, 0.22);
+    font-weight: 700;
+}
+
+/* ============================================================
+   🟢 游鲸五子棋 沉浸式墨绿棋盘 UI Style
+   ============================================================ */
+.gomoku-screen-wrap {
+    background: linear-gradient(135deg, #061d15 0%, #03140e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.gomoku-screen-wrap.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.gomoku-container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 顶部对局玩家与回合 Header Area */
+.gomoku-header-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 1. 置顶对局状态指示胶囊 */
+.gomoku-turn-status.top-status {
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    border-radius: 16px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #34d399;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+}
+
+/* 五子棋回合倒计时徽章 */
+.gomoku-timer-badge {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #a7f3d0;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    line-height: 1.4;
+}
+.gomoku-timer-badge.urgent {
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #fca5a5;
+    animation: timerUrgentPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes timerUrgentPulse {
+    from { transform: scale(1); opacity: 1; }
+    to   { transform: scale(1.08); opacity: 0.75; }
+}
+
+/* 2. 玩家 VS 对决 Bar (全屏宽度充分利用) */
+.gomoku-header-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8, 20, 15, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(52, 211, 153, 0.28);
+    border-radius: 12px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    gap: 10px;
+}
+
+/* 中央 VS 标识 */
+.gomoku-vs-badge {
+    font-size: 0.85rem;
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(52, 211, 153, 0.6);
+    text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* 玩家卡片 (宽屏扩展，ID 独立一行完全展示) */
+.gomoku-player-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.25s ease;
+    max-width: 46%;
+    min-width: 0;
+}
+
+.player-pill-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.player-pill-top.right {
+    justify-content: flex-end;
+}
+
+/* 轮到落子方的卡片高亮高光 */
+.gomoku-player-pill.turn-active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 29, 21, 0.7) 100%) !important;
+    border-color: rgba(52, 211, 153, 0.6) !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.3) !important;
+    transform: scale(1.02);
+}
+
+/* 3D 迷你棋子头像 (标准 1:1 相同规格) */
+.mini-stone-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.mini-stone-avatar.black {
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none;
+}
+
+.mini-stone-avatar.white {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    border: none;
+}
+
+/* 玩家 ID / 昵称 (精致字号 0.72rem，去冗余高精简) */
+.player-pill-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.player-pill-name.align-right {
+    text-align: right;
+}
+
+.gomoku-player-pill .p-role {
+    font-size: 0.64rem;
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* 15x15 五子棋盘外框 — 经典榧木/红木温润木纹棋盘 */
+.gomoku-board-wrapper {
+    background-color: #d49c53;
+    background-image:
+        radial-gradient(ellipse 90% 70% at 50% 50%, #eac285 0%, #ca9046 70%, #995f21 100%),
+        repeating-linear-gradient(0deg, rgba(74, 37, 0, 0.03), rgba(74, 37, 0, 0.03) 2px, transparent 2px, transparent 6px);
+    border: 7px solid #4a2408;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(60, 30, 5, 0.5), 0 0 0 2px rgba(255, 215, 0, 0.2);
+    position: relative;
+}
+
+.gomoku-board {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    width: min(calc(100vw - 36px), 340px);
+    height: min(calc(100vw - 36px), 340px);
+    position: relative;
+    user-select: none;
+    touch-action: manipulation;
+    background: transparent;
+}
+
+@media (max-width: 768px) {
+    .gomoku-board-wrapper {
+        padding: 6px !important;
+    }
+}
+
+/* PC 桌面大屏专属：棋盘尺寸适度微缩与清晰视野 */
+@media (min-width: 768px) {
+    .gomoku-container {
+        max-width: 600px;
+        gap: 16px;
+    }
+
+    .gomoku-board-wrapper {
+        padding: 16px;
+        border-width: 8px;
+    }
+
+    .gomoku-board {
+        width: 480px;
+        height: 480px;
+    }
+
+    .gomoku-header-bar {
+        padding: 12px 18px;
+    }
+
+    .gomoku-player-pill .p-name {
+        font-size: 0.95rem;
+    }
+
+    .gomoku-player-pill .p-role {
+        font-size: 0.78rem;
+    }
+
+    .gomoku-turn-status {
+        font-size: 0.88rem;
+        padding: 6px 14px;
+    }
+
+    .btn-gomoku-action {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 交叉格节点 */
+.gomoku-cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 网格交叉线 (深浓木墨色) */
+.gomoku-cell::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(50, 24, 4, 0.85);
+    z-index: 1;
+}
+
+.gomoku-cell::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(50, 24, 4, 0.85);
+    z-index: 1;
+}
+
+/* 边缘格线条精确裁剪，止于 15x15 外围交叉点封边 */
+.gomoku-cell.col-left::before {
+    left: 50% !important;
+    width: 50% !important;
+}
+
+.gomoku-cell.col-right::before {
+    left: 0 !important;
+    width: 50% !important;
+}
+
+.gomoku-cell.row-top::after {
+    top: 50% !important;
+    height: 50% !important;
+}
+
+.gomoku-cell.row-bottom::after {
+    top: 0 !important;
+    height: 50% !important;
+}
+
+/* 星位点 (4,4), (4,12), (8,8天元), (12,4), (12,12) 交叉圆点 */
+.star-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #321402;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+/* 棋子 Style (全自然光感，1:1 物理等大规格) */
+.gomoku-stone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 84%;
+    height: 84%;
+    border-radius: 50%;
+    z-index: 5;
+    border: none !important; /* 彻底无描边 */
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.65);
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: stonePop 0.2s ease;
+}
+
+@keyframes stonePop {
+    0% { transform: translate(-50%, -50%) scale(0.2); }
+    80% { transform: translate(-50%, -50%) scale(1.15); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.gomoku-stone.black {
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    border: none !important;
+}
+
+.gomoku-stone.white {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    border: none !important;
+}
+
+/* 最近落子指示点 */
+.gomoku-stone.last-move::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff2a2a;
+    box-shadow: 0 0 6px #ff2a2a;
+}
+
+/* 落子序号标记 (低调微光风格，避免喧宾夺主) */
+.gomoku-stone .stone-num {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(0.42rem + 0.18vw);
+    font-weight: 600;
+    font-family: 'Outfit', 'Noto Sans SC', sans-serif;
+    line-height: 1;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    z-index: 7;
+    opacity: 0.42;
+}
+.gomoku-stone .stone-num.on-black {
+    color: rgba(248, 250, 252, 0.9);
+}
+.gomoku-stone .stone-num.on-white {
+    color: rgba(30, 41, 59, 0.85);
+}
+/* 序号不超过2位时略小一号，避免溢出棋子 */
+.gomoku-stone .stone-num.len-2 {
+    font-size: calc(0.36rem + 0.14vw);
+}
+
+/* 桌面端悬停预览落子 (半透明当前方棋子) */
+.gomoku-stone.hover-preview {
+    opacity: 0.45;
+    pointer-events: none;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    animation: none;
+}
+
+/* 获胜 5 连子闪耀墨绿细描边与光圈效果 (保持原尺寸不缩微) */
+.gomoku-stone.win-stone {
+    box-sizing: border-box !important;
+    border: 1px solid #34d399 !important; /* 精致细墨绿描边 */
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.85), 0 0 6px rgba(16, 185, 129, 0.6) !important;
+    animation: winPulse 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes winPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.08);
+        box-shadow: 0 0 22px rgba(52, 211, 153, 0.95), 0 0 10px rgba(16, 185, 129, 0.8);
+    }
+}
+
+/* 手机端二次确认落子 静态虚影预选棋子 (100% 精确对齐交叉点) */
+.gomoku-stone.preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 84%;
+    height: 84%;
+    opacity: 0.55;
+    pointer-events: none;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* 控制按钮栏 (居中单悔棋按钮，向下挪动) */
+.gomoku-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 28px; /* 向下挪动 */
+    margin-bottom: 12px;
+}
+
+.btn-gomoku-action {
+    padding: 9px 24px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-gomoku-action.undo {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 29, 21, 0.9) 100%);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    color: #34d399;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    width: 100%;
+    max-width: 220px;
+}
+
+.btn-gomoku-action.undo:hover:not(.disabled) {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.38) 0%, rgba(6, 29, 21, 0.95) 100%);
+    border-color: rgba(52, 211, 153, 0.7);
+    color: #6ee7b7;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+}
+
+.btn-gomoku-action.rematch {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: 1px solid #34d399;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    width: 100%;
+    max-width: 220px;
+}
+
+.btn-gomoku-action.rematch:hover:not(.disabled) {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-gomoku-action.disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+}
+
+/* 底部操作栏 极简高级按钮 */
+.waiting-actions-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* 【立即开始斗地主】—— 克制金色全宽主按钮 */
+.btn-start-game-gold {
+    width: 100%;
+    height: 42px;
+}
+
+/* 【补齐机器人并立即开局】—— 极简暗金次级按钮 */
+.btn-start-ai-sub {
+    width: 100%;
+    height: 42px;
+    background: rgba(201, 146, 42, 0.12);
+    border: 1px solid rgba(201, 146, 42, 0.28);
+    color: #ffd700;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.btn-start-ai-sub:hover {
+    transform: translateY(-1px);
+    background: rgba(201, 146, 42, 0.2);
+    border-color: rgba(201, 146, 42, 0.4);
+}
+
+.btn-cancel-lobby {
+    width: 100%;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel-lobby:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f1f5f9;
+}
+
+/* 我方 ID 右侧打发时间解闷气球小按钮 (默认10px微型深灰偏黑小点，第1次点击变大到标准24px纯白球，之后逐级变大变红，啪的爆裂重置) */
+.btn-boredom-toy {
+    position: absolute;
+    right: -34px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1;
+    background: radial-gradient(circle at 35% 35%, #475569 0%, #1e293b 60%, #0f172a 100%);
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.25), 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 10;
+}
+
+.btn-boredom-toy:hover {
+    filter: brightness(1.15);
+}
+
+.btn-boredom-toy:active {
+    filter: brightness(0.9);
+}
+
+/* ==========================================================================
+   五子棋开局先后手 苹果级奢华微标语 (Apple-Style Luxury Glassmorphism Banner)
+   ========================================================================== */
+.gomoku-center-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 85;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 20px;
+    background: linear-gradient(135deg, rgba(20, 26, 38, 0.85) 0%, rgba(10, 15, 26, 0.92) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 8px;
+    animation: luxuryBannerEnter 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gomoku-center-banner .stone-badge {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.gomoku-center-banner .stone-badge.black {
+    background: radial-gradient(circle at 35% 35%, #71717a 0%, #18181b 70%, #000000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.gomoku-center-banner .stone-badge.white {
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e4e4e7 60%, #a1a1aa 100%);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.gomoku-center-banner span {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    white-space: nowrap;
+}
+
+.gomoku-center-banner span.black-first {
+    background: linear-gradient(135deg, #ffe082 0%, #f59e0b 60%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gomoku-center-banner span.white-second {
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 60%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes luxuryBannerEnter {
+    0% {
+        transform: translate(-50%, -40%) scale(0.92);
+        opacity: 0;
+        filter: blur(4px);
+    }
+    18% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    82% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    100% {
+        transform: translate(-50%, -60%) scale(0.96);
+        opacity: 0;
+        filter: blur(4px);
+    }
+}
+
+/* ==========================================================================
+   五子棋开局 3秒 倒计时后亮起抢先手按键 (居中悬浮于棋盘中央)
+   ========================================================================== */
+.gomoku-bidding-bar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.94);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(245, 158, 11, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 16px 24px;
+    border-radius: 20px;
+    animation: zoomInBid 0.25s ease-out;
+}
+
+@keyframes zoomInBid {
+    from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.btn-gomoku-bid {
+    padding: 10px 22px;
+    height: 44px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    white-space: nowrap;
+}
+
+/* 3秒倒计时中：灰色未激活禁用态 */
+.btn-gomoku-bid.grab-black.disabled-gray {
+    background: rgba(71, 85, 105, 0.6) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.75;
+}
+
+/* 3秒倒计时结束：高亮闪耀就绪态 */
+.btn-gomoku-bid.grab-black.active-gold {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: #000 !important;
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.85), 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    animation: grabPulse 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes grabPulse {
+    0% { transform: scale(1); box-shadow: 0 0 16px rgba(245, 158, 11, 0.7); }
+    100% { transform: scale(1.06); box-shadow: 0 0 28px rgba(245, 158, 11, 0.95); }
+}
+
+.btn-gomoku-bid.grab-black.claimed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* ==========================================================================

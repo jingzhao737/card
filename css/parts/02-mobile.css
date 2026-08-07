@@ -1,0 +1,648 @@
+   📱 移动端/手机界面重磅专项优化 (Mobile Viewport Optimization)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    :root {
+        /* 手机端手牌尺寸适度放大 (52px x 74px, 3px 圆角) */
+        --card-w: 52px;
+        --card-h: 74px;
+        --card-radius: 3px;
+        --card-overlap: -32px;
+    }
+
+    /* ——— 手机端大厅：可滚动 + 全局压缩 ——— */
+
+    /* 大厅遮罩：允许纵向滚动，水平严格居中 */
+    .overlay-screen {
+        align-items: center !important;
+        justify-content: center;
+        overflow-y: auto;
+        padding: 8px 12px 20px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 主卡片与顶部排行榜：保持精质最大宽度，水平绝对居中 */
+    .hero-lobby-card, .mini-leaderboard-bar {
+        width: 94%;
+        max-width: 430px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* 手机端创建房间/房间等待界面极简优化 */
+    .waiting-card-hero {
+        padding: 14px 14px !important;
+        gap: 10px !important;
+        border-radius: 6px !important;
+        width: 96% !important;
+    }
+
+    .invite-action-card {
+        padding: 10px 12px !important;
+        border-radius: 4px !important;
+    }
+
+    .invite-card-title {
+        font-size: 0.85rem !important;
+        margin-bottom: 6px !important;
+    }
+
+    .share-box-redesign {
+        margin-bottom: 0 !important;
+        gap: 6px !important;
+    }
+
+    .share-box-redesign input {
+        padding: 7px 10px !important;
+        font-size: 0.76rem !important;
+    }
+
+    .btn-copy-gold {
+        padding: 0 12px !important;
+        font-size: 0.78rem !important;
+    }
+
+    /* 手机端隐藏占用屏幕大面积的二维码，保留纯净单行组局链接 */
+    .qr-box-toggle {
+        display: none !important;
+    }
+
+    .slots-grid-redesign {
+        gap: 6px !important;
+    }
+
+    .player-slot-card {
+        padding: 8px 4px !important;
+        border-radius: 4px !important;
+        gap: 4px !important;
+    }
+
+    .slot-badge-crown {
+        font-size: 0.6rem !important;
+        padding: 1px 5px !important;
+    }
+
+    .slot-avatar-emoji {
+        font-size: 1.6rem !important;
+    }
+
+    .slot-name-text {
+        font-size: 0.74rem !important;
+    }
+
+    .slot-status-pill {
+        font-size: 0.64rem !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+    }
+
+    .waiting-actions-bar {
+        margin-top: 4px !important;
+        gap: 8px !important;
+    }
+
+    .btn-start-game-gold, .btn-start-ai-sub, .btn-cancel-lobby {
+        height: 38px !important;
+        font-size: 0.82rem !important;
+        border-radius: 4px !important;
+    }
+
+    /* 顶部品牌横幅：大幅压缩高度 */
+    .lobby-header {
+        padding: 12px 16px 10px;
+    }
+
+    /* Logo 图标缩小 */
+    .brand-logo-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+        border-radius: 3px;
+    }
+
+    /* 品牌标题缩小 */
+    .brand-title {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+    }
+
+    .brand-subtitle {
+        font-size: 0.52rem;
+        letter-spacing: 1.5px;
+    }
+
+    /* 标签行紧凑化 */
+    .hero-tags {
+        margin-top: 8px;
+        gap: 6px;
+    }
+
+    .badge-tag {
+        font-size: 0.62rem;
+        padding: 2px 8px;
+    }
+
+    /* 表单区：缩减内边距 */
+    .lobby-form {
+        padding: 12px 14px;
+    }
+
+    .nickname-section {
+        margin-bottom: 10px;
+    }
+
+    .input-label {
+        font-size: 0.62rem;
+        margin-bottom: 4px;
+    }
+
+    .nickname-input-wrapper input {
+        font-size: 0.88rem !important;
+        height: 32px !important;
+        padding: 6px 0 !important;
+    }
+
+    /* 昵称输入行：防止溢出 */
+    .nickname-input-wrapper {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .nickname-input-wrapper input {
+        font-size: 0.88rem !important;
+        height: 32px !important;
+        padding: 6px 0 !important;
+        min-width: 0;
+        width: 0;
+        flex: 1 1 0;
+    }
+
+    .btn-random-nick {
+        height: 30px !important;
+        font-size: 0 !important;      /* 隐藏文字，只留图标 */
+        padding: 0 9px !important;
+        flex-shrink: 0;
+    }
+
+    /* 只显示图标，隐藏文字文本节点 */
+    .btn-random-nick i {
+        font-size: 0.78rem;
+    }
+
+    /* 加入行：同样防溢出 */
+    .join-input-row {
+        overflow: hidden;
+    }
+
+    .join-input-row input {
+        height: 34px !important;
+        font-size: 0.85rem !important;
+        padding: 7px 8px !important;
+        min-width: 0;
+        flex: 1 1 0;
+    }
+
+    .btn-join-action {
+        height: 34px !important;
+        font-size: 0.75rem !important;
+        padding: 0 10px !important;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* 功能卡片：更紧凑 */
+    .mode-selection {
+        gap: 6px;
+    }
+
+    .mode-card {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .card-icon-wrap,
+    .card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+
+    .card-title {
+        font-size: 0.82rem;
+        margin-bottom: 2px;
+    }
+
+    .card-desc {
+        font-size: 0.65rem;
+    }
+
+    /* 加入房间子卡 */
+    .join-card {
+        padding: 9px 12px !important;
+        gap: 7px !important;
+    }
+
+    .join-input-row input {
+        height: 34px !important;
+        font-size: 0.85rem !important;
+        padding: 7px 10px !important;
+    }
+
+    .btn-join-action {
+        height: 34px !important;
+        font-size: 0.78rem !important;
+        padding: 0 10px !important;
+    }
+
+    .divider {
+        margin: 4px 0;
+        font-size: 0.6rem;
+    }
+
+    /* 底部小脚注 */
+    .lobby-footer {
+        padding: 6px 14px;
+        font-size: 0.6rem;
+    }
+    
+    html, body {
+        height: 100svh;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .game-container {
+        height: 100svh;
+        overflow: hidden;
+    }
+
+    .top-nav {
+        height: 40px;
+        padding: 0 8px;
+    }
+
+    .brand span {
+        font-size: 0.88rem;
+    }
+
+    .badge-free {
+        display: none;
+    }
+
+    .btn-icon {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+
+    .room-info {
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 14px;
+        font-size: 0.7rem;
+    }
+
+    .room-info .room-label {
+        display: none;
+    }
+
+    .room-info .room-code {
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+    }
+
+    .room-info .btn-icon {
+        padding: 2px 6px;
+        font-size: 0.65rem;
+        gap: 3px;
+    }
+
+    .room-info .btn-icon span {
+        display: none;
+    }
+
+    .game-table {
+        grid-template-rows: 45px minmax(0, 1fr) minmax(200px, auto);
+        grid-template-columns: 84px minmax(0, 1fr) 84px;
+        padding: 2px 6px 0 6px;
+        height: 100%;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: calc(100svh - 40px);
+        box-sizing: border-box;
+        overflow: hidden !important;
+    }
+
+    .table-center-area {
+        justify-content: flex-end;
+        padding-bottom: 20px;
+    }
+
+    #playedSelf {
+        transform: translateY(4px);
+    }
+
+    .table-top-center {
+        margin-top: 40px;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        z-index: 50;
+    }
+
+    .timer-badge {
+        top: 48px;
+        font-size: 0.78rem;
+        padding: 3px 10px;
+    }
+
+    .bottom-cards-box {
+        padding: 2px 6px;
+        margin: 0 auto;
+    }
+
+    .bottom-cards-cards .card {
+        width: 34px !important;
+        height: 48px !important;
+        padding: 2px 3px !important;
+    }
+
+    .bottom-cards-cards .card .card-value {
+        font-size: 0.75rem !important;
+    }
+
+    .bottom-cards-cards .card .card-suit {
+        font-size: 0.6rem !important;
+    }
+
+    .bottom-cards-cards .card .card-center-symbol {
+        font-size: 0.9rem !important;
+    }
+
+    .game-stats-badge {
+        padding: 2px 5px;
+        gap: 5px;
+    }
+
+    .stat-item .label {
+        font-size: 0.55rem;
+    }
+
+    .stat-item .value {
+        font-size: 0.75rem;
+    }
+
+    /* 5. 左右玩家头像框：精简缩小并向上移，给中央对局留足视野 */
+    .left-player {
+        grid-area: left-play;
+        justify-content: flex-start;
+        padding-top: 35px;
+    }
+
+    .right-player {
+        grid-area: right-play;
+        justify-content: flex-start;
+        padding-top: 35px;
+    }
+
+    .player-profile {
+        width: 74px;
+        padding: 4px 3px;
+        gap: 3px;
+        border-radius: 4px;
+    }
+
+    .avatar-box {
+        width: 26px;
+        height: 26px;
+        font-size: 0.72rem;
+    }
+
+    .role-identity-badge {
+        font-size: 0.58rem;
+        padding: 1px 4px;
+    }
+
+    .player-name {
+        font-size: 0.6rem;
+        width: 100%;
+    }
+
+    .card-count-badge {
+        font-size: 0.54rem;
+        padding: 1px 3px;
+    }
+
+    /* 手机端精细微型出牌牌型标注胶囊 (Compact Mobile Card Type Badge) */
+    .card-type-label {
+        font-size: 0.62rem !important;
+        padding: 1px 6px !important;
+        border-radius: 10px !important;
+        gap: 2px !important;
+        top: -18px !important;
+        letter-spacing: 0px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .card-type-label.label-bomb,
+    .card-type-label.label-rocket {
+        font-size: 0.68rem !important;
+        padding: 1px 7px !important;
+    }
+
+    #playedSelf .card-type-label {
+        top: -20px !important;
+    }
+
+    #playedLeft {
+        left: 8px !important;
+        top: 160px !important;
+    }
+
+    #playedRight {
+        right: 8px !important;
+        top: 160px !important;
+    }
+
+    .left-player .speech-bubble {
+        top: -26px;
+        left: 0;
+        font-size: 0.68rem;
+        padding: 2px 6px;
+        max-width: 120px;
+    }
+
+    .right-player .speech-bubble {
+        top: -26px;
+        right: 0;
+        font-size: 0.68rem;
+        padding: 2px 6px;
+        max-width: 120px;
+    }
+
+    #playedLeft .card, #playedRight .card {
+        width: 34px !important;
+        height: 48px !important;
+        padding: 2px 3px !important;
+        margin-right: -16px;
+    }
+
+    #playedLeft .card .card-value, #playedRight .card .card-value {
+        font-size: 0.75rem !important;
+    }
+
+    #playedLeft .card .card-suit, #playedRight .card .card-suit {
+        font-size: 0.6rem !important;
+    }
+
+    #playedLeft .card .card-center-symbol, #playedRight .card .card-center-symbol {
+        font-size: 0.9rem !important;
+    }
+
+    /* 手机端扑克牌精细微小圆角与字体清晰化 */
+    .card {
+        padding: 2px 3px;
+        border-radius: 2px !important;
+        border-width: 1px;
+    }
+
+    /* 手机端手牌被选中上移距离适度微缩 (从20px缩小到8px，避免盖住上方出的牌) */
+    .card.selected {
+        transform: translateY(calc(var(--stack-y, 0px) - 8px)) !important;
+        box-shadow: 0 4px 10px rgba(255, 215, 0, 0.45), 0 0 0 1px #ffd700 !important;
+    }
+
+    .card.messy-card.selected {
+        transform: translateY(calc(var(--stack-y, 0px) + var(--jitter-y, 0px) - 8px)) rotate(var(--jitter-rot, 0deg)) !important;
+    }
+
+    /* 手机端手牌点数、花色与图案适度缩小，精细优雅 */
+    .card .card-value {
+        font-size: 0.8rem !important;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .card .card-suit {
+        font-size: 0.6rem !important;
+        line-height: 1;
+    }
+
+    .card .card-center-symbol {
+        font-size: 1.1rem !important;
+    }
+
+    .card .joker-vertical-label {
+        font-size: 0.38rem !important;
+        line-height: 0.78 !important;
+        margin-left: 1px !important;
+        margin-top: 1px !important;
+    }
+
+    .card .joker-bottom-graphic {
+        width: 26px !important;
+        height: 26px !important;
+        right: -3px !important;
+        bottom: -3px !important;
+    }
+
+    .card .joker-bottom-graphic .joker-svg {
+        width: 26px !important;
+        height: 26px !important;
+    }
+
+    /* 手机端自己打出的牌：更清晰优雅显示 (40px x 56px) */
+    #playedSelf .card {
+        width: 40px !important;
+        height: 56px !important;
+        padding: 2px 2px !important;
+        margin-right: -18px;
+    }
+
+    #playedSelf .card:last-child {
+        margin-right: 0 !important;
+    }
+
+    #playedSelf .card .card-value {
+        font-size: 0.84rem !important;
+    }
+
+    #playedSelf .card .card-suit {
+        font-size: 0.62rem !important;
+    }
+
+    #playedSelf .card .card-center-symbol {
+        font-size: 1.05rem !important;
+    }
+
+    /* 手机端控制按钮组悬浮向上提升，便于操作 */
+    .controls-bar {
+        margin-bottom: 44px;
+        z-index: 20;
+    }
+
+    .btn-group {
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 14px;
+        font-size: 0.78rem;
+        border-radius: 4px;
+    }
+
+    .self-bubble {
+        top: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        max-width: 180px;
+    }
+
+    .self-cards-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 4px;
+        overflow: visible;
+        z-index: 15;
+    }
+
+    .self-profile-mini {
+        position: relative;
+        gap: 4px;
+        margin-bottom: 16px;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .self-profile-mini .avatar-box {
+        width: 22px;
+        height: 22px;
+        font-size: 0.65rem;
+    }
+
+    .self-name {
+        font-size: 0.68rem;
+    }
+
+    .btn-sort {
+        padding: 1px 5px;
+        font-size: 0.65rem;
+    }
+
+    .hand-cards-container {
+        min-height: calc(var(--card-h) + 40px);
+        height: auto;
+        padding-top: 55px;
+        padding-bottom: 4px;
+        width: 100%;
+        max-width: 100vw;
+        overflow: visible !important;
+        justify-content: center;
+    }
+}
+
+/* ============================================================

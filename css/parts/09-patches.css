@@ -1,0 +1,120 @@
+/* ===== 围棋主页背景: 深红酒红 -> 深灰 (保留菱形网格) ===== */
+body.theme-go .overlay-screen {
+    background-color: #0a0c0e !important;
+    background-image:
+        radial-gradient(ellipse 85% 65% at 50% 45%, rgba(30, 34, 42, 0.86) 0%, rgba(13, 15, 19, 0.96) 60%, #030405 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='none'/%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%23cbd5e1' stroke-width='1.2' stroke-opacity='0.14'/%3E%3Cpath d='M18 6 L30 18 L18 30 L6 18 Z' fill='none' stroke='%23cbd5e1' stroke-width='0.8' stroke-opacity='0.1'/%3E%3C/svg%3E") !important;
+}
+
+/* ===== 围棋大厅卡: 绿色元素统一改为灰白色系 (仅围棋卡生效) ===== */
+#goLobbyCard .emerald-auth {
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.14), rgba(0, 0, 0, 0.5));
+    border-color: rgba(203, 213, 225, 0.4);
+}
+#goLobbyCard .green-theme,
+#goLobbyCard .primary-card.green-theme,
+#goLobbyCard .public-card.green-theme {
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.2) 0%, rgba(30, 35, 42, 0.65) 100%);
+    border-color: rgba(203, 213, 225, 0.45);
+}
+#goLobbyCard .primary-card.green-theme:hover,
+#goLobbyCard .public-card.green-theme:hover {
+    background: linear-gradient(135deg, rgba(226, 232, 240, 0.3) 0%, rgba(40, 45, 55, 0.8) 100%);
+    border-color: rgba(226, 232, 240, 0.6);
+}
+#goLobbyCard .btn-auth-action.green,
+#goLobbyCard .btn-join-action.green {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1) !important;
+    color: #1e293b !important;
+}
+#goLobbyCard .pill-badge.green {
+    background: rgba(203, 213, 225, 0.2);
+    border: 1px solid rgba(226, 232, 240, 0.45);
+    color: #e2e8f0;
+}
+#goLobbyCard .card-icon-wrap.green {
+    background: rgba(203, 213, 225, 0.18);
+    border: 1px solid rgba(226, 232, 240, 0.4);
+    color: #e2e8f0;
+}
+
+/* 围棋卡: 棋盘路数选中按钮 绿色 -> 灰白 (仅围棋卡) */
+#goLobbyCard .btn-size-pick.active {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1) !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+    box-shadow: 0 3px 10px rgba(148, 163, 184, 0.35) !important;
+}
+
+/* ===== 榜单克制化: 隐藏滚动条 + 简化设计 + 字体收敛 ===== */
+#leaderboardListContainer {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#leaderboardListContainer::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* 榜单项: 去掉大色块/金边, 改细分割线列表 */
+.lb-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0;
+    padding: 9px 4px;
+    margin-bottom: 0;
+}
+.lb-item:last-child {
+    border-bottom: none;
+}
+
+/* 名次: 收敛字号字重, 前三名仅保留轻微色差 */
+.lb-rank {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #64748b;
+    width: 26px;
+}
+.lb-rank.top1 { color: #d4a017; }
+.lb-rank.top2 { color: #94a3b8; }
+.lb-rank.top3 { color: #a16207; }
+
+/* 昵称: 减重 */
+.lb-nick {
+    font-weight: 500;
+    color: #e2e8f0;
+    flex: 1;
+    font-size: 0.82rem;
+    padding: 0 10px;
+}
+
+/* 分数: 金色大粗字 -> 低调灰斜体 */
+.lb-score {
+    font-weight: 600;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+
+/* 主页顶部迷你榜单: 悬浮态低调化 */
+.mini-leaderboard-bar:hover {
+    background: rgba(25, 18, 14, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.mini-lb-ticker .lb-top-score {
+    color: #94a3b8;
+}
+
+/* 创建房间区块: 工作日加成小字提示 */
+.room-bonus-hint {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+    line-height: 1.3;
+    letter-spacing: 0.3px;
+    user-select: none;
+}

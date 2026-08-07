@@ -1,0 +1,566 @@
+   ♞ 游鲸中国象棋 主题与大厅卡样式
+   ============================================================ */
+body.theme-xiangqi {
+    background: linear-gradient(135deg, #14100f 0%, #05070a 100%);
+}
+
+/* 象棋导航按钮激活态 (红黑配色) */
+.game-nav-btn.active#btnNavXiangqi {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.28) 0%, rgba(15, 10, 8, 0.95) 100%);
+    border-color: rgba(220, 38, 38, 0.55);
+    color: #fecaca;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.2);
+}
+
+/* ===== 象棋大厅卡: 绿色元素统一改为象棋棋子木色 (仅象棋卡生效) ===== */
+#xiangqiLobbyCard .emerald-auth {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.16), rgba(0, 0, 0, 0.5));
+    border-color: rgba(185, 138, 78, 0.45);
+}
+
+#xiangqiLobbyCard .green-theme,
+#xiangqiLobbyCard .primary-card.green-theme,
+#xiangqiLobbyCard .public-card.green-theme {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.22) 0%, rgba(40, 25, 8, 0.65) 100%);
+    border-color: rgba(185, 138, 78, 0.5);
+}
+
+#xiangqiLobbyCard .primary-card.green-theme:hover,
+#xiangqiLobbyCard .public-card.green-theme:hover {
+    background: linear-gradient(135deg, rgba(217, 171, 106, 0.32) 0%, rgba(50, 30, 10, 0.8) 100%);
+    border-color: rgba(201, 162, 85, 0.7);
+}
+
+#xiangqiLobbyCard .btn-auth-action.green,
+#xiangqiLobbyCard .btn-join-action.green {
+    background: linear-gradient(135deg, #d9ab6a, #b98a4e) !important;
+    color: #3b2410 !important;
+}
+
+#xiangqiLobbyCard .pill-badge.green {
+    background: rgba(120, 80, 30, 0.28);
+    border: 1px solid rgba(201, 162, 85, 0.5);
+    color: #e8c98f;
+}
+
+#xiangqiLobbyCard .card-icon-wrap.green {
+    background: rgba(140, 95, 40, 0.22);
+    border: 1px solid rgba(201, 162, 85, 0.45);
+    color: #e8c98f;
+}
+
+/* 象棋大厅卡 Header (红木漆面) */
+.hero-lobby-card.theme-ink .lobby-header.xiangqi-header {
+    background: linear-gradient(180deg, #a03434 0%, #7c2222 60%, #571414 100%) !important;
+    border-bottom: 2px solid #2b0a0a !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px 16px 26px !important;
+    text-align: left !important;
+}
+
+.hero-lobby-card.theme-ink .xiangqi-header .brand-title {
+    color: #fde8e8 !important;
+    background: none !important;
+    -webkit-text-fill-color: #fde8e8 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55) !important;
+}
+
+.hero-lobby-card.theme-ink .xiangqi-header .brand-subtitle {
+    color: #fecaca !important;
+    font-weight: 900 !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 1px !important;
+}
+
+.hero-lobby-card.theme-ink .xiangqi-header .badge-tag.ink {
+    background: rgba(0, 0, 0, 0.25) !important;
+    border-color: rgba(254, 202, 202, 0.4) !important;
+    color: #fecaca !important;
+    font-weight: 800 !important;
+    margin-top: 2px;
+}
+
+/* 象棋装饰红子 */
+.mini-stone.xq-red-stone {
+    background: radial-gradient(circle at 35% 35%, #f87171 0%, #dc2626 60%, #991b1b 100%);
+    border: 1px solid #7f1d1d;
+}
+/* ============================================================
+   ♞ 游鲸中国象棋 对局室样式
+   ============================================================ */
+/* ============================================================
+   ♞ 游鲸中国象棋 对局室样式 (精致版)
+   ============================================================ */
+.xq-screen-wrap {
+    background: linear-gradient(135deg, #14100f 0%, #05070a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.xq-screen-wrap.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.xq-container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.xq-header-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.xq-turn-status.top-status {
+    background: linear-gradient(180deg, rgba(60, 34, 12, 0.65), rgba(30, 16, 6, 0.85));
+    border: 1px solid rgba(212, 156, 83, 0.45);
+    border-radius: 16px;
+    padding: 4px 16px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #f5e6c8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+.xq-timer-badge {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.4);
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    line-height: 1.4;
+}
+
+.xq-timer-badge.urgent {
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #fca5a5;
+    animation: timerUrgentPulse 0.6s ease-in-out infinite alternate;
+}
+
+.xq-header-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(46, 26, 10, 0.9), rgba(22, 12, 5, 0.95));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(212, 156, 83, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    gap: 10px;
+}
+
+.xq-vs-badge {
+    font-size: 0.9rem;
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(245, 230, 200, 0.55);
+    text-shadow: 0 0 8px rgba(212, 156, 83, 0.4);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.xq-player-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.25s ease;
+    max-width: 46%;
+    min-width: 0;
+}
+
+.xq-player-pill.turn-active {
+    background: linear-gradient(135deg, rgba(212, 156, 83, 0.22) 0%, rgba(30, 16, 6, 0.8) 100%) !important;
+    border-color: rgba(245, 230, 200, 0.55) !important;
+    box-shadow: 0 0 14px rgba(212, 156, 83, 0.25) !important;
+    transform: scale(1.02);
+}
+
+.xq-mini-piece {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 900;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.xq-mini-piece.red-piece {
+    background: radial-gradient(circle at 35% 30%, #fecaca, #e11d48 75%);
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.xq-mini-piece.black-piece {
+    background: radial-gradient(circle at 35% 30%, #52525b, #18181b 75%);
+    color: #f8fafc;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+/* ========== 精致木纹棋盘外框 ========== */
+.xq-board-wrapper {
+    background-color: #d49c53;
+    background-image:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 32%, rgba(120, 60, 10, 0.12) 100%),
+        radial-gradient(ellipse 95% 75% at 50% 42%, #f0ca8c 0%, #d49c53 55%, #a06a24 100%),
+        repeating-linear-gradient(2deg, rgba(110, 55, 10, 0.05) 0px, rgba(110, 55, 10, 0.05) 2px, transparent 2px, transparent 8px),
+        repeating-linear-gradient(92deg, rgba(110, 55, 10, 0.04) 0px, rgba(110, 55, 10, 0.04) 3px, transparent 3px, transparent 10px);
+    border: 8px solid #4a2408;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.9),
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        inset 0 2px 6px rgba(255, 255, 255, 0.3),
+        inset 0 -8px 18px rgba(70, 32, 5, 0.55),
+        0 0 0 3px #6b3410,
+        0 0 0 4px rgba(212, 156, 83, 0.35);
+    position: relative;
+}
+
+/* 内嵌金色细线 */
+.xq-board-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.xq-board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    width: min(calc(100vw - 40px), 330px);
+    height: min(calc((100vw - 40px) * 10 / 9), 366px);
+    position: relative;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+@media (min-width: 768px) {
+    .xq-container { max-width: 560px; gap: 14px; }
+    .xq-board-wrapper { padding: 16px; border-width: 9px; }
+    .xq-board { width: 460px; height: 511px; }
+}
+
+/* 棋盘交叉格 */
+.xq-cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.xq-cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 棋盘线条由 .xq-board-svg 统一精确绘制 */
+.xq-board-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.xq-board-svg line {
+    stroke: rgba(55, 28, 5, 0.9);
+    stroke-width: 0.02;
+    stroke-linecap: round;
+}
+
+.xq-board-svg path {
+    stroke: rgba(55, 28, 5, 0.6);
+    stroke-width: 0.018;
+    stroke-linecap: round;
+}
+
+/* 楚河汉界 */
+.xq-river {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    top: 44%;
+    height: 12%;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(74, 37, 0, 0.75);
+    letter-spacing: 3px;
+    pointer-events: none;
+    text-shadow: 0 1px 0 rgba(255, 235, 200, 0.4);
+}
+
+/* 炮位/兵位标记 */
+
+
+/* ========== 3D 立体棋子 ========== */
+.xq-piece {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10.4%;
+    aspect-ratio: 1;
+    height: auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif;
+    font-size: clamp(0.68rem, 2.7vw, 1.22rem);
+    z-index: 5;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    user-select: none;
+    /* 木色底: 真象棋象牙木质感 (与大厅卡将帅棋子同款) */
+    background-image:
+        radial-gradient(circle at 32% 30%, #f7e3b6 0%, #d9ab6a 68%, #b98a4e 100%);
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.5),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 2px 3px rgba(255, 255, 255, 0.55),
+        inset 0 -2px 4px rgba(120, 75, 25, 0.3);
+}
+
+/* 边缘双圈线: 紧贴棋子边缘 (与大厅卡将帅棋子同款, 不要内部线圈) */
+.xq-piece::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow:
+        inset 0 0 0 2px rgba(90, 60, 20, 0.55),
+        inset 0 0 0 5px rgba(90, 60, 20, 0.18);
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+/* 一圈线 + 中心字 (真象棋样式) */
+.xq-piece.red {
+    color: #b91c1c;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+    /* 手机端象棋棋子字单独调大 (电脑端保持基础 clamp) */
+    .xq-piece {
+        font-size: clamp(0.88rem, 4.2vw, 1.3rem);
+    }
+    /* 手机端外圈线改细 (电脑端保持 2px/5px) */
+    .xq-piece::before {
+        box-shadow:
+            inset 0 0 0 1.4px rgba(90, 60, 20, 0.55),
+            inset 0 0 0 3.5px rgba(90, 60, 20, 0.18);
+    }
+}
+
+.xq-piece.black {
+    color: #1c1917;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.xq-piece.selected {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow:
+        0 0 0 3px rgba(250, 204, 21, 0.9),
+        0 0 16px rgba(250, 204, 21, 0.45),
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 2px 3px rgba(255, 255, 255, 0.5);
+    z-index: 8;
+}
+
+
+
+/* 最近走子标记 */
+.xq-piece.last-move {
+    box-shadow:
+        0 0 0 2px rgba(250, 204, 21, 0.95),
+        0 0 12px rgba(250, 204, 21, 0.4),
+        0 4px 10px rgba(0, 0, 0, 0.45),
+        inset 0 2px 3px rgba(255, 255, 255, 0.5);
+}
+
+/* 被将军闪烁 */
+.xq-piece.in-check {
+    animation: xqCheckPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes xqCheckPulse {
+    from { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.5); }
+    to   { box-shadow: 0 0 0 6px rgba(239, 68, 68, 1), 0 0 22px rgba(239, 68, 68, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.5); }
+}
+
+/* 中间横幅 */
+.xq-center-banner {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(250, 204, 21, 0.5);
+    color: #fde68a;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    z-index: 30;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: xqBannerFade 1.4s ease forwards;
+}
+
+@keyframes xqBannerFade {
+    0% { opacity: 0; transform: translate(-50%, -50%) translateY(10px); }
+    15% { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* 操作栏 */
+.xq-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.btn-xq-action {
+    padding: 8px 16px;
+    border-radius: 18px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(212, 156, 83, 0.35);
+    background: linear-gradient(180deg, rgba(60, 34, 12, 0.5), rgba(25, 14, 5, 0.7));
+    color: #e8d5a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-xq-action:hover:not(.disabled) {
+    background: linear-gradient(180deg, rgba(90, 55, 20, 0.6), rgba(35, 20, 7, 0.8));
+    border-color: rgba(245, 230, 200, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.btn-xq-action.undo:hover:not(.disabled) {
+    border-color: rgba(251, 191, 36, 0.6);
+    color: #fcd34d;
+}
+
+.btn-xq-action.resign:hover:not(.disabled) {
+    border-color: rgba(248, 113, 113, 0.6);
+    color: #fca5a5;
+}
+
+.btn-xq-action.rematch {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #34d399;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    padding: 9px 24px;
+    font-size: 0.88rem;
+}
+
+.btn-xq-action.disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+/* 象棋大厅卡兜底样式 (不依赖主题类, 确保任何浏览器可见) */
+#xiangqiLobbyCard {
+    background: linear-gradient(180deg, #14181d 0%, #07090c 100%) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(148, 163, 184, 0.08) !important;
+    display: block;
+    min-height: 300px;
+}
+/* 象棋大厅卡标题区: 将帅棋子装饰 (木色圆片 + 内圈 + 中心字) */
+.xiangqi-stones-decoration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: -12px;
+}
+.mini-xq-piece {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    font-family: "KaiTi", "STKaiti", "楷体", serif;
+    background: radial-gradient(circle at 32% 30%, #f7e3b6, #d9ab6a 68%, #b98a4e);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(90,60,20,0.55), inset 0 0 0 5px rgba(90,60,20,0.18);
+    user-select: none;
+}
+.mini-xq-piece.red  { color: #c23a2b; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+.mini-xq-piece.black { color: #191919; text-shadow: 0 1px 1px rgba(0,0,0,0.15); }

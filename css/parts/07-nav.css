@@ -1,0 +1,129 @@
+   📱 手机端 4 游戏导航适配 (避免按钮溢出屏幕)
+   ============================================================ */
+@media (max-width: 768px) {
+    .game-switch-nav {
+        width: 97%;
+        gap: 5px;
+        margin: 8px auto 4px;
+        max-width: 97%;
+    }
+
+    .game-nav-btn {
+        padding: 8px 14px;
+        font-size: 0.72rem;
+        gap: 6px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    .game-nav-btn i {
+        font-size: 0.72rem;
+        flex-shrink: 0;
+    }
+}
+
+/* 超小屏 (≤360px) 进一步收紧 */
+@media (max-width: 360px) {
+    .game-switch-nav {
+        gap: 4px;
+    }
+
+    .game-nav-btn {
+        font-size: 0.66rem;
+        padding: 7px 10px;
+    }
+
+    .game-nav-btn i {
+        font-size: 0.66rem;
+    }
+}
+/* 吃碰杠胡响应倒计时徽标 */
+.mahjong-act-timer {
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #fcd34d;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(252, 211, 77, 0.45);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-left: 4px;
+    white-space: nowrap;
+    animation: actTimerPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes actTimerPulse {
+    from { opacity: 0.75; transform: scale(1); }
+    to   { opacity: 1; transform: scale(1.06); }
+}
+
+.mahjong-act-timer.urgent {
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.6);
+}
+/* ============================================================
+   📱 手机端主页大厅可滚动修复 (矮屏时下方内容可下滑查看)
+   ============================================================ */
+@media (max-width: 768px) {
+    #lobbyScreen {
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        padding: 14px 12px 34px !important;
+    }
+
+    /* 大厅卡禁止被 flex 压缩 (矮屏内容不再被压扁/裁剪), 由 #lobbyScreen 滚动展示 */
+    .hero-lobby-card {
+        flex-shrink: 0 !important;
+        height: auto !important;
+    }
+
+    /* 隐藏滚动条 (保留滑动功能, 移动端滚动条碍眼) */
+    #lobbyScreen {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    #lobbyScreen::-webkit-scrollbar {
+        display: none;
+    }
+}
+/* ============================================================
+   🎠 主页游戏大厅卡片滑动切换动画
+   ============================================================ */
+.lobby-card-out {
+    animation: lobbyCardOut 0.26s ease forwards;
+}
+
+.lobby-card-in {
+    animation: lobbyCardIn 0.32s ease;
+}
+
+@keyframes lobbyCardOut {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(-70px); opacity: 0; }
+}
+
+@keyframes lobbyCardIn {
+    from { transform: translateX(70px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+/* 反向 (右滑/上一个): 旧卡向右滑出, 新卡从左滑入 */
+.lobby-card-out-right {
+    animation: lobbyCardOutRight 0.26s ease forwards;
+}
+
+.lobby-card-in-left {
+    animation: lobbyCardInLeft 0.32s ease;
+}
+
+@keyframes lobbyCardOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(70px); opacity: 0; }
+}
+
+@keyframes lobbyCardInLeft {
+    from { transform: translateX(-70px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+/* ============================================================

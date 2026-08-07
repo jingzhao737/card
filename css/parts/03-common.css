@@ -1,0 +1,790 @@
+   大厅公共房间列表 (Public Rooms List Item Styles)
+   ============================================================ */
+.public-room-item {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 146, 42, 0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+.public-room-item:hover {
+    border-color: rgba(201, 146, 42, 0.7);
+    background: rgba(201, 146, 42, 0.08);
+}
+.pr-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.pr-room-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pr-room-id {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #ffd700;
+    font-family: var(--font-num);
+    letter-spacing: 1.5px;
+}
+.pr-phase-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+.pr-phase-tag.waiting { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #34d399; }
+.pr-phase-tag.bidding { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
+.pr-phase-tag.playing { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4); color: #f87171; }
+
+.pr-players {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.pr-player-pill {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.pr-player-pill.ai { color: #94a3b8; border: 1px stroke rgba(255,255,255,0.1); }
+.pr-player-pill.human { color: #fef08a; font-weight: 600; background: rgba(201,146,42,0.18); }
+
+.btn-join-public-room {
+    background: linear-gradient(135deg, #c9921a, #e2a820);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+.btn-join-public-room:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+}
+
+/* ============================================================
+   顶部用户状态组件 & Auth / 战绩 Modal 样式
+   ============================================================ */
+.user-header-badge {
+    display: none !important;
+}
+.user-header-badge:hover {
+    background: rgba(255, 215, 0, 0.18);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+.user-avatar-text {
+    font-size: 1.1rem;
+}
+.user-header-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.user-header-nick {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-header-score {
+    font-size: 0.72rem;
+    color: #ffd700;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Auth 选项卡 */
+.auth-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    padding: 3px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 215, 0, 0.12);
+}
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 7px 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.auth-tab.active {
+    background: linear-gradient(135deg, #c9921a, #e2a820);
+    color: #000;
+}
+
+/* 个人战绩名片 Hero */
+.user-profile-hero {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.15), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    border-radius: 4px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.profile-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.profile-avatar-big {
+    font-size: 2.4rem;
+    background: rgba(0, 0, 0, 0.4);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 215, 0, 0.6);
+}
+.profile-names {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.profile-nick {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #fff;
+}
+.profile-email {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.profile-stat-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 8px;
+    text-align: center;
+}
+.stat-val {
+    font-size: 0.96rem;
+    font-weight: 500;
+    color: #ffd700;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.3px;
+}
+.stat-lbl {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* 排行榜 Item */
+.lb-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+.lb-rank {
+    font-size: 1.1rem;
+    font-weight: 900;
+    font-family: var(--font-num);
+    width: 28px;
+}
+.lb-rank.top1 { color: #ffd700; }
+.lb-rank.top2 { color: #e2e8f0; }
+.lb-rank.top3 { color: #b45309; }
+.lb-nick {
+    font-weight: 700;
+    color: #fff;
+    flex: 1;
+    font-size: 0.88rem;
+    padding: 0 10px;
+}
+.lb-score {
+    font-weight: 900;
+    color: #ffd700;
+    font-family: var(--font-num);
+    font-size: 0.95rem;
+}
+
+/* 顶部游鲸多游戏大厅切换 Navigation Bar */
+.game-switch-nav {
+    touch-action: pan-x; /* 导航区自身横向滚动, 不触发页面/切换干扰 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 2px auto -4px;
+    padding: 8px 10px 8px; /* 四边留空间: 上(NEW角标) 下(active阴影) 左右(边框/滚动边缘) */
+    /* mask 渐隐由 JS 动态控制 (updateNavScrollMask): 滚到边界时对应侧渐隐消失 */
+    width: min(92%, 460px); /* 限宽: 电脑端也只显示部分可滚动 */
+    max-width: 92%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain; /* 边界独立: 滚动到导航边界不带动页面 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+    flex-shrink: 0; /* 防止被 flex 容器压缩导致导航消失/裁切 */
+}
+
+.game-switch-nav.nav-dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+
+/* 导航横向滚动时隐藏滚动条 */
+.game-switch-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.game-nav-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: rgba(15, 10, 8, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 9px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
+}
+
+
+
+.game-nav-btn:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.game-nav-btn.active#btnNavDoudizhu {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.22) 0%, rgba(20, 10, 5, 0.9) 100%);
+    border-color: rgba(201, 146, 42, 0.45);
+    color: #ffd700;
+    box-shadow: 0 4px 14px rgba(201, 146, 42, 0.15);
+}
+
+.game-nav-btn.active#btnNavGomoku {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 29, 21, 0.95) 100%);
+    border-color: rgba(52, 211, 153, 0.45);
+    color: #34d399;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+}
+
+.nav-new-pill {
+    font-size: 0.6rem;
+    font-weight: 900;
+    background: #10b981;
+    color: #000;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+}
+
+/* 墨绿主调：游鲸五子棋专属 Lobby Card */
+.hero-lobby-card.theme-emerald {
+    background: linear-gradient(180deg, #07241a 0%, #03140e 100%) !important;
+    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(16, 185, 129, 0.12) !important;
+}
+
+/* 游鲸五子棋专属：经典温润榧木/棋盘木质大厅 Header (左右对齐版) */
+.hero-lobby-card.theme-emerald .lobby-header.gomoku-wood-header {
+    background: linear-gradient(180deg, #d49c53 0%, #b87b32 60%, #9e6423 100%) !important;
+    border-bottom: 2px solid #5a320c !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px 16px 26px !important;
+    text-align: left !important;
+}
+
+.brand-hero-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
+    padding-left: 6px; /* 文本稍向右移 */
+}
+
+.hero-lobby-card.theme-emerald .brand-title {
+    color: #2b1103 !important;
+    background: none !important;
+    -webkit-text-fill-color: #2b1103 !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    font-size: 1.35rem !important;
+    letter-spacing: 1.5px !important;
+}
+
+.hero-lobby-card.theme-emerald .brand-subtitle {
+    color: #5c300c !important;
+    font-weight: 900 !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 1px !important;
+}
+
+.hero-lobby-card.theme-emerald .badge-tag.green {
+    background: rgba(43, 17, 3, 0.14) !important;
+    border-color: rgba(74, 36, 8, 0.45) !important;
+    color: #2b1103 !important;
+    font-weight: 800 !important;
+    margin-top: 2px;
+}
+
+/* 顶部右侧悬浮双子 3D 艺术装饰 (无描边、进一步左移、点击动画) */
+.gomoku-stones-decoration {
+    position: relative;
+    width: 72px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-right: 18px; /* 适度向右微调 */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mini-stone {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    position: absolute;
+    border: none !important; /* 完全无描边 */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 黑子：对角左上方 (无描边，纯自然阴影) */
+.mini-stone.black-stone {
+    left: -4px;
+    top: -2px;
+    background: radial-gradient(circle at 35% 35%, #52525b 0%, #18181b 65%, #000000 100%);
+    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.75), inset -2px -2px 5px rgba(0, 0, 0, 0.9);
+    z-index: 2;
+}
+
+/* 白子：对角右下方 (无描边，纯自然阴影) */
+.mini-stone.white-stone {
+    right: -4px;
+    bottom: -2px;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f4f4f5 60%, #cbd5e1 100%);
+    box-shadow: 3px 6px 14px rgba(0, 0, 0, 0.48), inset -2px -2px 5px rgba(0, 0, 0, 0.18);
+    z-index: 1;
+}
+
+/* 点击促发一次性爽快弹跳动画 */
+.gomoku-stones-decoration.animate .black-stone {
+    animation: stoneBounceBlack 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gomoku-stones-decoration.animate .white-stone {
+    animation: stoneBounceWhite 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes stoneBounceBlack {
+    0% { transform: scale(1); }
+    40% { transform: translate(-6px, -4px) scale(1.22) rotate(-14deg); box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.85); }
+    100% { transform: scale(1); }
+}
+
+@keyframes stoneBounceWhite {
+    0% { transform: scale(1); }
+    40% { transform: translate(6px, 4px) scale(1.22) rotate(14deg); box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.6); }
+    100% { transform: scale(1); }
+}
+
+.auth-banner-card.emerald-auth {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(0, 0, 0, 0.5));
+    border-color: rgba(52, 211, 153, 0.25);
+}
+
+.badge-tag.green {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(52, 211, 153, 0.35);
+    color: #34d399;
+}
+
+.mode-card.primary-card.green-theme {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(6, 29, 21, 0.6) 100%);
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+.mode-card.primary-card.green-theme:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(6, 29, 21, 0.8) 100%);
+    border-color: rgba(52, 211, 153, 0.55);
+}
+
+.btn-auth-action.green {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+}
+
+.btn-join-action.green {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+}
+
+/* 主页顶部简略排行榜横幅 (极简平淡微型流线 Bar，低调融入背景) */
+.mini-leaderboard-bar {
+    background: rgba(15, 10, 8, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 3px 10px;
+    width: 90%;
+    max-width: 430px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 15;
+}
+.mini-leaderboard-bar:hover {
+    background: rgba(25, 18, 14, 0.7);
+    border-color: rgba(201, 146, 42, 0.25);
+}
+.mini-lb-left {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.mini-lb-icon {
+    color: #a07840;
+    font-size: 0.75rem;
+}
+.mini-lb-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #a07840;
+    white-space: nowrap;
+}
+.mini-lb-ticker {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
+}
+.mini-lb-track {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: marqueeScroll 28s linear infinite;
+    will-change: transform;
+}
+.mini-lb-ticker:hover .mini-lb-track {
+    animation-play-state: paused;
+}
+@keyframes marqueeScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.mini-lb-ticker .lb-top-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 12px;
+    font-size: 0.68rem;
+}
+.mini-lb-ticker .lb-top-item.is-top3 {
+    margin-right: 16px;
+}
+.mini-lb-ticker .lb-top-name {
+    color: #94a3b8;
+    font-weight: 500;
+}
+.mini-lb-ticker .lb-top-score {
+    color: #c9921a;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+.mini-lb-more {
+    font-size: 0.68rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.mini-lb-more i {
+    font-size: 0.6rem;
+    transition: transform 0.15s ease;
+}
+.mini-leaderboard-bar:hover .mini-lb-more i {
+    transform: translateX(2px);
+    color: #a07840;
+}
+
+/* 大厅专属登录卡片 */
+.auth-banner-card {
+    background: linear-gradient(135deg, rgba(201, 146, 42, 0.15), rgba(0, 0, 0, 0.45));
+    border: 1px solid rgba(201, 146, 42, 0.22);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.auth-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.auth-avatar-badge {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(201, 146, 42, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+.avatar-level-tag {
+    position: absolute;
+    bottom: -3px;
+    right: -4px;
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #000;
+    font-size: 0.58rem;
+    font-weight: 900;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #0f172a;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1;
+    z-index: 5;
+}
+.auth-banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.auth-banner-nick {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+.auth-banner-sub {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #a07840;
+    letter-spacing: 0.2px;
+}
+.auth-banner-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: stretch;
+    flex-shrink: 0;
+}
+.btn-auth-action {
+    background: linear-gradient(135deg, #c9921a, #e2a820);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 9px;
+    font-size: 0.71rem;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    transition: transform 0.15s ease;
+}
+.btn-auth-action.btn-appearance {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+    color: #ffffff !important;
+}
+.btn-auth-action:hover {
+    transform: scale(1.03);
+}
+
+/* ============================================================
+   弹窗全局遮罩组件 (Global Modal Overlay & Card Type Modal)
+   ============================================================ */
+.card-type-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.78) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.card-type-inner {
+    background: linear-gradient(180deg, #1f1008 0%, #120904 100%);
+    border: 1px solid rgba(201, 146, 42, 0.25);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 20px rgba(201, 146, 42, 0.12);
+    overflow: hidden;
+    color: #fff;
+    animation: popIn 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ct-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(201, 146, 42, 0.18);
+}
+
+/* 左上方延伸式 Bar 标签页 */
+.ct-header-protruding {
+    padding: 8px 14px 0 14px !important;
+    background: rgba(0, 0, 0, 0.45);
+    border-bottom: 1px solid rgba(201, 146, 42, 0.2);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.protruding-tabs-left {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.protruding-tab {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    top: 1px;
+    user-select: none;
+}
+
+.protruding-tab:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.protruding-tab.active {
+    background: linear-gradient(180deg, rgba(201, 146, 42, 0.22) 0%, rgba(20, 10, 5, 0.95) 100%);
+    border: 1px solid rgba(201, 146, 42, 0.35);
+    border-bottom: 1px solid #14070a;
+    color: #ffd700;
+    font-weight: 800;
+    box-shadow: 0 -3px 10px rgba(201, 146, 42, 0.15);
+}
+
+.ct-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ct-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.15s ease;
+}
+.ct-close:hover {
+    color: #f87171;
+}
+
+.auth-form-body .nickname-input-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 146, 42, 0.35);
+    border-radius: 6px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ==========================================================================
