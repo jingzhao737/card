@@ -7302,7 +7302,7 @@ body.theme-mahjong #lobbyScreen {
     #meldsLeft .meld-tile,
     #meldsRight .meld-tile {
         transform: rotate(90deg) !important;
-        margin: -4px 0 !important;
+        margin: -3px 0 !important;
     }
 }
    ⚫⚪ 游鲸围棋 水墨黑白棋盘 UI Style (Go / Weiqi)

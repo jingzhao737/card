@@ -14021,8 +14021,11 @@ Object.assign(GameEngineController.prototype, {
             const el = document.getElementById(item.id);
             if (el) {
                 const list = engine.melds[item.idx] || [];
+                // 手机端: 其他三家(上/左/右)吃碰杠牌缩小到 72%, 避免牌堆占用过多空间 (底部自家保持原尺寸)
+                const isSide = (item.id !== 'meldsBottom');
+                const tileW = (isSide && handTileW) ? Math.round(handTileW * 0.72) : handTileW;
                 el.innerHTML = list.map(m => {
-                    const tilesHtml = m.tiles.map(t => `<div class="meld-tile" ${handTileW ? `style="width:${handTileW}px;height:${Math.round(handTileW * 1.34)}px;"` : ''}>${this.getMahjongTileFaceHTML(t)}</div>`).join('');
+                    const tilesHtml = m.tiles.map(t => `<div class="meld-tile" ${tileW ? `style="width:${tileW}px;height:${Math.round(tileW * 1.34)}px;"` : ''}>${this.getMahjongTileFaceHTML(t)}</div>`).join('');
                     return `<div class="meld-group">${tilesHtml}</div>`;
                 }).join('');
             }
