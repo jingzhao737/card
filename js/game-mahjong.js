@@ -197,9 +197,12 @@ Object.assign(GameEngineController.prototype, {
                     this.clearMahjongPendingResponse();
                     const actText = move.actionType === 'CHOW' ? '吃！' : (move.actionType === 'PONG' ? '碰！' : '杠！');
                     this.showMahjongActionToast(`${seatLabels[relativeSender] || '对方'}${actText}`);
-                    // 远程玩家杠牌: 同步金币结算 (与点炮同价)
+                    // 远程玩家杠牌: 同步金币结算 (分杠型)
                     if (move.actionType === 'KONG') {
-                        this.settleMahjongKongCoins(move.senderSlot);
+                        const remoteKongType = (move.stateData && move.stateData.kongType) ? move.stateData.kongType : 'KONG';
+                        const remoteDiscarder = (move.stateData && typeof move.stateData.kongDiscarder === 'number')
+                            ? move.stateData.kongDiscarder : -1;
+                        this.settleMahjongKongCoins(move.senderSlot, remoteKongType, remoteDiscarder);
                     }
                     return;
                 }
@@ -1506,11 +1509,12 @@ Object.assign(GameEngineController.prototype, {
                 }
                 const aiSelfKong = engine.getSelfKongOptions(curIdx);
                 if (aiSelfKong.length > 0 && Math.random() < 0.3) {
+                    const aiKongType = aiSelfKong[0].type === 'ANKONG' ? 'ANKONG' : 'BUKONG';
                     engine.executeSelfKong(curIdx, aiSelfKong[0]);
                     this.renderMahjongHandTiles(true);
                     this.renderMahjongMelds();
-                    // AI 杠牌金币结算 (与点炮同价)
-                    this.settleMahjongKongCoins(curIdx);
+                    // AI 杠牌金币结算 (暗杠2倍价/补杠同价)
+                    this.settleMahjongKongCoins(curIdx, aiKongType, -1);
                     // 杠后补摸的牌继续检查能否再胡/再杠
                     if (engine.checkCanHu(engine.hands[curIdx])) {
                         engine.isGameOver = true;
@@ -1523,11 +1527,12 @@ Object.assign(GameEngineController.prototype, {
                     }
                     const skAgain = engine.getSelfKongOptions(curIdx);
                     if (skAgain.length > 0 && Math.random() < 0.3) {
+                        const skAgainType = skAgain[0].type === 'ANKONG' ? 'ANKONG' : 'BUKONG';
                         engine.executeSelfKong(curIdx, skAgain[0]);
                         this.renderMahjongHandTiles(true);
                         this.renderMahjongMelds();
                         // 二次杠同样结算
-                        this.settleMahjongKongCoins(curIdx);
+                        this.settleMahjongKongCoins(curIdx, skAgainType, -1);
                     }
                 }
 
@@ -1779,37 +1784,50 @@ Object.assign(GameEngineController.prototype, {
         }
     },
     /**
-     * 杠牌金币结算: 与点炮胡同价 (80币基础价 × PVE折扣 × 工作日加成)
-     * 杠牌者得币, 其余三家分摊扣除 (零和, 与自摸一致)
+     * 杠牌金币结算 (分明杠/暗杠/补杠)
+     * - 明杠 KONG: 与点炮同价 (80币基础价), 放杠者一人承担 (像点炮包赔)
+     * - 暗杠 ANKONG: 2倍价 (160币基础价), 其余三家分摊
+     * - 补杠 BUKONG: 与明杠同价 (80币基础价), 其余三家分摊
+     * 均 × PVE折扣 × 工作日加成, 杠牌者得币, 零和
      * @param {number} kongPlayerIdx 杠牌者座位号
+     * @param {string} [kongType] KONG / ANKONG / BUKONG (默认 KONG)
+     * @param {number} [discarderIdx] 明杠时被杠的那张牌的放杠者座位号
      */
-    settleMahjongKongCoins(kongPlayerIdx) {
+    settleMahjongKongCoins(kongPlayerIdx, kongType = 'KONG', discarderIdx = -1) {
         const engine = window.mahjongEngine;
         if (!engine || engine.isGameOver) return;
         const mySlot = NetworkManager.myPlayerIndex !== null ? NetworkManager.myPlayerIndex : 0;
         const isPve = NetworkManager.isAiMode || !NetworkManager.roomId || NetworkManager.humanCount < 2;
         const ratio = isPve ? 0.25 : 1.0;
-        const kongAmount = Math.ceil(80 * ratio); // 与点炮胡 1 番同价
+        // 明杠/补杠 1 倍价, 暗杠 2 倍价
+        const mult = (kongType === 'ANKONG') ? 2 : 1;
+        const kongAmount = Math.ceil(80 * mult * ratio);
 
         const coinDiffs = [0, 0, 0, 0];
         coinDiffs[kongPlayerIdx] = Math.ceil(kongAmount * AuthEngine.getWeekdayWinBonus()); // 工作日 +15%
-        // 其余 3 家平摊 (零和, 消除 ceil 取整误差)
-        const base = Math.floor(kongAmount / 3);
-        const remainder = kongAmount - base * 3;
-        let cnt = 0;
-        for (let i = 0; i < 4; i++) {
-            if (i !== kongPlayerIdx) {
-                coinDiffs[i] = -(base + (cnt < remainder ? 1 : 0));
-                cnt++;
+        if (kongType === 'KONG' && discarderIdx >= 0 && discarderIdx !== kongPlayerIdx) {
+            // 明杠: 放杠者一人承担全额 (零和)
+            coinDiffs[discarderIdx] = -kongAmount;
+        } else {
+            // 暗杠/补杠: 其余 3 家平摊 (零和, 消除 ceil 取整误差)
+            const base = Math.floor(kongAmount / 3);
+            const remainder = kongAmount - base * 3;
+            let cnt = 0;
+            for (let i = 0; i < 4; i++) {
+                if (i !== kongPlayerIdx) {
+                    coinDiffs[i] = -(base + (cnt < remainder ? 1 : 0));
+                    cnt++;
+                }
             }
         }
 
         if (typeof AuthEngine !== 'undefined' && AuthEngine.updateCoins) {
             const myDiff = coinDiffs[mySlot] || 0;
             if (myDiff !== 0) {
+                const tag = kongType === 'ANKONG' ? '暗杠' : (kongType === 'BUKONG' ? '补杠' : '杠牌');
                 const reasonStr = (myDiff > 0)
-                    ? (isPve ? `麻将切磋杠牌 (+${myDiff}币)` : `麻将杠牌 (+${myDiff}币)`)
-                    : (isPve ? `麻将切磋杠牌 (${myDiff}币)` : `麻将对局杠牌 (${myDiff}币)`);
+                    ? (isPve ? `麻将切磋${tag} (+${myDiff}币)` : `麻将${tag} (+${myDiff}币)`)
+                    : (isPve ? `麻将切磋${tag} (${myDiff}币)` : `麻将对局${tag} (${myDiff}币)`);
                 AuthEngine.updateCoins(myDiff, reasonStr);
             }
         }
@@ -1826,6 +1844,9 @@ Object.assign(GameEngineController.prototype, {
         if (this.pendingDiscardRes) {
             // 明杠
             const discarded = this.pendingDiscardRes.discarded;
+            // 明杠: 放杠者一人承担 (与点炮同价)
+            const discarderIdx = (this.pendingDiscardRes && typeof this.pendingDiscardRes.fromPlayer === 'number')
+                ? this.pendingDiscardRes.fromPlayer : -1;
             if (engine.executeKong(mySlot, discarded)) {
                 this.pendingDiscardRes = null;
                 this.showMahjongActionToast('杠！');
@@ -1835,11 +1856,14 @@ Object.assign(GameEngineController.prototype, {
                 const actionBar = document.getElementById('mahjongActionBar');
                 if (actionBar) actionBar.style.display = 'none';
                 this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
-                // 杠牌金币结算 (与点炮同价)
-                this.settleMahjongKongCoins(mySlot);
+                // 杠牌金币结算: 明杠, 放杠者承担 (与点炮同价)
+                this.settleMahjongKongCoins(mySlot, 'KONG', discarderIdx);
 
                 if (!NetworkManager.isAiMode && NetworkManager.roomId) {
-                    NetworkManager.sendMahjongMove(mySlot, -1, discarded, engine.exportState(), 'KONG');
+                    const st = engine.exportState();
+                    st.kongType = 'KONG';
+                    if (discarderIdx >= 0) st.kongDiscarder = discarderIdx;
+                    NetworkManager.sendMahjongMove(mySlot, -1, discarded, st, 'KONG');
                 }
             }
         } else {
@@ -1847,6 +1871,7 @@ Object.assign(GameEngineController.prototype, {
             const options = engine.getSelfKongOptions(mySlot);
             if (options.length > 0) {
                 if (engine.executeSelfKong(mySlot, options[0])) {
+                    const kongType = options[0].type === 'ANKONG' ? 'ANKONG' : 'BUKONG';
                     this.pendingDiscardRes = null;
                     this.showMahjongActionToast(options[0].type === 'ANKONG' ? '暗杠！' : '补杠！');
                     if (typeof SoundEngine !== 'undefined' && SoundEngine.playCardPlaySound) SoundEngine.playCardPlaySound();
@@ -1855,11 +1880,13 @@ Object.assign(GameEngineController.prototype, {
                     const actionBar = document.getElementById('mahjongActionBar');
                     if (actionBar) actionBar.style.display = 'none';
                     this.updateMahjongStatusUI('🀅 杠牌补摸一牌 · 请出牌');
-                    // 杠牌金币结算 (与点炮同价)
-                    this.settleMahjongKongCoins(mySlot);
+                    // 杠牌金币结算: 暗杠2倍价/补杠同价, 三家分摊
+                    this.settleMahjongKongCoins(mySlot, kongType, -1);
 
                     if (!NetworkManager.isAiMode && NetworkManager.roomId) {
-                        NetworkManager.sendMahjongMove(mySlot, -1, null, engine.exportState(), 'KONG');
+                        const st = engine.exportState();
+                        st.kongType = kongType;
+                        NetworkManager.sendMahjongMove(mySlot, -1, null, st, 'KONG');
                     }
                 }
             }
