@@ -1878,3 +1878,47 @@ body.theme-mahjong #lobbyScreen {
         align-content: flex-start !important;
     }
 }
+
+/* ============================================================
+   ?? 手机端触控目标优化: 出牌/吃碰杠胡按钮放大到 ≥40px (WCAG 2.5.5)
+   ============================================================ */
+@media (max-width: 768px) {
+    /* 出牌按钮: 25px -> 44px 高, 更大字号与内边距 */
+    .btn-mahjong-discard {
+        height: 44px !important;
+        min-width: 76px !important;
+        font-size: 0.95rem !important;
+        padding: 0 16px !important;
+        border-radius: 8px !important;
+        gap: 6px !important;
+    }
+    .btn-mahjong-discard i { font-size: 0.95rem !important; }
+
+    /* 吃碰杠胡过 行动条: 按钮高度 40px, 字号加大 */
+    .mahjong-action-bar {
+        gap: 7px !important;
+        padding: 7px 9px !important;
+        border-radius: 10px !important;
+        margin-bottom: 8px !important;
+    }
+    .btn-mahjong-act {
+        min-height: 42px !important;
+        min-width: 58px !important;
+        font-size: 0.95rem !important;
+        padding: 6px 12px !important;
+        border-radius: 8px !important;
+        gap: 5px !important;
+    }
+    .btn-mahjong-act i, .btn-mahjong-act .fa-solid { font-size: 0.9rem !important; }
+
+    /* 行动条倒计时徽标字号同步放大 */
+    .mahjong-act-timer {
+        font-size: 0.8rem !important;
+        padding: 4px 8px !important;
+    }
+
+    /* 手牌可点区域: 卡片略加大 (23x31 -> 25x34), 点击容错更好 */
+    .mahjong-tile-card {
+        width: min(25px, calc((100vw - 60px) / 14)) !important;
+    }
+}
