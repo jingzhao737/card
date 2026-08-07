@@ -199,3 +199,46 @@ body.theme-go .overlay-screen {
 #publicRoomsListContainer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12) !important; border-radius: 2px !important; }
 #publicRoomsListContainer::-webkit-scrollbar-track { background: transparent !important; }
 #publicRoomsListContainer { scrollbar-width: thin !important; scrollbar-color: rgba(255,255,255,0.12) transparent !important; }
+
+/* ===== 顶部迷你榜单: 进一步降噪 (更淡更矮, 融入背景) ===== */
+.mini-leaderboard-bar {
+    background: rgba(15, 10, 8, 0.28) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    padding: 2px 8px !important;
+    box-shadow: none !important;
+    border-radius: 2px !important;
+}
+.mini-lb-title {
+    font-size: 0.64rem !important;
+    font-weight: 500 !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    letter-spacing: 1px !important;
+}
+.mini-lb-ticker {
+    height: 16px !important;
+}
+.mini-lb-ticker .lb-top-item {
+    font-size: 0.62rem !important;
+    gap: 3px !important;
+    margin-right: 10px !important;
+}
+.mini-lb-ticker .lb-top-name {
+    color: rgba(255, 255, 255, 0.45) !important;
+    font-weight: 400 !important;
+}
+.mini-lb-ticker .lb-top-score {
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+}
+.mini-lb-more {
+    font-size: 0.62rem !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+}
+.mini-lb-more i {
+    font-size: 0.55rem !important;
+}
+.mini-lb-icon {
+    font-size: 0.68rem !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+}
