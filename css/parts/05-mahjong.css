@@ -1836,3 +1836,20 @@ body.theme-mahjong #lobbyScreen {
 
 
 /* ============================================================
+
+/* ============================================================
+   ?? 手机端: 左右两家吃碰杠牌旋转90度竖排 (省横向空间)
+   ============================================================ */
+@media (max-width: 768px) {
+    #meldsLeft .meld-group,
+    #meldsRight .meld-group {
+        flex-direction: column !important;
+        gap: 1px !important;
+    }
+
+    #meldsLeft .meld-tile,
+    #meldsRight .meld-tile {
+        transform: rotate(90deg) !important;
+        margin: -4px 0 !important;
+    }
+}

@@ -7288,6 +7288,23 @@ body.theme-mahjong #lobbyScreen {
 
 
 /* ============================================================
+
+/* ============================================================
+   ?? �ֻ���: �������ҳ���������ת90������ (ʡ����ռ�)
+   ============================================================ */
+@media (max-width: 768px) {
+    #meldsLeft .meld-group,
+    #meldsRight .meld-group {
+        flex-direction: column !important;
+        gap: 1px !important;
+    }
+
+    #meldsLeft .meld-tile,
+    #meldsRight .meld-tile {
+        transform: rotate(90deg) !important;
+        margin: -4px 0 !important;
+    }
+}
    ⚫⚪ 游鲸围棋 水墨黑白棋盘 UI Style (Go / Weiqi)
    ============================================================ */
 
