@@ -1672,7 +1672,8 @@ Object.assign(GameEngineController.prototype, {
         this.highlightMahjongActionTiles(res);
     },
     /**
-     * 🀄 高亮可碰/可杠的手牌搭子（金色脉冲微光）
+     * 🀄 高亮可吃/可碰/可杠的手牌搭子（金色脉冲微光）
+     * 碰/杠: 高亮与弃牌同名的牌; 吃: 高亮能组成顺子的搭子牌
      */
     highlightMahjongActionTiles(res) {
         const container = document.getElementById('mahjongHandTilesContainer');
@@ -1681,15 +1682,24 @@ Object.assign(GameEngineController.prototype, {
         // 清除旧高亮
         container.querySelectorAll('.mahjong-tile-card').forEach(c => c.classList.remove('action-highlight'));
 
-        if (!res.canPong && !res.canKong) return;
-        if (!res.discarded) return;
+        if ((!res.canPong && !res.canKong && !res.canChow) || !res.discarded) return;
 
         const targetName = res.discarded.name;
+        // 收集需高亮的牌名集合: 碰/杠 = 同名牌, 吃 = 搭子组合中的所有牌
+        const highlightNames = new Set();
+        if (res.canPong || res.canKong) highlightNames.add(targetName);
+        if (res.canChow && Array.isArray(res.chowOptions)) {
+            res.chowOptions.forEach(pair => {
+                if (Array.isArray(pair)) pair.forEach(t => { if (t && t.name) highlightNames.add(t.name); });
+            });
+        }
+        if (highlightNames.size === 0) return;
+
         container.querySelectorAll('.mahjong-tile-card').forEach(card => {
             const face = card.querySelector('.m-face');
             if (!face) return;
             const tileName = face.dataset.tileName;
-            if (tileName === targetName) {
+            if (tileName && highlightNames.has(tileName)) {
                 card.classList.add('action-highlight');
             }
         });
