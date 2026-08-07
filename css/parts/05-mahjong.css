@@ -1855,7 +1855,7 @@ body.theme-mahjong #lobbyScreen {
 }
 
 /* ============================================================
-   ?? ÊÖ»ú¶Ë: ×óÓÒÆúÅÆ¶Ñ×ÝÏòÁÐÅÅ, ±ÜÃâÓë×ùÎ»Çø/ÊÖÅÆÇøÅö×²
+   ?? ï¿½Ö»ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²
    ============================================================ */
 @media (max-width: 768px) {
     .discard-grid.grid-left {
@@ -1880,21 +1880,21 @@ body.theme-mahjong #lobbyScreen {
 }
 
 /* ============================================================
-   ?? ÊÖ»ú¶Ë´¥¿ØÄ¿±êÓÅ»¯: ³öÅÆ/³ÔÅö¸Üºú°´Å¥·Å´óµ½ ¡Ý40px (WCAG 2.5.5)
+   ?? ï¿½Ö»ï¿½ï¿½Ë´ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Å»ï¿½: ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½Å¥ï¿½Å´ï¿½ ï¿½ï¿½40px (WCAG 2.5.5)
    ============================================================ */
 @media (max-width: 768px) {
-    /* ³öÅÆ°´Å¥: 25px -> 44px ¸ß, ¸ü´ó×ÖºÅÓëÄÚ±ß¾à */
+    /* ï¿½ï¿½ï¿½Æ°ï¿½Å¥: 25px -> 44px ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½ï¿½Ú±ß¾ï¿½ */
     .btn-mahjong-discard {
-        height: 44px !important;
-        min-width: 76px !important;
-        font-size: 0.95rem !important;
-        padding: 0 16px !important;
-        border-radius: 8px !important;
-        gap: 6px !important;
+        height: 30px !important;
+        min-width: 60px !important;
+        font-size: 0.8rem !important;
+        padding: 0 12px !important;
+        border-radius: 4px !important;
+        gap: 4px !important;
     }
-    .btn-mahjong-discard i { font-size: 0.95rem !important; }
+    .btn-mahjong-discard i { font-size: 0.8rem !important; }
 
-    /* ³ÔÅö¸Üºú¹ý ÐÐ¶¯Ìõ: °´Å¥¸ß¶È 40px, ×ÖºÅ¼Ó´ó */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½ ï¿½Ð¶ï¿½ï¿½ï¿½: ï¿½ï¿½Å¥ï¿½ß¶ï¿½ 40px, ï¿½ÖºÅ¼Ó´ï¿½ */
     .mahjong-action-bar {
         gap: 7px !important;
         padding: 7px 9px !important;
@@ -1911,13 +1911,13 @@ body.theme-mahjong #lobbyScreen {
     }
     .btn-mahjong-act i, .btn-mahjong-act .fa-solid { font-size: 0.9rem !important; }
 
-    /* ÐÐ¶¯Ìõµ¹¼ÆÊ±»Õ±ê×ÖºÅÍ¬²½·Å´ó */
+    /* ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Õ±ï¿½ï¿½Öºï¿½Í¬ï¿½ï¿½ï¿½Å´ï¿½ */
     .mahjong-act-timer {
         font-size: 0.8rem !important;
         padding: 4px 8px !important;
     }
 
-    /* ÊÖÅÆ¿ÉµãÇøÓò: ¿¨Æ¬ÂÔ¼Ó´ó (23x31 -> 25x34), µã»÷ÈÝ´í¸üºÃ */
+    /* ï¿½ï¿½ï¿½Æ¿Éµï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½Æ¬ï¿½Ô¼Ó´ï¿½ (23x31 -> 25x34), ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½ï¿½ */
     .mahjong-tile-card {
         width: min(25px, calc((100vw - 60px) / 14)) !important;
     }

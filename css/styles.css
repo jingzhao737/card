@@ -7337,14 +7337,14 @@ body.theme-mahjong #lobbyScreen {
 @media (max-width: 768px) {
     /* ���ư�ť: 25px -> 44px ��, �����ֺ����ڱ߾� */
     .btn-mahjong-discard {
-        height: 44px !important;
-        min-width: 76px !important;
-        font-size: 0.95rem !important;
-        padding: 0 16px !important;
-        border-radius: 8px !important;
-        gap: 6px !important;
+        height: 30px !important;
+        min-width: 60px !important;
+        font-size: 0.8rem !important;
+        padding: 0 12px !important;
+        border-radius: 4px !important;
+        gap: 4px !important;
     }
-    .btn-mahjong-discard i { font-size: 0.95rem !important; }
+    .btn-mahjong-discard i { font-size: 0.8rem !important; }
 
     /* �����ܺ��� �ж���: ��ť�߶� 40px, �ֺżӴ� */
     .mahjong-action-bar {
