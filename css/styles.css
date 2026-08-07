@@ -7305,6 +7305,31 @@ body.theme-mahjong #lobbyScreen {
         margin: -3px 0 !important;
     }
 }
+
+/* ============================================================
+   ?? �ֻ���: �������ƶ���������, ��������λ��/��������ײ
+   ============================================================ */
+@media (max-width: 768px) {
+    .discard-grid.grid-left {
+        left: 6px !important;
+        top: 44% !important;
+        max-width: 19px !important;
+        max-height: 150px !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        align-content: flex-start !important;
+    }
+
+    .discard-grid.grid-right {
+        right: 6px !important;
+        top: 44% !important;
+        max-width: 19px !important;
+        max-height: 150px !important;
+        flex-direction: column-reverse !important;
+        flex-wrap: nowrap !important;
+        align-content: flex-start !important;
+    }
+}
    ⚫⚪ 游鲸围棋 水墨黑白棋盘 UI Style (Go / Weiqi)
    ============================================================ */
 
